@@ -1,4 +1,4 @@
-Q21:
+q21:
   label: Question 21
   rubrics:
     - label: "Draw a circle of the correct color, and approximately at the center"
@@ -11,10 +11,49 @@ Q21:
       marks: 1
     - label: "At least one pre-defined variable is used, and no value is hardcoded when a pre-defined variable could have been used"
       marks: 1
-Q22:
+q22:
   label: Question 22
   rubrics:
-    - label: TODO 1
-      marks: 2
-    - label: TODO 2
+    - label: Line position is correct (and there is a line-like allowed shape)
       marks: 1
+    - label: Line length is correct (and there is a line-like allowed shape)
+      marks: 1
+    - label: Ellipse position is correct (and there is an ellipse)
+      marks: 1
+    - label: Ellipse diameter is correct (and there is an ellipse)
+      marks: 1
+    - label: Line does not poke out on top of the ellipse
+      marks: 0.5
+    - label: Ellipse fill is working
+      marks: 0.5
+
+q23:
+  label: Question 23
+  rubrics:
+    - label: Load image pixels
+      marks: 0.5
+    - label: Iterates through every pixels
+      marks: 0.5
+    - label: Fetch the right pixel values (i = (x + y * img.width) * 4)
+      marks: 0.5
+    - label: Make the right color test
+      marks: 1
+    - label: Choose the right new pixel values
+      marks: 1
+    - label: Properly write back every pixels
+      marks: 1
+    - label: Update image pixels
+      marks: 0.5
+
+q24:
+  label: Question 24
+  rubrics:
+    - label: The outer loop is correct, with the right number of row or column iteractions
+      marks: 1
+    - label: The inner loop is correct, with the right number of row and column iterations
+      marks: 1
+    - label: position of ellipses are correct
+      marks: 1
+    - label: colors of ellipses are correct
+      marks: 2
+

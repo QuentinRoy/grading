@@ -15,12 +15,12 @@ import produce from "immer";
 import { GetStaticPaths, GetStaticProps } from "next";
 import React, { useRef } from "react";
 
-import Link from "../../src/Link";
+import Link from "../src/Link";
 import type {
   Question as QuestionProps,
   Rubric as QuestionRubric,
-} from "../../src/loadQuestions";
-import loadQuestions from "../../src/loadQuestions";
+} from "../src/loadQuestions";
+import loadQuestions from "../src/loadQuestions";
 
 const useStyles = makeStyles((theme) => ({
   root: { padding: theme.spacing(5, 0) },
@@ -155,16 +155,18 @@ export default function Question({
 
         <Box className={classes.summary}>
           <Box textAlign="center">
-            <Typography variant="subtitle2">
+            <Typography variant="subtitle1">
               <span ref={resultRef}>{marks}</span>&nbsp;/&nbsp;{maxMarks}
             </Typography>
           </Box>
           <Box textAlign="center">
-            {isCompleted
-              ? "(completed)"
-              : `(${totalRubricsLeft} rubric${
-                  totalRubricsLeft !== 1 ? "s" : ""
-                } left)`}
+            <Typography variant="caption">
+              {isCompleted
+                ? "(completed)"
+                : `(${totalRubricsLeft} rubric${
+                    totalRubricsLeft !== 1 ? "s" : ""
+                  } left)`}
+            </Typography>
           </Box>
         </Box>
         <Box className={classes.controls}>
@@ -247,13 +249,15 @@ function Rubric({ label, marks, grading, number, dispatch }: GridItemProps) {
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const grid = await loadQuestions();
-  let paths = Object.keys(grid).map((id) => ({ params: { id } }));
+  let paths = Object.keys(grid).map((questionId) => ({
+    params: { questionId },
+  }));
   return { paths, fallback: false };
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   let grid = await loadQuestions();
-  let question: QuestionProps = grid[params.id as string];
+  let question: QuestionProps = grid[params.questionId as string];
   return { props: question };
 };
 

@@ -23,7 +23,7 @@ export default function Index({
   const classes = useStyles();
 
   let qLinks = questions.map(({ id, label }) => (
-    <ListItemLink button naked key={id} href={`/questions/${id}`}>
+    <ListItemLink button key={id} href={`/${id}`}>
       {label == null ? id : label}
     </ListItemLink>
   ));
