@@ -45,6 +45,8 @@ q24:
       marks: 1
     - label: position of ellipses are correct
       marks: 1
-    - label: colors of ellipses are correct
-      marks: 2
+    - label: colors of ellipses forms a gradiant that goes approximately from black to white
+      marks: 1
+    - label: Leftmost ellipses are pure black, and rightmost ellipses are pure white
+      marks: 1
 
