@@ -19,7 +19,7 @@ function setup() {
       let g = img.pixels[i + 1];
       let b = img.pixels[i + 2];
 
-      if (b === 255 && g === 80 && r === 80) {
+      if (r === 80 && g === 80 && b === 255) {
         r = 0;
         g = 0;
         b = 0;
