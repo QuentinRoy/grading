@@ -1,38 +1,23 @@
-let img;
+let minSize = 50; // The smallest possible size for the ball.
+let maxSize = 200; // The largest possible size for the ball.
+let color = 100; // The color of the ball.
 
-// preload is an event function called before setup
-function preload() {
-  img = loadImage("Oo.png");
-}
+let size = 100; // The current size of the ball.
+let speed = 2; // The current growing or shrinking speed.
 
 function setup() {
-  // image processing
-  createCanvas(img.width, img.height);
-  img.loadPixels();
-  for (let x = 0; x < img.width; x++) {
-    for (let y = 0; y < img.height; y++) {
-      // index into pixels array
-      let i = (x + y * img.width) * 4;
+  createCanvas(maxSize, maxSize);
+}
 
-      // extract red, green, blue, alpha
-      let r = img.pixels[i];
-      let g = img.pixels[i + 1];
-      let b = img.pixels[i + 2];
+function draw() {
+  background(255);
+  fill(color);
 
-      if (b === 255 && g === 80 && r === 80) {
-        r = 0;
-        g = 0;
-        b = 0;
-      }
+  ellipse(maxSize / 2, maxSize / 2, size, size);
 
-      // write red, blue, green, alpha
-      img.pixels[i] = r;
-      img.pixels[i + 1] = g;
-      img.pixels[i + 2] = b;
-    }
+  if (size >= maxSize || size <= minSize) {
+    speed = -speed;
   }
-  img.updatePixels();
 
-  // display image
-  image(img, 0, 0);
+  size = size + speed;
 }

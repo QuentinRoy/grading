@@ -1,38 +1,18 @@
-let img;
-
-// preload is an event function called before setup
-function preload() {
-  img = loadImage("Oo.png");
+function setup() {
+  createCanvas(200, 150);
 }
 
-function setup() {
-  // image processing
-  createCanvas(img.width, img.height);
-  img.loadPixels();
-  for (let x = 0; x < img.width; x++) {
-    for (let y = 0; y < img.height; y++) {
-      // index into pixels array
-      let i = (x + y * img.width) * 4;
+function draw() {
+  background(220); // Grey.
 
-      // extract red, green, blue, alpha
-      let r = img.pixels[i];
-      let g = img.pixels[i + 1];
-      let b = img.pixels[i + 2];
+  fill("#e37cff"); // Purple.
+  lollipop(width / 2, height / 2, 60, 20);
 
-      if (b === 255 && g === 80 && r === 80) {
-        r = 0;
-        g = 0;
-        b = 0;
-      }
+  fill("#5ef389"); // Green.
+  lollipop(mouseX, mouseY, 40, 40);
+}
 
-      // write red, blue, green, alpha
-      img.pixels[i] = r;
-      img.pixels[i + 1] = g;
-      img.pixels[i + 2] = b;
-    }
-  }
-  img.updatePixels();
-
-  // display image
-  image(img, 0, 0);
+function lollipop(x, y, length, diameter) {
+  line(x, y, x, y - length);
+  ellipse(x, y - length, diameter, diameter);
 }

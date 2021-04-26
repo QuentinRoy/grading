@@ -1,38 +1,15 @@
-let img;
-
-// preload is an event function called before setup
-function preload() {
-  img = loadImage("Oo.png");
-}
+let rows = 10;
+let cols = 8;
+let size = 20;
 
 function setup() {
-  // image processing
-  createCanvas(img.width, img.height);
-  img.loadPixels();
-  for (let x = 0; x < img.width; x++) {
-    for (let y = 0; y < img.height; y++) {
-      // index into pixels array
-      let i = (x + y * img.width) * 4;
+  createCanvas(size * rows, size * cols);
 
-      // extract red, green, blue, alpha
-      let r = img.pixels[i];
-      let g = img.pixels[i + 1];
-      let b = img.pixels[i + 2];
-
-      if (b === 255 && g === 80 && r === 80) {
-        r = 0;
-        g = 0;
-        b = 0;
-      }
-
-      // write red, blue, green, alpha
-      img.pixels[i] = r;
-      img.pixels[i + 1] = g;
-      img.pixels[i + 2] = b;
+  for (let i = 0; i < rows; i++) {
+    // i goes from 0 to rows - 1, so 255 must be reached when i == rows - 1.
+    fill((i * 255) / (rows - 1));
+    for (let j = 0; j < cols; j++) {
+      ellipse(i * size + size / 2, j * size + size / 2, size, size);
     }
   }
-  img.updatePixels();
-
-  // display image
-  image(img, 0, 0);
 }
