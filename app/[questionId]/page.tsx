@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
-import loadPapers from "../../src/loadPapers";
-import { loadQuestion } from "../../src/loadQuestions";
+import loadPapers from "../../src/papers/loadPapers";
+import { loadQuestion } from "../../src/questions/loadQuestions";
 
 type PageParams = {
   questionId: string;

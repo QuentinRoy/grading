@@ -12,20 +12,17 @@ import {
   useOptimistic,
   useReducer,
 } from "react";
-import type { Paper } from "./loadPapers";
-import RubricGradingSection from "./RubricGradingSection";
-import { getRubricMaxMarks, type Rubric as QuestionRubric } from "./rubric";
-import { useSaveErrors } from "./SaveErrorsContext";
+import type { Paper } from "../papers/loadPapers";
+import { getRubricMaxMarks } from "../rubrics/rubric";
+import { useSaveErrors } from "../shared/SaveErrorsProvider";
+import { attachGrading, type GradedRubric, type Grading } from "./grading";
+import RubricGradeList from "./RubricGradeList";
 import { saveRubricGrading } from "./saveRubricGrading";
-
-type Grading = string | number | boolean;
-
-type RubricItem = QuestionRubric & { grading?: boolean | number | string };
 
 type GradingUpdate = { index: number; grading: Grading };
 
 type State = {
-  savedRubrics: RubricItem[];
+  savedRubrics: GradedRubric[];
   pendingByIndex: Record<number, number>;
 };
 
@@ -44,21 +41,21 @@ type Action =
       index: number;
     };
 
-type PaperRubricClientSectionProps = {
+type PaperGradingClientProps = {
   questionId: string;
   questionLabel?: string;
-  rubrics: RubricItem[];
+  rubrics: GradedRubric[];
   papers: Paper[];
   currentPaperId: string;
 };
 
-export default function PaperRubricClientSection({
+export default function PaperGradingClient({
   questionId,
   questionLabel,
   rubrics: initialRubrics,
   papers,
   currentPaperId,
-}: PaperRubricClientSectionProps): ReactElement {
+}: PaperGradingClientProps): ReactElement {
   const { addError } = useSaveErrors();
 
   const [{ savedRubrics, pendingByIndex }, dispatch] = useReducer(reducer, {
@@ -68,8 +65,10 @@ export default function PaperRubricClientSection({
 
   const [optimisticRubrics, addOptimisticUpdate] = useOptimistic(
     savedRubrics,
-    (current: RubricItem[], { index, grading }: GradingUpdate) =>
-      current.map((r, i) => (i === index ? { ...r, grading } : r)),
+    (current: GradedRubric[], { index, grading }: GradingUpdate) =>
+      current.map((rubric, currentIndex) =>
+        currentIndex === index ? attachGrading(rubric, grading) : rubric,
+      ),
   );
 
   const { currentPaperIndex, currentPaper, previousPaper, nextPaper } =
@@ -205,7 +204,7 @@ export default function PaperRubricClientSection({
         </>
       )}
 
-      <RubricGradingSection
+      <RubricGradeList
         rubrics={optimisticRubrics}
         pendingByIndex={pendingByIndex}
         disabled={currentPaper == null}
@@ -245,7 +244,10 @@ function reducer(state: State, action: Action): State {
         );
         draft.pendingByIndex[action.index] = nextPending;
         if (draft.savedRubrics[action.index] != null) {
-          draft.savedRubrics[action.index].grading = action.grading;
+          draft.savedRubrics[action.index] = attachGrading(
+            draft.savedRubrics[action.index],
+            action.grading,
+          );
         }
         break;
       }

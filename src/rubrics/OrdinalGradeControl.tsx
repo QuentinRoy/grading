@@ -4,19 +4,19 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import type { ReactElement } from "react";
 
-type OrdinalRubricControlProps = {
+type OrdinalGradeControlProps = {
   grading?: string;
   values: Record<string, number>;
   disabled: boolean;
   onGrade: (grading: string) => void;
 };
 
-export default function OrdinalRubricControl({
+export default function OrdinalGradeControl({
   grading,
   values,
   disabled,
   onGrade,
-}: OrdinalRubricControlProps): ReactElement {
+}: OrdinalGradeControlProps): ReactElement {
   return (
     <ToggleButtonGroup
       value={grading ?? null}

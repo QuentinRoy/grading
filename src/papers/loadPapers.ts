@@ -1,5 +1,5 @@
 import { cacheLife, cacheTag } from "next/cache";
-import { prisma } from "./prisma";
+import { prisma } from "../db/prisma";
 
 export type Paper = {
   id: string;

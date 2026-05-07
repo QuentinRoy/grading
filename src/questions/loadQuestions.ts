@@ -1,10 +1,10 @@
 import { type Prisma, RubricType } from "@prisma/client";
 import { cacheLife, cacheTag } from "next/cache";
 
-import { prisma } from "./prisma";
-import type { Rubric } from "./rubric";
+import { prisma } from "../db/prisma";
+import type { Rubric } from "../rubrics/rubric";
 
-export type { Rubric } from "./rubric";
+export type { Rubric } from "../rubrics/rubric";
 
 export type Question = {
   label?: string;

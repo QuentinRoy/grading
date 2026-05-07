@@ -1,8 +1,6 @@
-import { promises as fs } from "fs";
-import path from "path";
 import { Suspense } from "react";
 
-import ImportPageClient from "./ImportPageClient";
+import ImportForm from "../../src/import/ImportForm";
 
 export default function ImportPage() {
   return (
@@ -13,5 +11,5 @@ export default function ImportPage() {
 }
 
 async function ImportPageContent() {
-  return <ImportPageClient />;
+  return <ImportForm />;
 }

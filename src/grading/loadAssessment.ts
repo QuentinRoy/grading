@@ -1,5 +1,5 @@
 import { cacheTag } from "next/cache";
-import { prisma } from "./prisma";
+import { prisma } from "../db/prisma";
 
 export type RubricGrading = string | number | boolean;
 

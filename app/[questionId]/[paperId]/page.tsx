@@ -7,12 +7,13 @@ import Typography from "@mui/material/Typography";
 import { cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import CodeSnippet from "../../../src/CodeSnippet";
-import { loadAssessment } from "../../../src/loadAssessment";
-import loadPapers from "../../../src/loadPapers";
-import { loadQuestion } from "../../../src/loadQuestions";
-import MuiNextLink from "../../../src/MuiNextLink";
-import PaperRubricClientSection from "../../../src/PaperRubricClientSection";
+import { attachGrading } from "../../../src/grading/grading";
+import { loadAssessment } from "../../../src/grading/loadAssessment";
+import PaperGradingClient from "../../../src/grading/PaperGradingClient";
+import loadPapers from "../../../src/papers/loadPapers";
+import { loadQuestion } from "../../../src/questions/loadQuestions";
+import CodeSnippet from "../../../src/shared/CodeSnippet";
+import MuiNextLink from "../../../src/shared/MuiNextLink";
 
 type PageParams = {
   questionId: string;
@@ -103,31 +104,12 @@ async function PaperRubricSection({
     notFound();
   }
 
-  const rubricsWithGradings = question.rubrics.map((rubric) => {
-    const grading = gradings.get(rubric.id);
-
-    if (rubric.type === "boolean") {
-      return {
-        ...rubric,
-        grading: typeof grading === "boolean" ? grading : undefined,
-      };
-    }
-
-    if (rubric.type === "ordinal") {
-      return {
-        ...rubric,
-        grading: typeof grading === "string" ? grading : undefined,
-      };
-    }
-
-    return {
-      ...rubric,
-      grading: typeof grading === "number" ? grading : undefined,
-    };
-  });
+  const rubricsWithGradings = question.rubrics.map((rubric) =>
+    attachGrading(rubric, gradings.get(rubric.id)),
+  );
 
   return (
-    <PaperRubricClientSection
+    <PaperGradingClient
       key={`${questionId}-${paperId}`}
       questionId={questionId}
       questionLabel={question.label}

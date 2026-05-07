@@ -3,18 +3,17 @@
 import { Prisma, RubricType } from "@prisma/client";
 import { revalidateTag } from "next/cache";
 import { ZodError } from "zod";
-
+import { prisma } from "../db/prisma";
 import {
   buildPapersFromStudents,
   formatZodIssues,
   parseQuestionsYaml,
   parseStudentsCsv,
-} from "../../src/importData";
-import { prisma } from "../../src/prisma";
+} from "./importData";
 
-import type { ImportState } from "./types";
+import type { ImportState } from "./importState";
 
-export type { ImportState } from "./types";
+export type { ImportState } from "./importState";
 
 export async function importDataAction(
   _previousState: ImportState,

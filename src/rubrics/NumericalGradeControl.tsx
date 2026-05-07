@@ -3,7 +3,7 @@
 import TextField from "@mui/material/TextField";
 import { type ReactElement, useEffect, useState } from "react";
 
-type NumericalRubricControlProps = {
+type NumericalGradeControlProps = {
   grading?: number;
   min: number;
   max: number;
@@ -11,13 +11,13 @@ type NumericalRubricControlProps = {
   onGrade: (grading: number) => void;
 };
 
-export default function NumericalRubricControl({
+export default function NumericalGradeControl({
   grading,
   min,
   max,
   disabled,
   onGrade,
-}: NumericalRubricControlProps): ReactElement {
+}: NumericalGradeControlProps): ReactElement {
   const [draft, setDraft] = useState(grading != null ? String(grading) : "");
 
   useEffect(() => {

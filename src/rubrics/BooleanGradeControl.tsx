@@ -6,17 +6,17 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import type { ReactElement } from "react";
 
-type BooleanRubricControlProps = {
+type BooleanGradeControlProps = {
   grading?: boolean;
   disabled: boolean;
   onGrade: (grading: boolean) => void;
 };
 
-export default function BooleanRubricControl({
+export default function BooleanGradeControl({
   grading,
   disabled,
   onGrade,
-}: BooleanRubricControlProps): ReactElement {
+}: BooleanGradeControlProps): ReactElement {
   const buttonValue = grading ?? null;
 
   return (

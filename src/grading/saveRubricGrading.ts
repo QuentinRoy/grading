@@ -2,7 +2,7 @@
 
 import { RubricType } from "@prisma/client";
 import { updateTag } from "next/cache";
-import { prisma } from "./prisma";
+import { prisma } from "../db/prisma";
 
 export type SaveRubricGradingResult =
   | { success: true }

@@ -19,8 +19,8 @@ import NextLink from "next/link";
 import React from "react";
 import { useFormStatus } from "react-dom";
 
-import { importDataAction } from "./actions";
-import { initialImportState } from "./types";
+import { importDataAction } from "./importDataAction";
+import { initialImportState } from "./importState";
 
 const YAML_PLACEHOLDER = `questions:
   - id: question-1
