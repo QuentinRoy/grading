@@ -45,7 +45,8 @@ export default function RubricRow<T extends TypedRubricItem = TypedRubricItem>({
   disabled,
   onGrade,
 }: RubricRowProps<T>): ReactElement {
-  const { label, grading, type } = rubric;
+  const { description, grading, id, label, type } = rubric;
+  const displayDescription = description ?? label ?? id;
   const rubricMarks = computeMarks(rubric);
 
   const handleGrade = (value: string | number | boolean) => {
@@ -100,7 +101,7 @@ export default function RubricRow<T extends TypedRubricItem = TypedRubricItem>({
           </Box>
         </Box>
       </Grid>
-      <Grid size={{ xs: 12, sm: 8 }}>{label}</Grid>
+      <Grid size={{ xs: 12, sm: 8 }}>{displayDescription}</Grid>
       <Grid size={{ xs: 12, sm: 1 }}>
         <Typography variant="body2">({rubricMarks})</Typography>
       </Grid>

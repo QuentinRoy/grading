@@ -2,10 +2,12 @@ import yaml from "js-yaml";
 import { z } from "zod";
 
 const nonEmptyString = z.string().trim().min(1);
-const numericValue = z.coerce.number().finite();
+const numericValue = z.coerce.number();
 
 const baseRubricSchema = z.object({
-  label: nonEmptyString,
+  id: nonEmptyString,
+  description: nonEmptyString.optional(),
+  label: nonEmptyString.optional(),
   marks: numericValue.nonnegative(),
 });
 
@@ -20,14 +22,18 @@ const ordinalValuesSchema = z
   });
 
 const ordinalRubricSchema = z.object({
-  label: nonEmptyString,
+  id: nonEmptyString,
+  description: nonEmptyString.optional(),
+  label: nonEmptyString.optional(),
   type: z.literal("ordinal"),
   values: ordinalValuesSchema,
 });
 
 const numericalRubricSchema = z
   .object({
-    label: nonEmptyString,
+    id: nonEmptyString,
+    description: nonEmptyString.optional(),
+    label: nonEmptyString.optional(),
     type: z.literal("numerical"),
     min: numericValue,
     max: numericValue,
@@ -60,11 +66,25 @@ const rubricSchema = z
   });
 
 const questionSchema = z.object({
+  id: nonEmptyString,
   label: nonEmptyString.optional(),
-  rubrics: z.array(rubricSchema).min(1),
+  rubrics: z
+    .array(rubricSchema)
+    .refine(
+      (rubrics) => new Set(rubrics.map((r) => r.id)).size === rubrics.length,
+      { message: "Rubric ids must be unique within a question" },
+    ),
 });
 
-const questionsSchema = z.record(nonEmptyString, questionSchema);
+const questionsSchema = z.object({
+  questions: z
+    .array(questionSchema)
+    .refine(
+      (questions) =>
+        new Set(questions.map((q) => q.id)).size === questions.length,
+      { message: "Question ids must be unique" },
+    ),
+});
 
 const studentRowSchema = z.object({
   family_name: nonEmptyString,
@@ -77,15 +97,15 @@ const studentRowsSchema = z.array(studentRowSchema);
 
 export type ImportedRubric = z.output<typeof rubricSchema>;
 export type ImportedQuestion = z.output<typeof questionSchema>;
-export type ImportedQuestions = z.output<typeof questionsSchema>;
+export type ImportedQuestions = z.output<typeof questionsSchema>["questions"];
 export type ImportedStudent = {
   familyName: string;
   firstName: string;
-  externalId: string;
+  id: string;
   team?: string;
 };
 export type ImportedPaper = {
-  externalId: string;
+  id: string;
   label: string;
   team?: string;
   students: ImportedStudent[];
@@ -102,7 +122,7 @@ export function toSlug(value: string): string {
 
 export function parseQuestionsYaml(content: string): ImportedQuestions {
   const parsed = yaml.load(content);
-  return questionsSchema.parse(parsed);
+  return questionsSchema.parse(parsed).questions;
 }
 
 export function parseStudentsCsv(content: string): ImportedStudent[] {
@@ -127,7 +147,7 @@ export function parseStudentsCsv(content: string): ImportedStudent[] {
   return studentRowsSchema.parse(rows).map((row) => ({
     familyName: row.family_name,
     firstName: row.first_name,
-    externalId: row.id,
+    id: row.id,
     team: row.team.length > 0 ? row.team : undefined,
   }));
 }
@@ -139,46 +159,44 @@ export function buildPapersFromStudents(
 
   students.forEach((student) => {
     const key =
-      student.team == null
-        ? `student:${student.externalId}`
-        : `team:${student.team}`;
+      student.team == null ? `student:${student.id}` : `team:${student.team}`;
     const currentStudents = groupedByPaper.get(key) ?? [];
     currentStudents.push(student);
     groupedByPaper.set(key, currentStudents);
   });
 
-  const usedExternalIds = new Set<string>();
+  const usedIds = new Set<string>();
 
   return Array.from(groupedByPaper.values()).map((groupedStudents) => {
     const firstStudent = groupedStudents[0];
 
     if (firstStudent.team != null) {
-      let externalId = `team-${toSlug(firstStudent.team) || "unknown"}`;
+      let id = `team-${toSlug(firstStudent.team) || "unknown"}`;
       let suffix = 1;
-      while (usedExternalIds.has(externalId)) {
+      while (usedIds.has(id)) {
         suffix += 1;
-        externalId = `team-${toSlug(firstStudent.team) || "unknown"}-${suffix}`;
+        id = `team-${toSlug(firstStudent.team) || "unknown"}-${suffix}`;
       }
-      usedExternalIds.add(externalId);
+      usedIds.add(id);
 
       return {
-        externalId,
+        id,
         label: `Team ${firstStudent.team}`,
         team: firstStudent.team,
         students: groupedStudents,
       };
     }
 
-    let externalId = `paper-${toSlug(firstStudent.externalId) || "unknown"}`;
+    let id = `paper-${toSlug(firstStudent.id) || "unknown"}`;
     let suffix = 1;
-    while (usedExternalIds.has(externalId)) {
+    while (usedIds.has(id)) {
       suffix += 1;
-      externalId = `paper-${toSlug(firstStudent.externalId) || "unknown"}-${suffix}`;
+      id = `paper-${toSlug(firstStudent.id) || "unknown"}-${suffix}`;
     }
-    usedExternalIds.add(externalId);
+    usedIds.add(id);
 
     return {
-      externalId,
+      id,
       label: `${firstStudent.familyName} ${firstStudent.firstName}`.trim(),
       students: groupedStudents,
     };

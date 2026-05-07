@@ -14,14 +14,14 @@ export async function saveRubricGrading({
   rubricId,
   grading,
 }: {
-  paperId: string; // externalId
-  questionId: string; // externalId
-  rubricId: string; // DB id
+  paperId: string; // id
+  questionId: string; // id
+  rubricId: string; // id
   grading: string;
 }): Promise<SaveRubricGradingResult> {
   const [paper, question, rubric] = await Promise.all([
-    prisma.paper.findUnique({ where: { externalId: paperId } }),
-    prisma.question.findUnique({ where: { externalId: questionId } }),
+    prisma.paper.findUnique({ where: { id: paperId } }),
+    prisma.question.findUnique({ where: { id: questionId } }),
     prisma.rubric.findUnique({
       where: { id: rubricId },
       include: {

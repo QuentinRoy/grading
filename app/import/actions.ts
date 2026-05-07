@@ -34,34 +34,33 @@ export async function importDataAction(
       let paperCount = 0;
       let studentCount = 0;
 
-      for (const [
-        questionPosition,
-        [questionExternalId, question],
-      ] of Object.entries(questions).entries()) {
+      for (const [questionPosition, question] of questions.entries()) {
+        const questionId = question.id;
         const persistedQuestion = await tx.question.upsert({
-          where: { externalId: questionExternalId },
+          where: { id: questionId },
           update: {
-            label: question.label ?? questionExternalId,
+            label: question.label ?? null,
             position: questionPosition,
           },
           create: {
-            externalId: questionExternalId,
-            label: question.label ?? questionExternalId,
+            id: questionId,
+            label: question.label ?? null,
             position: questionPosition,
           },
         });
         questionCount += 1;
 
+        const importedRubricIds = question.rubrics.map((r) => r.id);
+
         for (const [position, rubric] of question.rubrics.entries()) {
+          const rubricId = rubric.id;
           const persistedRubric = await tx.rubric.upsert({
-            where: {
-              questionId_position: {
-                questionId: persistedQuestion.id,
-                position,
-              },
-            },
+            where: { id: rubricId },
             update: {
-              label: rubric.label,
+              questionId: persistedQuestion.id,
+              position,
+              description: rubric.description ?? null,
+              label: rubric.label ?? null,
               type:
                 rubric.type === "boolean"
                   ? RubricType.BOOLEAN
@@ -70,9 +69,11 @@ export async function importDataAction(
                     : RubricType.NUMERICAL,
             },
             create: {
+              id: rubricId,
               questionId: persistedQuestion.id,
               position,
-              label: rubric.label,
+              description: rubric.description ?? null,
+              label: rubric.label ?? null,
               type:
                 rubric.type === "boolean"
                   ? RubricType.BOOLEAN
@@ -168,8 +169,8 @@ export async function importDataAction(
         await tx.rubric.deleteMany({
           where: {
             questionId: persistedQuestion.id,
-            position: {
-              gte: question.rubrics.length,
+            id: {
+              notIn: importedRubricIds,
             },
           },
         });
@@ -177,13 +178,13 @@ export async function importDataAction(
 
       for (const paper of papers) {
         const persistedPaper = await tx.paper.upsert({
-          where: { externalId: paper.externalId },
+          where: { id: paper.id },
           update: {
             label: paper.label,
             team: paper.team,
           },
           create: {
-            externalId: paper.externalId,
+            id: paper.id,
             label: paper.label,
             team: paper.team,
           },
@@ -192,7 +193,7 @@ export async function importDataAction(
 
         for (const student of paper.students) {
           await tx.student.upsert({
-            where: { externalId: student.externalId },
+            where: { id: student.id },
             update: {
               familyName: student.familyName,
               firstName: student.firstName,
@@ -200,7 +201,7 @@ export async function importDataAction(
               paperId: persistedPaper.id,
             },
             create: {
-              externalId: student.externalId,
+              id: student.id,
               familyName: student.familyName,
               firstName: student.firstName,
               team: student.team,

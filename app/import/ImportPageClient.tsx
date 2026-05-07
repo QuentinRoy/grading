@@ -22,26 +22,30 @@ import { useFormStatus } from "react-dom";
 import { importDataAction } from "./actions";
 import { initialImportState } from "./types";
 
-const YAML_PLACEHOLDER = `question-1:
-  label: "Question 1"
-  rubrics:
-    - label: "Correct answer"
-      marks: 2
-    - label: "Showed work"
-      marks: 1
+const YAML_PLACEHOLDER = `questions:
+  - id: question-1
+    label: "Question 1"
+    rubrics:
+      - id: correct-answer
+        description: "The answer is correct"
+        label: "Correct answer"
+        marks: 2
+      - id: showed-work
+        marks: 1
 
-question-2:
-  rubrics:
-    - label: "Performance"
-      type: ordinal
-      values:
-        bad: 0
-        medium: 2
-        good: 4
-    - label: "Numerical score"
-      min: -1
-      max: 3
-      type: numerical`;
+  - id: question-2
+    rubrics:
+      - id: performance
+        description: "Overall performance"
+        type: ordinal
+        values:
+          bad: 0
+          medium: 2
+          good: 4
+      - id: numerical-score
+        min: -1
+        max: 3
+        type: numerical`;
 
 const CSV_PLACEHOLDER = `family_name,first_name,id,team
 Smith,Alice,s1001,
@@ -65,10 +69,13 @@ function HelpDialog({ open, onClose }: HelpDialogProps): React.ReactElement {
               Questions YAML
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              A map of question IDs to question objects. Each question has an
-              optional <code>label</code> and a list of <code>rubrics</code>.
-              Boolean and numerical rubrics require a <code>marks</code> field;
-              ordinal rubrics derive their max from the highest value.
+              A top-level <code>questions</code> array of question objects. Each
+              question requires a stable <code>id</code>, has an optional{" "}
+              <code>label</code>, and a <code>rubrics</code> array. Each rubric
+              requires a stable <code>id</code>, accepts an optional{" "}
+              <code>description</code> and <code>label</code>. Boolean rubrics
+              use <code>marks</code>, ordinal rubrics use <code>values</code>,
+              and numerical rubrics use <code>min</code>/<code>max</code>.
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               Rubric types:

@@ -30,6 +30,7 @@
         "useConst": "off"
       },
       "suspicious": {
+        "noConsole": "error",
         "noExplicitAny": "error",
         "noExtraNonNullAssertion": "error",
         "noMisleadingInstantiator": "error",

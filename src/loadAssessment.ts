@@ -3,18 +3,18 @@ import { prisma } from "./prisma";
 
 export type RubricGrading = string;
 
-// Returns a map from rubricId (DB id) to grading
+// Returns a map from rubricId (external id) to grading
 export async function loadAssessment(
-  paperId: string, // externalId
-  questionId: string, // externalId
+  paperId: string, // id
+  questionId: string, // id
 ): Promise<Map<string, RubricGrading>> {
   "use cache";
   cacheTag(`assessments:${paperId}:${questionId}`);
 
   const assessment = await prisma.assessment.findFirst({
     where: {
-      paper: { externalId: paperId },
-      question: { externalId: questionId },
+      paper: { id: paperId },
+      question: { id: questionId },
     },
     include: {
       scores: {

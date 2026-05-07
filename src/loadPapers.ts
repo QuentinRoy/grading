@@ -12,7 +12,7 @@ async function loadPapersFromDb() {
   cacheTag("papers");
   cacheLife({ revalidate: 60 });
   return prisma.paper.findMany({
-    orderBy: { externalId: "asc" },
+    orderBy: { id: "asc" },
   });
 }
 
@@ -20,7 +20,7 @@ export default async function loadPapers(): Promise<Paper[]> {
   const papers = await loadPapersFromDb();
 
   return papers.map((paper) => ({
-    id: paper.externalId,
+    id: paper.id,
     label: paper.label,
     team: paper.team ?? undefined,
   }));

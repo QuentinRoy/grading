@@ -13,8 +13,7 @@ enum RubricType {
 }
 
 model Paper {
-  id          String       @id @default(cuid())
-  externalId  String       @unique
+  id          String       @id
   label       String
   team        String?
   createdAt   DateTime     @default(now())
@@ -24,8 +23,7 @@ model Paper {
 }
 
 model Student {
-  id         String   @id @default(cuid())
-  externalId String   @unique
+  id         String   @id
   familyName String
   firstName  String
   team       String?
@@ -36,9 +34,8 @@ model Student {
 }
 
 model Question {
-  id          String       @id @default(cuid())
-  externalId  String       @unique
-  label       String
+  id          String       @id
+  label       String?
   position    Int          @default(0)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
@@ -47,10 +44,11 @@ model Question {
 }
 
 model Rubric {
-  id              String         @id @default(cuid())
+  id              String         @id
   questionId      String
   position        Int
-  label           String
+  description     String?
+  label           String?
   type            RubricType
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt

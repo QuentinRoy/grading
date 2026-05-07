@@ -1,19 +1,22 @@
 export type Rubric =
   | {
       id: string;
-      label: string;
+      description?: string | undefined;
+      label?: string | undefined;
       type: "boolean";
       marks: number;
     }
   | {
       id: string;
-      label: string;
+      description?: string | undefined;
+      label?: string | undefined;
       type: "ordinal";
       values: Record<string, number>;
     }
   | {
       id: string;
-      label: string;
+      description?: string | undefined;
+      label?: string | undefined;
       type: "numerical";
       min: number;
       max: number;

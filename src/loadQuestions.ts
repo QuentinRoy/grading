@@ -28,7 +28,8 @@ function toNumber(value: Prisma.Decimal | number): number {
 function toRubric(data: {
   id: string;
   type: RubricType;
-  label: string;
+  description: string | null;
+  label: string | null;
   booleanRubric: { marks: number } | null;
   ordinalRubric: { values: { label: string; score: number }[] } | null;
   numericalRubric: { min: number; max: number } | null;
@@ -39,7 +40,8 @@ function toRubric(data: {
     );
     return {
       id: data.id,
-      label: data.label,
+      description: data.description ?? undefined,
+      label: data.label ?? undefined,
       type: "ordinal",
       values,
     };
@@ -48,7 +50,8 @@ function toRubric(data: {
   if (data.type === RubricType.NUMERICAL && data.numericalRubric) {
     return {
       id: data.id,
-      label: data.label,
+      description: data.description ?? undefined,
+      label: data.label ?? undefined,
       type: "numerical",
       min: toNumber(data.numericalRubric.min),
       max: toNumber(data.numericalRubric.max),
@@ -57,19 +60,21 @@ function toRubric(data: {
 
   return {
     id: data.id,
-    label: data.label,
+    description: data.description ?? undefined,
+    label: data.label ?? undefined,
     type: "boolean",
     marks: data.booleanRubric ? toNumber(data.booleanRubric.marks) : 0,
   };
 }
 
 type QuestionRow = {
-  externalId: string;
-  label: string;
+  id: string;
+  label: string | null;
   rubrics: {
     id: string;
     type: RubricType;
-    label: string;
+    description: string | null;
+    label: string | null;
     booleanRubric: { marks: number } | null;
     ordinalRubric: { values: { label: string; score: number }[] } | null;
     numericalRubric: { min: number; max: number } | null;
@@ -83,12 +88,13 @@ async function loadQuestionsFromDb(): Promise<QuestionRow[]> {
 
   const rows = await prisma.question.findMany({
     select: {
-      externalId: true,
+      id: true,
       label: true,
       rubrics: {
         select: {
           id: true,
           type: true,
+          description: true,
           label: true,
           booleanRubric: { select: { marks: true } },
           ordinalRubric: {
@@ -108,7 +114,7 @@ async function loadQuestionsFromDb(): Promise<QuestionRow[]> {
   });
 
   return rows.map((question) => ({
-    externalId: question.externalId,
+    id: question.id,
     label: question.label,
     rubrics: question.rubrics.map((rubric) => {
       const ordinalValues =
@@ -120,6 +126,7 @@ async function loadQuestionsFromDb(): Promise<QuestionRow[]> {
       return {
         id: rubric.id,
         type: rubric.type,
+        description: rubric.description,
         label: rubric.label,
         booleanRubric: rubric.booleanRubric
           ? { marks: toNumber(rubric.booleanRubric.marks) }
@@ -142,9 +149,9 @@ export default async function loadQuestions(): Promise<Grid> {
 
   return Object.fromEntries(
     rows.map((row) => [
-      row.externalId,
+      row.id,
       {
-        label: row.label,
+        label: row.label ?? undefined,
         rubrics: row.rubrics.map(toRubric),
       },
     ]),
@@ -155,14 +162,14 @@ export async function loadQuestion(
   questionId: string,
 ): Promise<Question | undefined> {
   const rows = await loadQuestionsFromDb();
-  const row = rows.find((item) => item.externalId === questionId);
+  const row = rows.find((item) => item.id === questionId);
 
   if (row == null) {
     return undefined;
   }
 
   return {
-    label: row.label,
+    label: row.label ?? undefined,
     rubrics: row.rubrics.map(toRubric),
   };
 }
