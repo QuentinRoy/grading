@@ -28,7 +28,7 @@ type RubricGradingSectionProps = {
   rubrics: RubricItem[];
   pendingByIndex: Record<number, number>;
   disabled: boolean;
-  onGrade: (index: number, grading: string) => void;
+  onGrade: (index: number, grading: Grading) => void;
 };
 
 export default function RubricGradingSection({
@@ -37,44 +37,26 @@ export default function RubricGradingSection({
   disabled,
   onGrade,
 }: RubricGradingSectionProps): ReactElement {
-  const handleGrade = (index: number, value: Grading) => {
-    const stringValue =
-      typeof value === "boolean"
-        ? value
-          ? "passed"
-          : "failed"
-        : String(value);
-    onGrade(index, stringValue);
-  };
+  const handleGrade = (index: number, value: Grading) => onGrade(index, value);
 
   const convertToTypedRubric = (rubric: RubricItem): TypedRubricItem => {
     if (rubric.type === "boolean") {
       return {
         ...rubric,
         grading:
-          typeof rubric.grading === "boolean"
-            ? rubric.grading
-            : rubric.grading === "passed",
+          typeof rubric.grading === "boolean" ? rubric.grading : undefined,
       } as BooleanRubricItem;
     } else if (rubric.type === "numerical") {
       return {
         ...rubric,
         grading:
-          typeof rubric.grading === "number"
-            ? rubric.grading
-            : rubric.grading
-              ? Number(rubric.grading)
-              : undefined,
+          typeof rubric.grading === "number" ? rubric.grading : undefined,
       } as NumericalRubricItem;
     } else {
       return {
         ...rubric,
         grading:
-          typeof rubric.grading === "string"
-            ? rubric.grading
-            : rubric.grading
-              ? String(rubric.grading)
-              : undefined,
+          typeof rubric.grading === "string" ? rubric.grading : undefined,
       } as OrdinalRubricItem;
     }
   };

@@ -17,7 +17,7 @@ export async function saveRubricGrading({
   paperId: string; // id
   questionId: string; // id
   rubricId: string; // id
-  grading: string;
+  grading: string | number | boolean;
 }): Promise<SaveRubricGradingResult> {
   const [paper, question, rubric] = await Promise.all([
     prisma.paper.findUnique({ where: { id: paperId } }),
@@ -85,7 +85,7 @@ export async function saveRubricGrading({
   });
 
   if (rubric.type === RubricType.BOOLEAN) {
-    if (grading !== "passed" && grading !== "failed") {
+    if (typeof grading !== "boolean") {
       return { success: false, error: "Invalid boolean value." };
     }
 
@@ -93,9 +93,9 @@ export async function saveRubricGrading({
       where: { rubricScoreId: rubricScore.id },
       create: {
         rubricScoreId: rubricScore.id,
-        passed: grading === "passed",
+        passed: grading,
       },
-      update: { passed: grading === "passed" },
+      update: { passed: grading },
     });
     await prisma.ordinalRubricScore.deleteMany({
       where: { rubricScoreId: rubricScore.id },
@@ -104,6 +104,10 @@ export async function saveRubricGrading({
       where: { rubricScoreId: rubricScore.id },
     });
   } else if (rubric.type === RubricType.ORDINAL) {
+    if (typeof grading !== "string") {
+      return { success: false, error: "Invalid ordinal value." };
+    }
+
     const allowedValues =
       rubric.ordinalRubric?.values.map((item) => item.label) ?? [];
 
@@ -126,7 +130,11 @@ export async function saveRubricGrading({
       where: { rubricScoreId: rubricScore.id },
     });
   } else {
-    const parsed = Number(grading);
+    if (typeof grading !== "number") {
+      return { success: false, error: "Invalid numerical value." };
+    }
+
+    const parsed = grading;
 
     if (!Number.isFinite(parsed)) {
       return { success: false, error: "Invalid numerical value." };

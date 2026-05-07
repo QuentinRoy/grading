@@ -103,10 +103,28 @@ async function PaperRubricSection({
     notFound();
   }
 
-  const rubricsWithGradings = question.rubrics.map((rubric) => ({
-    ...rubric,
-    grading: gradings.get(rubric.id),
-  }));
+  const rubricsWithGradings = question.rubrics.map((rubric) => {
+    const grading = gradings.get(rubric.id);
+
+    if (rubric.type === "boolean") {
+      return {
+        ...rubric,
+        grading: typeof grading === "boolean" ? grading : undefined,
+      };
+    }
+
+    if (rubric.type === "ordinal") {
+      return {
+        ...rubric,
+        grading: typeof grading === "string" ? grading : undefined,
+      };
+    }
+
+    return {
+      ...rubric,
+      grading: typeof grading === "number" ? grading : undefined,
+    };
+  });
 
   return (
     <PaperRubricClientSection

@@ -1,7 +1,7 @@
 import { cacheTag } from "next/cache";
 import { prisma } from "./prisma";
 
-export type RubricGrading = string;
+export type RubricGrading = string | number | boolean;
 
 // Returns a map from rubricId (external id) to grading
 export async function loadAssessment(
@@ -46,10 +46,7 @@ export async function loadAssessment(
 
   for (const score of assessment.scores) {
     if (score.booleanScore != null) {
-      result.set(
-        score.rubricId,
-        score.booleanScore.passed ? "passed" : "failed",
-      );
+      result.set(score.rubricId, score.booleanScore.passed);
       continue;
     }
 
@@ -63,7 +60,7 @@ export async function loadAssessment(
         typeof score.numericalScore.score === "number"
           ? score.numericalScore.score
           : parseFloat(String(score.numericalScore.score));
-      result.set(score.rubricId, String(numericScore));
+      result.set(score.rubricId, numericScore);
     }
   }
 

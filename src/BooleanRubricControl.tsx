@@ -17,34 +17,24 @@ export default function BooleanRubricControl({
   disabled,
   onGrade,
 }: BooleanRubricControlProps): ReactElement {
-  const buttonValue = grading != null ? (grading ? "passed" : "failed") : null;
+  const buttonValue = grading ?? null;
 
   return (
     <ToggleButtonGroup
       value={buttonValue}
       exclusive
-      onChange={(_, value: string | null) => {
+      onChange={(_, value: boolean | null) => {
         if (value != null) {
-          onGrade(value === "passed");
+          onGrade(value);
         }
       }}
       aria-label="Boolean rubric grading"
       disabled={disabled}
     >
-      <ToggleButton
-        size="small"
-        value="passed"
-        aria-label="passed"
-        color="primary"
-      >
+      <ToggleButton size="small" value={true} aria-label="true" color="primary">
         <CheckIcon color={grading === true ? "primary" : "inherit"} />
       </ToggleButton>
-      <ToggleButton
-        size="small"
-        value="failed"
-        color="error"
-        aria-label="failed"
-      >
+      <ToggleButton size="small" value={false} color="error" aria-label="false">
         <CrossIcon color={grading === false ? "error" : "inherit"} />
       </ToggleButton>
     </ToggleButtonGroup>

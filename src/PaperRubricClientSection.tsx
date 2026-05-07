@@ -18,7 +18,7 @@ import { getRubricMaxMarks, type Rubric as QuestionRubric } from "./rubric";
 import { useSaveErrors } from "./SaveErrorsContext";
 import { saveRubricGrading } from "./saveRubricGrading";
 
-type Grading = string;
+type Grading = string | number | boolean;
 
 type RubricItem = QuestionRubric & { grading?: boolean | number | string };
 
@@ -103,10 +103,13 @@ export default function PaperRubricClientSection({
           marks += rubricMarks;
         }
       } else if (rubric.type === "ordinal") {
-        marks += rubric.values[grading as string] ?? 0;
+        if (typeof grading === "string") {
+          marks += rubric.values[grading] ?? 0;
+        }
       } else {
-        const numeric = typeof grading === "number" ? grading : Number(grading);
-        marks += Number.isFinite(numeric) ? numeric : 0;
+        if (typeof grading === "number") {
+          marks += grading;
+        }
       }
     }
 
@@ -128,21 +131,15 @@ export default function PaperRubricClientSection({
     dispatch({ type: "save-start", index });
 
     startTransition(async () => {
-      const stringGrading =
-        typeof grading === "boolean"
-          ? grading
-            ? "passed"
-            : "failed"
-          : String(grading);
-      addOptimisticUpdate({ index, grading: stringGrading });
+      addOptimisticUpdate({ index, grading });
       const result = await saveRubricGrading({
         paperId: currentPaperId,
         questionId,
         rubricId: rubric.id,
-        grading: stringGrading,
+        grading,
       });
       if (result.success) {
-        dispatch({ type: "save-success", index, grading: stringGrading });
+        dispatch({ type: "save-success", index, grading });
       } else {
         dispatch({ type: "save-failure", index });
         addError({
