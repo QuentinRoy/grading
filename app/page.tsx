@@ -1,6 +1,5 @@
-import { Suspense } from "react";
-
 import { Button, Container, Typography } from "@mui/material";
+import { Suspense } from "react";
 import loadQuestions from "../src/loadQuestions";
 import QuestionList from "../src/QuestionList";
 

@@ -1,9 +1,7 @@
-import { Suspense } from "react";
-
 import { notFound, redirect } from "next/navigation";
+import { Suspense } from "react";
 import loadPapers from "../../src/loadPapers";
-import type { Question } from "../../src/loadQuestions";
-import loadQuestions from "../../src/loadQuestions";
+import { loadQuestion } from "../../src/loadQuestions";
 
 type PageParams = {
   questionId: string;
@@ -23,9 +21,8 @@ export default function QuestionPage({ params }: QuestionPageProps) {
 
 async function QuestionPageContent({ params }: QuestionPageProps) {
   const { questionId } = await params;
-  const grid = await loadQuestions();
   const papers = await loadPapers();
-  const question = grid[questionId] as Question | undefined;
+  const question = await loadQuestion(questionId);
 
   if (question == null) {
     notFound();

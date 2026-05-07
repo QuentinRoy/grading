@@ -1,6 +1,7 @@
 "use server";
 
 import { Prisma, RubricKind } from "@prisma/client";
+import { revalidateTag } from "next/cache";
 import { ZodError } from "zod";
 
 import {
@@ -30,18 +31,10 @@ function rubricConfigFromType(
   rubric:
     | { type: "boolean" }
     | { type: "ordinal"; values: (string | number)[] }
-    | { type: "numerical"; min: number; max: number; step?: number },
+    | { type: "numerical" },
 ) {
   if (rubric.type === "ordinal") {
     return { values: rubric.values };
-  }
-
-  if (rubric.type === "numerical") {
-    return {
-      min: rubric.min,
-      max: rubric.max,
-      ...(rubric.step == null ? {} : { step: rubric.step }),
-    };
   }
 
   return Prisma.JsonNull;
@@ -65,7 +58,10 @@ export async function importDataAction(
       let paperCount = 0;
       let studentCount = 0;
 
-      for (const [questionPosition, [questionExternalId, question]] of Object.entries(questions).entries()) {
+      for (const [
+        questionPosition,
+        [questionExternalId, question],
+      ] of Object.entries(questions).entries()) {
         const persistedQuestion = await tx.question.upsert({
           where: { externalId: questionExternalId },
           update: {
@@ -154,6 +150,9 @@ export async function importDataAction(
 
       return { questionCount, rubricCount, paperCount, studentCount };
     });
+
+    revalidateTag("questions", "seconds");
+    revalidateTag("papers", "seconds");
 
     return {
       status: "success",

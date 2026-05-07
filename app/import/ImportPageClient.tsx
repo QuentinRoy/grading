@@ -94,8 +94,7 @@ export default function ImportPageClient({
 
         <Alert severity="info">
           Boolean rubrics are the default. To declare other types, use `type:
-          ordinal` with a `values` list, or `type: numerical` with `min` and
-          `max`.
+          ordinal` with a `values` list, or `type: numerical`.
         </Alert>
 
         {state.status === "success" && state.message ? (

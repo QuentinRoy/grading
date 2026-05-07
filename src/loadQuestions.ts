@@ -1,4 +1,5 @@
-import { RubricKind, type Prisma } from "@prisma/client";
+import { type Prisma, RubricKind } from "@prisma/client";
+import { cacheLife, cacheTag } from "next/cache";
 
 import { prisma } from "./prisma";
 
@@ -18,9 +19,6 @@ export type Rubric =
       label: string;
       marks: number;
       type: "numerical";
-      min: number;
-      max: number;
-      step?: number;
     };
 
 export type Question = {
@@ -33,22 +31,36 @@ export type Grid = {
   [id: string]: Question;
 };
 
+type DbQuestion = {
+  externalId: string;
+  label: string;
+  rubrics: {
+    kind: RubricKind;
+    label: string;
+    maxMarks: number;
+    config: Prisma.JsonValue;
+  }[];
+};
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === "object" && !Array.isArray(value);
 }
 
 function toNumber(value: Prisma.Decimal | number): number {
-  return typeof value === "number" ? value : value.toNumber();
+  if (typeof value === "number") return value;
+  if (typeof value === "string") return parseFloat(value);
+  if (typeof (value as { toNumber?: unknown }).toNumber === "function") {
+    return (value as Prisma.Decimal).toNumber();
+  }
+  return parseFloat(String(value));
 }
 
-function toRubric(
-  rubric: {
-    kind: RubricKind;
-    label: string;
-    maxMarks: Prisma.Decimal;
-    config: Prisma.JsonValue;
-  },
-): Rubric {
+function toRubric(rubric: {
+  kind: RubricKind;
+  label: string;
+  maxMarks: number;
+  config: Prisma.JsonValue;
+}): Rubric {
   const marks = toNumber(rubric.maxMarks);
 
   if (rubric.kind === RubricKind.ORDINAL) {
@@ -68,17 +80,10 @@ function toRubric(
   }
 
   if (rubric.kind === RubricKind.NUMERICAL) {
-    const config = isRecord(rubric.config) ? rubric.config : {};
-    const min = typeof config.min === "number" ? config.min : 0;
-    const max = typeof config.max === "number" ? config.max : 1;
-    const step = typeof config.step === "number" ? config.step : undefined;
     return {
       label: rubric.label,
       marks,
       type: "numerical",
-      min,
-      max,
-      ...(step == null ? {} : { step }),
     };
   }
 
@@ -89,8 +94,11 @@ function toRubric(
   };
 }
 
-export default async function loadQuestions(): Promise<Grid> {
-  const questions = await prisma.question.findMany({
+async function loadQuestionsFromDb(): Promise<DbQuestion[]> {
+  "use cache";
+  cacheTag("questions");
+  cacheLife({ revalidate: 60 * 60 });
+  const rows = await prisma.question.findMany({
     include: {
       rubrics: {
         orderBy: {
@@ -102,16 +110,44 @@ export default async function loadQuestions(): Promise<Grid> {
       position: "asc",
     },
   });
+  return rows.map((q) => ({
+    externalId: q.externalId,
+    label: q.label,
+    rubrics: q.rubrics.map((r) => ({
+      kind: r.kind,
+      label: r.label,
+      maxMarks: toNumber(r.maxMarks),
+      config: r.config,
+    })),
+  }));
+}
+
+function toQuestion(question: DbQuestion): Question {
+  return {
+    label: question.label,
+    rubrics: question.rubrics.map(toRubric),
+  };
+}
+
+export default async function loadQuestions(): Promise<Grid> {
+  const questions = await loadQuestionsFromDb();
 
   const grid: Grid = Object.fromEntries(
-    questions.map((question) => [
-      question.externalId,
-      {
-        label: question.label,
-        rubrics: question.rubrics.map(toRubric),
-      },
-    ]),
+    questions.map((question) => [question.externalId, toQuestion(question)]),
   );
 
   return grid;
+}
+
+export async function loadQuestion(
+  questionId: string,
+): Promise<Question | undefined> {
+  const questions = await loadQuestionsFromDb();
+  const question = questions.find((item) => item.externalId === questionId);
+
+  if (question == null) {
+    return undefined;
+  }
+
+  return toQuestion(question);
 }

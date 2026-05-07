@@ -29,17 +29,9 @@ const ordinalRubricSchema = baseRubricSchema
     },
   );
 
-const numericalRubricSchema = baseRubricSchema
-  .extend({
-    type: z.literal("numerical"),
-    min: numericValue.default(0),
-    max: numericValue,
-    step: numericValue.positive().optional(),
-  })
-  .refine((rubric) => rubric.max > rubric.min, {
-    message: "Numerical rubric max must be greater than min",
-    path: ["max"],
-  });
+const numericalRubricSchema = baseRubricSchema.extend({
+  type: z.literal("numerical"),
+});
 
 const rubricSchema = z
   .union([booleanRubricSchema, ordinalRubricSchema, numericalRubricSchema])
@@ -135,7 +127,9 @@ export function buildPapersFromStudents(
 
   students.forEach((student) => {
     const key =
-      student.team == null ? `student:${student.externalId}` : `team:${student.team}`;
+      student.team == null
+        ? `student:${student.externalId}`
+        : `team:${student.team}`;
     const currentStudents = groupedByPaper.get(key) ?? [];
     currentStudents.push(student);
     groupedByPaper.set(key, currentStudents);
