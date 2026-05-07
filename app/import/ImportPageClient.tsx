@@ -1,12 +1,19 @@
 "use client";
 
+import HelpOutlineIcon from "@mui/icons-material/HelpOutlined";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
 import Container from "@mui/material/Container";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import IconButton from "@mui/material/IconButton";
 import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
+import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import NextLink from "next/link";
 import React from "react";
@@ -14,6 +21,111 @@ import { useFormStatus } from "react-dom";
 
 import { importDataAction } from "./actions";
 import { initialImportState } from "./types";
+
+const YAML_PLACEHOLDER = `question-1:
+  label: "Question 1"
+  rubrics:
+    - label: "Correct answer"
+      marks: 2
+    - label: "Showed work"
+      marks: 1
+
+question-2:
+  rubrics:
+    - label: "Performance"
+      type: ordinal
+      values:
+        bad: 0
+        medium: 2
+        good: 4
+    - label: "Numerical score"
+      min: -1
+      max: 3
+      type: numerical`;
+
+const CSV_PLACEHOLDER = `family_name,first_name,id,team
+Smith,Alice,s1001,
+Johnson,Bob,s1002,
+Williams,Carol,s1003,group-a
+Davis,Dan,s1004,group-a`;
+
+type HelpDialogProps = {
+  open: boolean;
+  onClose: () => void;
+};
+
+function HelpDialog({ open, onClose }: HelpDialogProps): React.ReactElement {
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>Import Format Reference</DialogTitle>
+      <DialogContent>
+        <Stack spacing={3}>
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 1 }}>
+              Questions YAML
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              A map of question IDs to question objects. Each question has an
+              optional <code>label</code> and a list of <code>rubrics</code>.
+              Boolean and numerical rubrics require a <code>marks</code> field;
+              ordinal rubrics derive their max from the highest value.
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              Rubric types:
+            </Typography>
+            <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", mb: 2 }}>
+              <Chip size="small" label="boolean (default)" variant="outlined" />
+              <Chip
+                size="small"
+                label="ordinal — label: grade map, no marks"
+                variant="outlined"
+              />
+              <Chip size="small" label="numerical" variant="outlined" />
+            </Stack>
+            <Box
+              component="pre"
+              sx={{
+                bgcolor: "action.hover",
+                borderRadius: 1,
+                p: 2,
+                fontSize: "0.8rem",
+                overflowX: "auto",
+                fontFamily: "monospace",
+              }}
+            >
+              {YAML_PLACEHOLDER}
+            </Box>
+          </Box>
+
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 1 }}>
+              Students CSV
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              Required columns: <code>family_name</code>,{" "}
+              <code>first_name</code>, <code>id</code>. Optional:{" "}
+              <code>team</code> (students sharing a team get grouped into the
+              same paper).
+            </Typography>
+            <Box
+              component="pre"
+              sx={{
+                bgcolor: "action.hover",
+                borderRadius: 1,
+                p: 2,
+                fontSize: "0.8rem",
+                overflowX: "auto",
+                fontFamily: "monospace",
+              }}
+            >
+              {CSV_PLACEHOLDER}
+            </Box>
+          </Box>
+        </Stack>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 type ImportPageClientProps = {
   defaultQuestionsYaml?: string;
@@ -73,6 +185,7 @@ export default function ImportPageClient({
   const [studentsCsv, setStudentsCsv] = React.useState(
     defaultStudentsCsv ?? "",
   );
+  const [helpOpen, setHelpOpen] = React.useState(false);
 
   const yamlDrop = useDrop(setQuestionsYaml);
   const csvDrop = useDrop(setStudentsCsv);
@@ -81,10 +194,25 @@ export default function ImportPageClient({
     <Container component="main" maxWidth="lg" sx={{ py: 5 }}>
       <Stack spacing={3}>
         <Box>
-          <Typography variant="h3" component="h1" gutterBottom>
-            Import Data
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ alignItems: "center", mb: 1 }}
+          >
+            <Typography variant="h3" component="h1">
+              Import Data
+            </Typography>
+            <Tooltip title="Show format reference">
+              <IconButton
+                size="small"
+                onClick={() => setHelpOpen(true)}
+                aria-label="Show import format help"
+              >
+                <HelpOutlineIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 0.5 }}>
             Load question rubrics and student or team data into PostgreSQL.
           </Typography>
           <Link component={NextLink} href="/" underline="hover">
@@ -92,10 +220,7 @@ export default function ImportPageClient({
           </Link>
         </Box>
 
-        <Alert severity="info">
-          Boolean rubrics are the default. To declare other types, use `type:
-          ordinal` with a `values` list, or `type: numerical`.
-        </Alert>
+        <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
 
         {state.status === "success" && state.message ? (
           <Alert severity="success">{state.message}</Alert>
@@ -127,6 +252,7 @@ export default function ImportPageClient({
                 fullWidth
                 required
                 spellCheck={false}
+                placeholder={YAML_PLACEHOLDER}
                 helperText="Drop a .yaml file here to fill this field"
               />
             </Box>
@@ -151,6 +277,7 @@ export default function ImportPageClient({
                 fullWidth
                 required
                 spellCheck={false}
+                placeholder={CSV_PLACEHOLDER}
                 helperText="Drop a .csv file here to fill this field"
               />
             </Box>

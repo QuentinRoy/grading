@@ -3,7 +3,6 @@ import { z } from "zod";
 
 const nonEmptyString = z.string().trim().min(1);
 const numericValue = z.coerce.number().finite();
-const ordinalValueSchema = z.union([nonEmptyString, numericValue]);
 
 const baseRubricSchema = z.object({
   label: nonEmptyString,
@@ -14,34 +13,47 @@ const booleanRubricSchema = baseRubricSchema.extend({
   type: z.undefined().optional(),
 });
 
-const ordinalRubricSchema = baseRubricSchema
-  .extend({
-    type: z.literal("ordinal"),
-    values: z.array(ordinalValueSchema).min(2),
-  })
-  .refine(
-    (rubric) =>
-      new Set(rubric.values.map((value) => JSON.stringify(value))).size ===
-      rubric.values.length,
-    {
-      message: "Ordinal rubric values must be unique",
-      path: ["values"],
-    },
-  );
+const ordinalValuesSchema = z
+  .record(nonEmptyString, numericValue.nonnegative())
+  .refine((values) => Object.keys(values).length >= 2, {
+    message: "Ordinal rubric must have at least 2 values",
+  });
 
-const numericalRubricSchema = baseRubricSchema.extend({
-  type: z.literal("numerical"),
+const ordinalRubricSchema = z.object({
+  label: nonEmptyString,
+  type: z.literal("ordinal"),
+  values: ordinalValuesSchema,
 });
+
+const numericalRubricSchema = z
+  .object({
+    label: nonEmptyString,
+    type: z.literal("numerical"),
+    min: numericValue,
+    max: numericValue,
+  })
+  .refine((r) => r.min < r.max, {
+    message: "min must be less than max",
+  });
 
 const rubricSchema = z
   .union([booleanRubricSchema, ordinalRubricSchema, numericalRubricSchema])
   .transform((rubric) => {
     if (rubric.type === "ordinal") {
-      return { ...rubric, type: "ordinal" as const };
+      return {
+        ...rubric,
+        type: "ordinal" as const,
+        marks: Math.max(...Object.values(rubric.values)),
+      };
     }
 
     if (rubric.type === "numerical") {
-      return { ...rubric, type: "numerical" as const };
+      return {
+        ...rubric,
+        type: "numerical" as const,
+        min: rubric.min,
+        max: rubric.max,
+      };
     }
 
     return { ...rubric, type: "boolean" as const };

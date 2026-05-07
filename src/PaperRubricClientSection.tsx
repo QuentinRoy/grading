@@ -13,14 +13,14 @@ import {
   useReducer,
 } from "react";
 import type { Paper } from "./loadPapers";
-import type { Rubric as QuestionRubric } from "./loadQuestions";
 import RubricGradingSection from "./RubricGradingSection";
+import { getRubricMaxMarks, type Rubric as QuestionRubric } from "./rubric";
 import { useSaveErrors } from "./SaveErrorsContext";
 import { saveRubricGrading } from "./saveRubricGrading";
 
-type Grading = "passed" | "failed";
+type Grading = string;
 
-type RubricItem = QuestionRubric & { grading?: Grading };
+type RubricItem = QuestionRubric & { grading?: boolean | number | string };
 
 type GradingUpdate = { index: number; grading: Grading };
 
@@ -93,9 +93,21 @@ export default function PaperRubricClientSection({
   let totalRubricsLeft = 0;
   let isCompleted = true;
 
-  optimisticRubrics.forEach(({ grading, marks: rubricMarks }) => {
-    if (grading === "passed") {
-      marks += rubricMarks;
+  optimisticRubrics.forEach((rubric) => {
+    const { grading } = rubric;
+    const rubricMarks = getRubricMaxMarks(rubric);
+
+    if (grading != null) {
+      if (rubric.type === "boolean") {
+        if (grading === true) {
+          marks += rubricMarks;
+        }
+      } else if (rubric.type === "ordinal") {
+        marks += rubric.values[grading as string] ?? 0;
+      } else {
+        const numeric = typeof grading === "number" ? grading : Number(grading);
+        marks += Number.isFinite(numeric) ? numeric : 0;
+      }
     }
 
     if (grading != null) {
@@ -106,7 +118,7 @@ export default function PaperRubricClientSection({
     }
   });
 
-  function handleGrade(index: number, grading: Grading) {
+  function handleGrade(index: number, grading: string | number | boolean) {
     const rubric = savedRubrics[index];
     const currentGrading = optimisticRubrics[index]?.grading;
     if (rubric == null || currentGrading === grading) {
@@ -116,15 +128,21 @@ export default function PaperRubricClientSection({
     dispatch({ type: "save-start", index });
 
     startTransition(async () => {
-      addOptimisticUpdate({ index, grading });
+      const stringGrading =
+        typeof grading === "boolean"
+          ? grading
+            ? "passed"
+            : "failed"
+          : String(grading);
+      addOptimisticUpdate({ index, grading: stringGrading });
       const result = await saveRubricGrading({
         paperId: currentPaperId,
         questionId,
         rubricId: rubric.id,
-        score: grading === "passed" ? 1 : 0,
+        grading: stringGrading,
       });
       if (result.success) {
-        dispatch({ type: "save-success", index, grading });
+        dispatch({ type: "save-success", index, grading: stringGrading });
       } else {
         dispatch({ type: "save-failure", index });
         addError({

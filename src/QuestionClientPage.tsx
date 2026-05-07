@@ -18,7 +18,8 @@ import dynamic from "next/dynamic";
 import NextLink from "next/link";
 import React from "react";
 import type { Paper } from "./loadPapers";
-import type { Question, Rubric as QuestionRubric } from "./loadQuestions";
+import type { Question } from "./loadQuestions";
+import { getRubricMaxMarks, type Rubric as QuestionRubric } from "./rubric";
 
 const CodeSnippet = dynamic(() => import("./CodeSnippet"), {
   ssr: false,
@@ -102,7 +103,9 @@ export default function QuestionClientPage({
   let totalRubricsLeft = 0;
   let isCompleted = true;
 
-  rubrics.forEach(({ grading, marks: rubricMarks }) => {
+  rubrics.forEach((rubric) => {
+    const { grading } = rubric;
+    const rubricMarks = getRubricMaxMarks(rubric);
     if (grading === "passed") {
       marks += rubricMarks;
     }
@@ -197,7 +200,9 @@ export default function QuestionClientPage({
         )}
 
         <Grid container spacing={2} sx={{ my: 4, alignItems: "center" }}>
-          {rubrics.map(({ label, marks: rubricMarks, grading }, index) => {
+          {rubrics.map((rubric, index) => {
+            const { label, grading } = rubric;
+            const rubricMarks = getRubricMaxMarks(rubric);
             return (
               <React.Fragment key={index}>
                 <Grid size={{ xs: 12, sm: 3 }}>

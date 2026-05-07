@@ -1,25 +1,34 @@
 "use client";
 
-import CheckIcon from "@mui/icons-material/Check";
-import CrossIcon from "@mui/icons-material/Clear";
-import Box from "@mui/material/Box";
-import CircularProgress from "@mui/material/CircularProgress";
 import Grid from "@mui/material/Grid";
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import Typography from "@mui/material/Typography";
-import { Fragment, type ReactElement } from "react";
-import type { Rubric as QuestionRubric } from "./loadQuestions";
+import type { ReactElement } from "react";
+import RubricRow from "./RubricRow";
+import type { Rubric as QuestionRubric } from "./rubric";
 
-type Grading = "passed" | "failed";
+// Typed rubric items for grading display
+type BooleanRubricItem = Extract<QuestionRubric, { type: "boolean" }> & {
+  grading?: boolean;
+};
+type OrdinalRubricItem = Extract<QuestionRubric, { type: "ordinal" }> & {
+  grading?: string;
+};
+type NumericalRubricItem = Extract<QuestionRubric, { type: "numerical" }> & {
+  grading?: number;
+};
+type TypedRubricItem =
+  | BooleanRubricItem
+  | OrdinalRubricItem
+  | NumericalRubricItem;
 
-type RubricItem = QuestionRubric & { grading?: Grading };
+type Grading = string | number | boolean;
+
+type RubricItem = QuestionRubric & { grading?: string | number | boolean };
 
 type RubricGradingSectionProps = {
   rubrics: RubricItem[];
   pendingByIndex: Record<number, number>;
   disabled: boolean;
-  onGrade: (index: number, grading: Grading) => void;
+  onGrade: (index: number, grading: string) => void;
 };
 
 export default function RubricGradingSection({
@@ -28,66 +37,62 @@ export default function RubricGradingSection({
   disabled,
   onGrade,
 }: RubricGradingSectionProps): ReactElement {
+  const handleGrade = (index: number, value: Grading) => {
+    const stringValue =
+      typeof value === "boolean"
+        ? value
+          ? "passed"
+          : "failed"
+        : String(value);
+    onGrade(index, stringValue);
+  };
+
+  const convertToTypedRubric = (rubric: RubricItem): TypedRubricItem => {
+    if (rubric.type === "boolean") {
+      return {
+        ...rubric,
+        grading:
+          typeof rubric.grading === "boolean"
+            ? rubric.grading
+            : rubric.grading === "passed",
+      } as BooleanRubricItem;
+    } else if (rubric.type === "numerical") {
+      return {
+        ...rubric,
+        grading:
+          typeof rubric.grading === "number"
+            ? rubric.grading
+            : rubric.grading
+              ? Number(rubric.grading)
+              : undefined,
+      } as NumericalRubricItem;
+    } else {
+      return {
+        ...rubric,
+        grading:
+          typeof rubric.grading === "string"
+            ? rubric.grading
+            : rubric.grading
+              ? String(rubric.grading)
+              : undefined,
+      } as OrdinalRubricItem;
+    }
+  };
+
   return (
     <Grid container spacing={2} sx={{ mb: 4, alignItems: "center" }}>
-      {rubrics.map(({ label, marks: rubricMarks, grading }, index) => {
+      {rubrics.map((rubric, index) => {
         const isPending = (pendingByIndex[index] ?? 0) > 0;
+        const typedRubric = convertToTypedRubric(rubric);
+
         return (
-          <Fragment key={index}>
-            <Grid size={{ xs: 12, sm: 3 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <ToggleButtonGroup
-                  value={grading ?? null}
-                  exclusive
-                  onChange={(_, value: Grading | null) => {
-                    if (value != null) {
-                      onGrade(index, value);
-                    }
-                  }}
-                  aria-label={`Rubric ${index + 1} grading`}
-                  disabled={disabled}
-                >
-                  <ToggleButton
-                    size="small"
-                    value="passed"
-                    aria-label="passed"
-                    color="primary"
-                  >
-                    <CheckIcon
-                      color={grading === "passed" ? "primary" : "inherit"}
-                    />
-                  </ToggleButton>
-                  <ToggleButton
-                    size="small"
-                    value="failed"
-                    color="error"
-                    aria-label="failed"
-                  >
-                    <CrossIcon
-                      color={grading === "failed" ? "error" : "inherit"}
-                    />
-                  </ToggleButton>
-                </ToggleButtonGroup>
-                <Box
-                  sx={{
-                    width: 16,
-                    height: 16,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {isPending ? (
-                    <CircularProgress size={12} thickness={6} />
-                  ) : null}
-                </Box>
-              </Box>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 8 }}>{label}</Grid>
-            <Grid size={{ xs: 12, sm: 1 }}>
-              <Typography variant="body2">({rubricMarks})</Typography>
-            </Grid>
-          </Fragment>
+          <RubricRow
+            key={rubric.id}
+            rubric={typedRubric}
+            isPending={isPending}
+            disabled={disabled}
+            onGrade={(value) => handleGrade(index, value)}
+          />
         );
       })}
     </Grid>

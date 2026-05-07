@@ -1,6 +1,6 @@
 "use server";
 
-import { Prisma, RubricKind } from "@prisma/client";
+import { Prisma, RubricType } from "@prisma/client";
 import { revalidateTag } from "next/cache";
 import { ZodError } from "zod";
 
@@ -15,30 +15,6 @@ import { prisma } from "../../src/prisma";
 import type { ImportState } from "./types";
 
 export type { ImportState } from "./types";
-
-function rubricKindFromType(type: "boolean" | "ordinal" | "numerical") {
-  switch (type) {
-    case "ordinal":
-      return RubricKind.ORDINAL;
-    case "numerical":
-      return RubricKind.NUMERICAL;
-    default:
-      return RubricKind.BOOLEAN;
-  }
-}
-
-function rubricConfigFromType(
-  rubric:
-    | { type: "boolean" }
-    | { type: "ordinal"; values: (string | number)[] }
-    | { type: "numerical" },
-) {
-  if (rubric.type === "ordinal") {
-    return { values: rubric.values };
-  }
-
-  return Prisma.JsonNull;
-}
 
 export async function importDataAction(
   _previousState: ImportState,
@@ -77,7 +53,7 @@ export async function importDataAction(
         questionCount += 1;
 
         for (const [position, rubric] of question.rubrics.entries()) {
-          await tx.rubric.upsert({
+          const persistedRubric = await tx.rubric.upsert({
             where: {
               questionId_position: {
                 questionId: persistedQuestion.id,
@@ -86,19 +62,106 @@ export async function importDataAction(
             },
             update: {
               label: rubric.label,
-              maxMarks: new Prisma.Decimal(rubric.marks),
-              kind: rubricKindFromType(rubric.type),
-              config: rubricConfigFromType(rubric),
+              type:
+                rubric.type === "boolean"
+                  ? RubricType.BOOLEAN
+                  : rubric.type === "ordinal"
+                    ? RubricType.ORDINAL
+                    : RubricType.NUMERICAL,
             },
             create: {
               questionId: persistedQuestion.id,
               position,
               label: rubric.label,
-              maxMarks: new Prisma.Decimal(rubric.marks),
-              kind: rubricKindFromType(rubric.type),
-              config: rubricConfigFromType(rubric),
+              type:
+                rubric.type === "boolean"
+                  ? RubricType.BOOLEAN
+                  : rubric.type === "ordinal"
+                    ? RubricType.ORDINAL
+                    : RubricType.NUMERICAL,
             },
           });
+
+          if (rubric.type === "boolean") {
+            await tx.booleanRubric.upsert({
+              where: { rubricId: persistedRubric.id },
+              update: { marks: new Prisma.Decimal(rubric.marks) },
+              create: {
+                rubricId: persistedRubric.id,
+                marks: new Prisma.Decimal(rubric.marks),
+              },
+            });
+            await tx.ordinalRubric.deleteMany({
+              where: { rubricId: persistedRubric.id },
+            });
+            await tx.numericalRubric.deleteMany({
+              where: { rubricId: persistedRubric.id },
+            });
+          } else if (rubric.type === "ordinal") {
+            const persistedOrdinalRubric = await tx.ordinalRubric.upsert({
+              where: { rubricId: persistedRubric.id },
+              update: {},
+              create: {
+                rubricId: persistedRubric.id,
+              },
+            });
+
+            const labels = Object.keys(rubric.values);
+            await Promise.all(
+              Object.entries(rubric.values).map(([label, score]) =>
+                tx.ordinalRubricValue.upsert({
+                  where: {
+                    ordinalRubricId_label: {
+                      ordinalRubricId: persistedOrdinalRubric.id,
+                      label,
+                    },
+                  },
+                  update: {
+                    score: new Prisma.Decimal(score),
+                  },
+                  create: {
+                    ordinalRubricId: persistedOrdinalRubric.id,
+                    label,
+                    score: new Prisma.Decimal(score),
+                  },
+                }),
+              ),
+            );
+            await tx.ordinalRubricValue.deleteMany({
+              where: {
+                ordinalRubricId: persistedOrdinalRubric.id,
+                label: {
+                  notIn: labels,
+                },
+              },
+            });
+            await tx.booleanRubric.deleteMany({
+              where: { rubricId: persistedRubric.id },
+            });
+            await tx.numericalRubric.deleteMany({
+              where: { rubricId: persistedRubric.id },
+            });
+          } else {
+            await tx.numericalRubric.upsert({
+              where: { rubricId: persistedRubric.id },
+              update: {
+                min: new Prisma.Decimal(rubric.min),
+                max: new Prisma.Decimal(rubric.max),
+              },
+              create: {
+                rubricId: persistedRubric.id,
+                min: new Prisma.Decimal(rubric.min),
+                max: new Prisma.Decimal(rubric.max),
+              },
+            });
+            await tx.booleanRubric.deleteMany({
+              where: { rubricId: persistedRubric.id },
+            });
+            await tx.ordinalRubric.deleteMany({
+              where: { rubricId: persistedRubric.id },
+            });
+          }
+
           rubricCount += 1;
         }
 

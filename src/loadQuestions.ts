@@ -1,28 +1,10 @@
-import { type Prisma, RubricKind } from "@prisma/client";
+import { type Prisma, RubricType } from "@prisma/client";
 import { cacheLife, cacheTag } from "next/cache";
 
 import { prisma } from "./prisma";
+import type { Rubric } from "./rubric";
 
-export type Rubric =
-  | {
-      id: string;
-      label: string;
-      marks: number;
-      type: "boolean";
-    }
-  | {
-      id: string;
-      label: string;
-      marks: number;
-      type: "ordinal";
-      values: (string | number)[];
-    }
-  | {
-      id: string;
-      label: string;
-      marks: number;
-      type: "numerical";
-    };
+export type { Rubric } from "./rubric";
 
 export type Question = {
   label?: string;
@@ -34,22 +16,6 @@ export type Grid = {
   [id: string]: Question;
 };
 
-type DbQuestion = {
-  externalId: string;
-  label: string;
-  rubrics: {
-    id: string;
-    kind: RubricKind;
-    label: string;
-    maxMarks: number;
-    config: Prisma.JsonValue;
-  }[];
-};
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value != null && typeof value === "object" && !Array.isArray(value);
-}
-
 function toNumber(value: Prisma.Decimal | number): number {
   if (typeof value === "number") return value;
   if (typeof value === "string") return parseFloat(value);
@@ -59,104 +25,144 @@ function toNumber(value: Prisma.Decimal | number): number {
   return parseFloat(String(value));
 }
 
-function toRubric(rubric: {
+function toRubric(data: {
   id: string;
-  kind: RubricKind;
+  type: RubricType;
   label: string;
-  maxMarks: number;
-  config: Prisma.JsonValue;
+  booleanRubric: { marks: number } | null;
+  ordinalRubric: { values: { label: string; score: number }[] } | null;
+  numericalRubric: { min: number; max: number } | null;
 }): Rubric {
-  const marks = toNumber(rubric.maxMarks);
-
-  if (rubric.kind === RubricKind.ORDINAL) {
-    const config = isRecord(rubric.config) ? rubric.config : {};
-    const values = Array.isArray(config.values)
-      ? config.values.filter(
-          (value): value is string | number =>
-            typeof value === "string" || typeof value === "number",
-        )
-      : [];
+  if (data.type === RubricType.ORDINAL && data.ordinalRubric) {
+    const values = Object.fromEntries(
+      data.ordinalRubric.values.map((item) => [item.label, item.score]),
+    );
     return {
-      id: rubric.id,
-      label: rubric.label,
-      marks,
+      id: data.id,
+      label: data.label,
       type: "ordinal",
       values,
     };
   }
 
-  if (rubric.kind === RubricKind.NUMERICAL) {
+  if (data.type === RubricType.NUMERICAL && data.numericalRubric) {
     return {
-      id: rubric.id,
-      label: rubric.label,
-      marks,
+      id: data.id,
+      label: data.label,
       type: "numerical",
+      min: toNumber(data.numericalRubric.min),
+      max: toNumber(data.numericalRubric.max),
     };
   }
 
   return {
-    id: rubric.id,
-    label: rubric.label,
-    marks,
+    id: data.id,
+    label: data.label,
     type: "boolean",
+    marks: data.booleanRubric ? toNumber(data.booleanRubric.marks) : 0,
   };
 }
 
-async function loadQuestionsFromDb(): Promise<DbQuestion[]> {
+type QuestionRow = {
+  externalId: string;
+  label: string;
+  rubrics: {
+    id: string;
+    type: RubricType;
+    label: string;
+    booleanRubric: { marks: number } | null;
+    ordinalRubric: { values: { label: string; score: number }[] } | null;
+    numericalRubric: { min: number; max: number } | null;
+  }[];
+};
+
+async function loadQuestionsFromDb(): Promise<QuestionRow[]> {
   "use cache";
   cacheTag("questions");
   cacheLife({ revalidate: 60 * 60 });
+
   const rows = await prisma.question.findMany({
-    include: {
+    select: {
+      externalId: true,
+      label: true,
       rubrics: {
-        orderBy: {
-          position: "asc",
+        select: {
+          id: true,
+          type: true,
+          label: true,
+          booleanRubric: { select: { marks: true } },
+          ordinalRubric: {
+            select: {
+              values: {
+                select: { label: true, score: true },
+                orderBy: { label: "asc" as const },
+              },
+            },
+          },
+          numericalRubric: { select: { min: true, max: true } },
         },
+        orderBy: { position: "asc" as const },
       },
     },
-    orderBy: {
-      position: "asc",
-    },
+    orderBy: { position: "asc" as const },
   });
-  return rows.map((q) => ({
-    externalId: q.externalId,
-    label: q.label,
-    rubrics: q.rubrics.map((r) => ({
-      id: r.id,
-      kind: r.kind,
-      label: r.label,
-      maxMarks: toNumber(r.maxMarks),
-      config: r.config,
-    })),
+
+  return rows.map((question) => ({
+    externalId: question.externalId,
+    label: question.label,
+    rubrics: question.rubrics.map((rubric) => {
+      const ordinalValues =
+        rubric.ordinalRubric?.values.map((item) => ({
+          label: item.label,
+          score: toNumber(item.score),
+        })) ?? [];
+
+      return {
+        id: rubric.id,
+        type: rubric.type,
+        label: rubric.label,
+        booleanRubric: rubric.booleanRubric
+          ? { marks: toNumber(rubric.booleanRubric.marks) }
+          : null,
+        ordinalRubric: rubric.ordinalRubric ? { values: ordinalValues } : null,
+        numericalRubric:
+          rubric.numericalRubric && rubric.numericalRubric.min
+            ? {
+                min: toNumber(rubric.numericalRubric.min),
+                max: toNumber(rubric.numericalRubric.max),
+              }
+            : null,
+      };
+    }),
   }));
 }
 
-function toQuestion(question: DbQuestion): Question {
-  return {
-    label: question.label,
-    rubrics: question.rubrics.map(toRubric),
-  };
-}
-
 export default async function loadQuestions(): Promise<Grid> {
-  const questions = await loadQuestionsFromDb();
+  const rows = await loadQuestionsFromDb();
 
-  const grid: Grid = Object.fromEntries(
-    questions.map((question) => [question.externalId, toQuestion(question)]),
+  return Object.fromEntries(
+    rows.map((row) => [
+      row.externalId,
+      {
+        label: row.label,
+        rubrics: row.rubrics.map(toRubric),
+      },
+    ]),
   );
-
-  return grid;
 }
 
 export async function loadQuestion(
   questionId: string,
 ): Promise<Question | undefined> {
-  const questions = await loadQuestionsFromDb();
-  const question = questions.find((item) => item.externalId === questionId);
+  const rows = await loadQuestionsFromDb();
+  const row = rows.find((item) => item.externalId === questionId);
 
-  if (question == null) {
+  if (row == null) {
     return undefined;
   }
 
-  return toQuestion(question);
+  return {
+    label: row.label,
+    rubrics: row.rubrics.map(toRubric),
+  };
 }
