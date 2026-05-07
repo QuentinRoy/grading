@@ -1,34 +1,81 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Grading Grid
 
-## Getting Started
+## Development
 
-First, run the development server:
+Start the app with:
 
 ```bash
-npm run dev
-# or
-yarn dev
+pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Postgres Backend
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+The project now includes a Prisma-backed Postgres setup for persisting grading data.
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+### Environment variables
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+The database auth variables live in `.env` and are loaded through `dotenvx` in all database-related scripts.
 
-## Learn More
+```bash
+POSTGRES_USER=grading
+POSTGRES_PASSWORD=grading_dev_password
+POSTGRES_DB=grading
+POSTGRES_PORT=5432
+DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public
+```
 
-To learn more about Next.js, take a look at the following resources:
+If you want to manage secrets with dotenvx encryption later, run:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm exec dotenvx encrypt
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+This will create `.env.keys`, which is already ignored by git.
 
-## Deploy on Vercel
+### Start Postgres
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+pnpm db:up
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Stop it with:
+
+```bash
+pnpm db:down
+```
+
+### Prisma commands
+
+Validate the schema:
+
+```bash
+pnpm prisma:validate
+```
+
+Create and apply a local migration:
+
+```bash
+pnpm prisma:migrate:dev -- --name init
+```
+
+Generate the Prisma client:
+
+```bash
+pnpm prisma:generate
+```
+
+Open Prisma Studio:
+
+```bash
+pnpm prisma:studio
+```
+
+## Grading model
+
+Rubric responses are stored as normalized scores from `0` to `1`.
+
+- `0` means the rubric was not satisfied.
+- `1` means the rubric was fully satisfied.
+- Intermediate values such as `0.25`, `0.5`, or `0.75` support partial credit and future non-binary rubrics.
+
+Rubric weights remain separate from rubric response scores, so weighting can change later without rewriting stored grading decisions.

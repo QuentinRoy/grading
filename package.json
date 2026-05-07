@@ -3,11 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "db:down": "dotenvx run -- docker compose down",
+    "db:logs": "dotenvx run -- docker compose logs -f postgres",
+    "db:up": "dotenvx run -- docker compose up -d postgres",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "biome lint",
-    "format": "biome format"
+    "format": "biome format",
+    "prisma:generate": "dotenvx run -- prisma generate",
+    "prisma:migrate:deploy": "dotenvx run -- prisma migrate deploy",
+    "prisma:migrate:dev": "dotenvx run -- prisma migrate dev",
+    "prisma:studio": "dotenvx run -- prisma studio",
+    "prisma:validate": "dotenvx run -- prisma validate"
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",
@@ -17,20 +25,26 @@
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
     "@mui/material-nextjs": "^9.0.1",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
     "clsx": "^2.1.0",
     "immer": "^11.1.7",
     "js-yaml": "^4.1.0",
     "next": "^16.2.5",
+    "pg": "^8.20.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-syntax-highlighter": "^16.1.1",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.14",
+    "@dotenvx/dotenvx": "^1.65.0",
     "@types/node": "^24.12.2",
     "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0"
+    "@types/react-dom": "^19.0.0",
+    "prisma": "^7.8.0"
   },
   "packageManager": "pnpm@10.33.4+sha512.1c67b3b359b2d408119ba1ed289f34b8fc3c6873412bec6fd264fbdc82489e510fcbecb9ce9d22dae7f3b76269d8441046014bdca53b9979cd7a561ad631b800"
 }

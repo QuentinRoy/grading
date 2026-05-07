@@ -1,8 +1,18 @@
-import { Container, Typography } from "@mui/material";
+import { Suspense } from "react";
+
+import { Button, Container, Typography } from "@mui/material";
 import loadQuestions from "../src/loadQuestions";
 import QuestionList from "../src/QuestionList";
 
-export default async function HomePage() {
+export default function HomePage() {
+  return (
+    <Suspense>
+      <HomePageContent />
+    </Suspense>
+  );
+}
+
+async function HomePageContent() {
   const grid = await loadQuestions();
 
   const questions = Object.entries(grid).map(([id, { label }]) => ({
@@ -15,6 +25,9 @@ export default async function HomePage() {
       <Typography component="h1" variant="h2">
         Grading Grid
       </Typography>
+      <Button href="/import" sx={{ my: 2 }} variant="outlined">
+        Import rubric and student data
+      </Button>
       <QuestionList questions={questions} />
     </Container>
   );

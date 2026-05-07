@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import { notFound } from "next/navigation";
 import loadPapers from "../../../src/loadPapers";
 import type { Question } from "../../../src/loadQuestions";
@@ -13,18 +15,15 @@ type QuestionPaperPageProps = {
   params: Promise<PageParams>;
 };
 
-export async function generateStaticParams() {
-  const grid = await loadQuestions();
-  const papers = await loadPapers();
-
-  return Object.keys(grid).flatMap((questionId) =>
-    papers.map((paper) => ({ questionId, paperId: paper.id })),
+export default function QuestionPaperPage({ params }: QuestionPaperPageProps) {
+  return (
+    <Suspense>
+      <QuestionPaperPageContent params={params} />
+    </Suspense>
   );
 }
 
-export default async function QuestionPaperPage({
-  params,
-}: QuestionPaperPageProps) {
+async function QuestionPaperPageContent({ params }: QuestionPaperPageProps) {
   const { questionId, paperId } = await params;
   const grid = await loadQuestions();
   const papers = await loadPapers();

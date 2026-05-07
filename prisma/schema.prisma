@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RubricKind {
+  BOOLEAN
+  ORDINAL
+  NUMERICAL
+}
+
+model Paper {
+  id          String       @id @default(cuid())
+  externalId  String       @unique
+  label       String
+  team        String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  assessments Assessment[]
+  students    Student[]
+}
+
+model Student {
+  id          String    @id @default(cuid())
+  externalId  String    @unique
+  familyName  String
+  firstName   String
+  team        String?
+  paperId     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  paper       Paper     @relation(fields: [paperId], references: [id], onDelete: Cascade)
+}
+
+model Question {
+  id          String       @id @default(cuid())
+  externalId  String       @unique
+  label       String
+  position    Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  rubrics     Rubric[]
+  assessments Assessment[]
+}
+
+model Rubric {
+  id          String        @id @default(cuid())
+  questionId  String
+  position    Int
+  label       String
+  maxMarks    Decimal       @db.Decimal(10, 2)
+  kind        RubricKind    @default(BOOLEAN)
+  config      Json?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  question    Question      @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  scores      RubricScore[]
+
+  @@unique([questionId, position])
+}
+
+model Assessment {
+  id          String        @id @default(cuid())
+  paperId     String
+  questionId  String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  paper       Paper         @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  question    Question      @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  scores      RubricScore[]
+
+  @@unique([paperId, questionId])
+}
+
+model RubricScore {
+  id            String      @id @default(cuid())
+  assessmentId  String
+  rubricId      String
+  score         Decimal     @db.Decimal(3, 2)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  assessment    Assessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  rubric        Rubric      @relation(fields: [rubricId], references: [id], onDelete: Cascade)
+
+  @@unique([assessmentId, rubricId])
+}

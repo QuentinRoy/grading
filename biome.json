@@ -39,7 +39,7 @@
         "useNamespaceKeyword": "error"
       }
     },
-    "includes": ["**", "!data/**/*.js"]
+    "includes": ["**", "!data/**/*.js", "!.next/**/*"]
   },
   "javascript": {
     "formatter": {

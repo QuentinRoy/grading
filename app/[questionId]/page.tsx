@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import { notFound, redirect } from "next/navigation";
 import loadPapers from "../../src/loadPapers";
 import type { Question } from "../../src/loadQuestions";
@@ -11,12 +13,15 @@ type QuestionPageProps = {
   params: Promise<PageParams>;
 };
 
-export async function generateStaticParams() {
-  const grid = await loadQuestions();
-  return Object.keys(grid).map((questionId) => ({ questionId }));
+export default function QuestionPage({ params }: QuestionPageProps) {
+  return (
+    <Suspense>
+      <QuestionPageContent params={params} />
+    </Suspense>
+  );
 }
 
-export default async function QuestionPage({ params }: QuestionPageProps) {
+async function QuestionPageContent({ params }: QuestionPageProps) {
   const { questionId } = await params;
   const grid = await loadQuestions();
   const papers = await loadPapers();
