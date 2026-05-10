@@ -50,8 +50,6 @@ async function QuestionPaperPageContent({ params }: QuestionPaperPageProps) {
 async function QuestionHeaderSection({ questionId }: { questionId: string }) {
   "use cache";
   cacheTag("questions", `questions:${questionId}`);
-
-  await new Promise((resolve) => setTimeout(resolve, 5000));
   const question = await loadQuestion(questionId);
 
   if (question == null) {
