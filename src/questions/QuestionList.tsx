@@ -15,7 +15,7 @@ export default function QuestionList({ questions }: { questions: Question[] }) {
         <ListItemButton
           key={question.id}
           component={Link}
-          href={`/${question.id}`}
+          href={`/grading/questions/${question.id}`}
         >
           <ListItemText primary={question.label} />
         </ListItemButton>

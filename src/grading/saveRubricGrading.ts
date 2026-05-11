@@ -179,6 +179,7 @@ export async function saveRubricGrading({
   }
 
   updateTag(`assessments:${paperId}:${questionId}`);
+  updateTag("assessments");
 
   return { success: true };
 }

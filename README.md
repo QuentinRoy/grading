@@ -1,4 +1,4 @@
-# Grading Grid
+# Grading
 
 ## Development
 

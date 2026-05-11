@@ -15,6 +15,7 @@ import {
 import type { Paper } from "../papers/loadPapers";
 import { getRubricMaxMarks } from "../rubrics/rubric";
 import { useSaveErrors } from "../shared/SaveErrorsProvider";
+import GradingProgressSummary from "./GradingProgressSummary";
 import { attachGrading, type GradedRubric, type Grading } from "./grading";
 import RubricGradeList from "./RubricGradeList";
 import { saveRubricGrading } from "./saveRubricGrading";
@@ -90,7 +91,6 @@ export default function PaperGradingClient({
   let marks = 0;
   let maxMarks = 0;
   let totalRubricsLeft = 0;
-  let isCompleted = true;
 
   optimisticRubrics.forEach((rubric) => {
     const { grading } = rubric;
@@ -116,9 +116,11 @@ export default function PaperGradingClient({
       maxMarks += rubricMarks;
     } else {
       totalRubricsLeft += 1;
-      isCompleted = false;
     }
   });
+
+  const completedRubrics = optimisticRubrics.length - totalRubricsLeft;
+  const isCompleted = totalRubricsLeft === 0 && optimisticRubrics.length > 0;
 
   function handleGrade(index: number, grading: string | number | boolean) {
     const rubric = savedRubrics[index];
@@ -181,7 +183,7 @@ export default function PaperGradingClient({
           <Box sx={{ mb: 4, display: "flex", gap: 1, flexWrap: "wrap" }}>
             <Button
               component={NextLink}
-              href={`/${questionId}/${previousPaper?.id ?? currentPaperId}`}
+              href={`/grading/papers/${previousPaper?.id ?? currentPaperId}/questions/${questionId}`}
               variant="outlined"
               color={isCompleted ? "primary" : "secondary"}
               disabled={previousPaper == null}
@@ -190,7 +192,7 @@ export default function PaperGradingClient({
             </Button>
             <Button
               component={NextLink}
-              href={`/${questionId}/${nextPaper?.id ?? currentPaperId}`}
+              href={`/grading/papers/${nextPaper?.id ?? currentPaperId}/questions/${questionId}`}
               variant="outlined"
               color={isCompleted ? "primary" : "secondary"}
               disabled={nextPaper == null}
@@ -211,20 +213,12 @@ export default function PaperGradingClient({
         onGrade={handleGrade}
       />
 
-      <Box sx={{ mb: 2 }}>
-        <Box sx={{ textAlign: "center" }}>
-          <Typography variant="subtitle1">
-            <span>{marks}</span>&nbsp;/&nbsp;{maxMarks}
-          </Typography>
-        </Box>
-        <Box sx={{ textAlign: "center" }}>
-          <Typography variant="caption">
-            {isCompleted
-              ? "(completed)"
-              : `(${totalRubricsLeft} rubric${totalRubricsLeft !== 1 ? "s" : ""} left)`}
-          </Typography>
-        </Box>
-      </Box>
+      <GradingProgressSummary
+        marks={marks}
+        maxMarks={maxMarks}
+        completedRubrics={completedRubrics}
+        totalRubrics={optimisticRubrics.length}
+      />
     </>
   );
 }

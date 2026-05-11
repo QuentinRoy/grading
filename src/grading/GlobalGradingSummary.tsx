@@ -1,0 +1,86 @@
+import Box from "@mui/material/Box";
+import LinearProgress from "@mui/material/LinearProgress";
+import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
+import type { ReactElement } from "react";
+import type { GlobalGradingProgress } from "./loadGlobalProgress";
+
+type GlobalGradingSummaryProps = {
+  progress: GlobalGradingProgress;
+};
+
+type MetricCardProps = {
+  title: string;
+  helper: string;
+  completed: number;
+  total: number;
+};
+
+function MetricCard({
+  title,
+  helper,
+  completed,
+  total,
+}: MetricCardProps): ReactElement {
+  const safeCompleted = Math.max(0, Math.min(completed, total));
+  const percent = total > 0 ? (safeCompleted / total) * 100 : 0;
+
+  return (
+    <Paper
+      variant="outlined"
+      sx={{
+        p: 2,
+        display: "flex",
+        flexDirection: "column",
+        gap: 1,
+        minWidth: { xs: "100%", sm: 220 },
+        flex: "1 1 220px",
+      }}
+    >
+      <Typography variant="subtitle2">{title}</Typography>
+      <Typography variant="h5">
+        {safeCompleted}&nbsp;/&nbsp;{total}
+      </Typography>
+      <LinearProgress
+        variant="determinate"
+        value={percent}
+        sx={{ height: 8, borderRadius: 4 }}
+      />
+      <Typography variant="caption" color="text.secondary">
+        {helper}
+      </Typography>
+    </Paper>
+  );
+}
+
+export default function GlobalGradingSummary({
+  progress,
+}: GlobalGradingSummaryProps): ReactElement {
+  return (
+    <Box sx={{ my: 3 }}>
+      <Typography variant="h6" sx={{ mb: 1.5 }}>
+        Grading Progress
+      </Typography>
+      <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+        <MetricCard
+          title="Rubrics graded"
+          helper="Saved rubric scores across all papers"
+          completed={progress.rubrics.completed}
+          total={progress.rubrics.total}
+        />
+        <MetricCard
+          title="Questions graded"
+          helper="Fully graded across all papers"
+          completed={progress.questions.completed}
+          total={progress.questions.total}
+        />
+        <MetricCard
+          title="Papers graded"
+          helper="Fully graded across all questions"
+          completed={progress.papers.completed}
+          total={progress.papers.total}
+        />
+      </Box>
+    </Box>
+  );
+}

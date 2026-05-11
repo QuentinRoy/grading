@@ -6,7 +6,7 @@ import { SaveErrorsDisplay } from "../src/shared/SaveErrorsDisplay";
 import { SaveErrorsProvider } from "../src/shared/SaveErrorsProvider";
 
 export const metadata = {
-  title: "Grading Grid",
+  title: "Grading",
   description: "Simple grading helper for rubric-based evaluation",
 };
 

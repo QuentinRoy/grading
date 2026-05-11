@@ -1,7 +1,7 @@
 import { Button, Container, Typography } from "@mui/material";
 import { Suspense } from "react";
-import loadQuestions from "../src/questions/loadQuestions";
-import QuestionList from "../src/questions/QuestionList";
+import GlobalGradingSummary from "../src/grading/GlobalGradingSummary";
+import loadGlobalProgress from "../src/grading/loadGlobalProgress";
 
 export default function HomePage() {
   return (
@@ -12,22 +12,20 @@ export default function HomePage() {
 }
 
 async function HomePageContent() {
-  const grid = await loadQuestions();
-
-  const questions = Object.entries(grid).map(([id, { label }]) => ({
-    id,
-    label: label == null ? id : label,
-  }));
+  const progress = await loadGlobalProgress();
 
   return (
     <Container component="main" maxWidth="md" sx={{ py: 5 }}>
       <Typography component="h1" variant="h2">
-        Grading Grid
+        Grading
       </Typography>
       <Button href="/import" sx={{ my: 2 }} variant="outlined">
         Import rubric and student data
       </Button>
-      <QuestionList questions={questions} />
+      <Button href="/grading" sx={{ my: 2, ml: 1 }} variant="contained">
+        Open grading
+      </Button>
+      <GlobalGradingSummary progress={progress} />
     </Container>
   );
 }

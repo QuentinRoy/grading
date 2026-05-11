@@ -294,6 +294,7 @@ export async function importDataAction(
 
     revalidateTag("questions", "seconds");
     revalidateTag("papers", "seconds");
+    revalidateTag("assessments", "seconds");
 
     return {
       status: "success",

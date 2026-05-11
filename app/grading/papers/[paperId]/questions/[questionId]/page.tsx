@@ -7,17 +7,17 @@ import Typography from "@mui/material/Typography";
 import { cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { attachGrading } from "../../../src/grading/grading";
-import { loadAssessment } from "../../../src/grading/loadAssessment";
-import PaperGradingClient from "../../../src/grading/PaperGradingClient";
-import loadPapers from "../../../src/papers/loadPapers";
-import { loadQuestion } from "../../../src/questions/loadQuestions";
-import CodeSnippet from "../../../src/shared/CodeSnippet";
-import MuiNextLink from "../../../src/shared/MuiNextLink";
+import { attachGrading } from "../../../../../../src/grading/grading";
+import { loadAssessment } from "../../../../../../src/grading/loadAssessment";
+import PaperGradingClient from "../../../../../../src/grading/PaperGradingClient";
+import loadPapers from "../../../../../../src/papers/loadPapers";
+import { loadQuestion } from "../../../../../../src/questions/loadQuestions";
+import CodeSnippet from "../../../../../../src/shared/CodeSnippet";
+import MuiNextLink from "../../../../../../src/shared/MuiNextLink";
 
 type PageParams = {
-  questionId: string;
   paperId: string;
+  questionId: string;
 };
 
 type QuestionPaperPageProps = {
@@ -33,7 +33,7 @@ export default function QuestionPaperPage({ params }: QuestionPaperPageProps) {
 }
 
 async function QuestionPaperPageContent({ params }: QuestionPaperPageProps) {
-  const { questionId, paperId } = await params;
+  const { paperId, questionId } = await params;
 
   return (
     <Container maxWidth="md" sx={{ py: 5 }}>
@@ -60,8 +60,8 @@ async function QuestionHeaderSection({ questionId }: { questionId: string }) {
     <>
       <Box component="header" sx={{ pb: 2 }}>
         <Breadcrumbs aria-label="breadcrumb">
-          <MuiNextLink color="inherit" href="/">
-            Grading Grid
+          <MuiNextLink color="inherit" href="/grading">
+            Grading
           </MuiNextLink>
           <Typography color="textPrimary">
             {question.label ?? questionId}
@@ -184,6 +184,18 @@ function RubricSectionFallback() {
           </Grid>
         </Grid>
       ))}
+
+      {/* Progress summary */}
+      <Box sx={{ mt: 2, mb: 2, textAlign: "center" }}>
+        <MuiSkeleton width={72} height={28} sx={{ mx: "auto" }} />
+        <MuiSkeleton
+          variant="rounded"
+          width={280}
+          height={8}
+          sx={{ mx: "auto", mt: 1, borderRadius: 3 }}
+        />
+        <MuiSkeleton width={120} height={20} sx={{ mx: "auto", mt: 0.5 }} />
+      </Box>
     </Box>
   );
 }
