@@ -1,5 +1,6 @@
 "use client";
 
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
@@ -73,7 +74,11 @@ export default function ExportCsvMenu(): ReactElement {
 
   return (
     <>
-      <Button variant="outlined" onClick={handleOpen}>
+      <Button
+        variant="outlined"
+        onClick={handleOpen}
+        endIcon={<ArrowDropDownIcon />}
+      >
         Export CSV
       </Button>
       <Menu

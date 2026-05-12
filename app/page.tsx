@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import GlobalAssessmentSummary from "@/assessment/GlobalAssessmentSummary";
 import { loadGlobalAssessmentProgress } from "@/db/assessmentsProgress";
 import ExportCsvMenu from "@/export/ExportCsvMenu";
+import ImportMenu from "@/import/ImportMenu";
 
 export default function HomePage() {
   return (
@@ -21,9 +22,7 @@ async function HomePageContent() {
         Assessments
       </Typography>
       <Box sx={{ mb: 2, display: "flex", gap: 1, flexWrap: "wrap" }}>
-        <Button href="/import" variant="outlined">
-          Import rubric and student data
-        </Button>
+        <ImportMenu />
         <Button href="/assessments" variant="contained">
           Open assessments
         </Button>

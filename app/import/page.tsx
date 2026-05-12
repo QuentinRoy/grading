@@ -1,15 +1,5 @@
-import { Suspense } from "react";
-
-import ImportForm from "@/import/ImportForm";
+import { redirect } from "next/navigation";
 
 export default function ImportPage() {
-  return (
-    <Suspense>
-      <ImportPageContent />
-    </Suspense>
-  );
-}
-
-async function ImportPageContent() {
-  return <ImportForm />;
+  redirect("/");
 }

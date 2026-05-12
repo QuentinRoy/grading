@@ -4,7 +4,6 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutlined";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Chip from "@mui/material/Chip";
 import Container from "@mui/material/Container";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
@@ -16,38 +15,10 @@ import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import NextLink from "next/link";
-import React from "react";
+import React, { type ReactElement } from "react";
 import { useFormStatus } from "react-dom";
-
-import { importDataAction } from "./importDataAction";
+import { importStudentsAction } from "./importDataAction";
 import { initialImportState } from "./importState";
-
-const YAML_PLACEHOLDER = `questions:
-  - id: question_1
-    label: "Question 1"
-    rubrics:
-      - id: correct_answer
-        type: boolean
-        description: "The answer is correct"
-        label: "Correct answer"
-        marks: 2
-      - id: showed_work
-        type: boolean
-        marks: 1
-
-  - id: question_2
-    rubrics:
-      - id: performance
-        type: ordinal
-        description: "Overall performance"
-        marks:
-          bad: 0
-          medium: 2
-          good: 4
-      - id: numerical_score
-        type: numerical
-        minMarks: 0
-        maxMarks: 6`;
 
 const CSV_PLACEHOLDER = `family_name,first_name,id,team
 Smith,Alice,s1001,
@@ -60,63 +31,12 @@ type HelpDialogProps = {
   onClose: () => void;
 };
 
-function HelpDialog({ open, onClose }: HelpDialogProps): React.ReactElement {
+function HelpDialog({ open, onClose }: HelpDialogProps): ReactElement {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Import Format Reference</DialogTitle>
+      <DialogTitle>Students Import Format Reference</DialogTitle>
       <DialogContent>
-        <Stack spacing={3}>
-          <Box>
-            <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 1 }}>
-              Questions YAML
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              A top-level <code>questions</code> array of question objects. Each
-              question requires a stable <code>id</code>, has an optional{" "}
-              <code>label</code>, and a <code>rubrics</code> array. Each rubric
-              requires a stable <code>id</code>, accepts an optional{" "}
-              <code>description</code> and <code>label</code>. Boolean rubrics
-              use <code>marks</code>, ordinal rubrics use <code>marks</code>,
-              and numerical rubrics use <code>minScore</code>/
-              <code>maxScore</code> and/or <code>minMarks</code>/
-              <code>maxMarks</code>.
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Numerical defaults and rules: <code>minScore</code> defaults to{" "}
-              <code>0</code>, <code>maxScore</code> defaults to <code>1</code>.
-              If <code>minScore</code> is provided, <code>maxScore</code> must
-              be provided too. <code>minMarks</code> defaults to <code>0</code>{" "}
-              when omitted; <code>maxMarks</code> defaults to <code>0</code>{" "}
-              when omitted. At least one of <code>minMarks</code>/
-              <code>maxMarks</code> must be provided.
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Rubric types:
-            </Typography>
-            <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", mb: 2 }}>
-              <Chip size="small" label="boolean" variant="outlined" />
-              <Chip
-                size="small"
-                label="ordinal — label: marks map"
-                variant="outlined"
-              />
-              <Chip size="small" label="numerical" variant="outlined" />
-            </Stack>
-            <Box
-              component="pre"
-              sx={{
-                bgcolor: "action.hover",
-                borderRadius: 1,
-                p: 2,
-                fontSize: "0.8rem",
-                overflowX: "auto",
-                fontFamily: "monospace",
-              }}
-            >
-              {YAML_PLACEHOLDER}
-            </Box>
-          </Box>
-
+        <Stack spacing={3} sx={{ pt: 2 }}>
           <Box>
             <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 1 }}>
               Students CSV
@@ -147,17 +67,12 @@ function HelpDialog({ open, onClose }: HelpDialogProps): React.ReactElement {
   );
 }
 
-type ImportPageClientProps = {
-  defaultQuestionsYaml?: string;
-  defaultStudentsCsv?: string;
-};
-
-function SubmitButton() {
+function SubmitButton(): ReactElement {
   const { pending } = useFormStatus();
 
   return (
     <Button type="submit" variant="contained" disabled={pending}>
-      {pending ? "Importing..." : "Import into database"}
+      {pending ? "Importing..." : "Import students"}
     </Button>
   );
 }
@@ -190,24 +105,23 @@ function useDrop(setValue: (text: string) => void) {
   return { isDragging, onDragOver, onDragLeave, onDrop };
 }
 
-export default function ImportPageClient({
-  defaultQuestionsYaml,
+type StudentsImportFormProps = {
+  defaultStudentsCsv?: string;
+};
+
+export default function StudentsImportForm({
   defaultStudentsCsv,
-}: ImportPageClientProps): React.ReactElement {
+}: StudentsImportFormProps): ReactElement {
   const [state, formAction] = React.useActionState(
-    importDataAction,
+    importStudentsAction,
     initialImportState,
   );
 
-  const [questionsYaml, setQuestionsYaml] = React.useState(
-    defaultQuestionsYaml ?? "",
-  );
   const [studentsCsv, setStudentsCsv] = React.useState(
     defaultStudentsCsv ?? "",
   );
   const [helpOpen, setHelpOpen] = React.useState(false);
 
-  const yamlDrop = useDrop(setQuestionsYaml);
   const csvDrop = useDrop(setStudentsCsv);
 
   return (
@@ -220,7 +134,7 @@ export default function ImportPageClient({
             sx={{ alignItems: "center", mb: 1 }}
           >
             <Typography variant="h3" component="h1">
-              Import Data
+              Import Students
             </Typography>
             <Tooltip title="Show format reference">
               <IconButton
@@ -233,10 +147,10 @@ export default function ImportPageClient({
             </Tooltip>
           </Stack>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 0.5 }}>
-            Load question rubrics and student or team data into PostgreSQL.
+            Load student or team data into the database.
           </Typography>
           <Link component={NextLink} href="/" underline="hover">
-            Back to assessments home
+            Back to home
           </Link>
         </Box>
 
@@ -252,31 +166,6 @@ export default function ImportPageClient({
 
         <Box component="form" action={formAction}>
           <Stack spacing={3}>
-            <Box
-              onDragOver={yamlDrop.onDragOver}
-              onDragLeave={yamlDrop.onDragLeave}
-              onDrop={yamlDrop.onDrop}
-              sx={{
-                borderRadius: 1,
-                outline: yamlDrop.isDragging ? "2px dashed" : "none",
-                outlineColor: "primary.main",
-              }}
-            >
-              <TextField
-                label="Questions YAML"
-                name="questionsYaml"
-                value={questionsYaml}
-                onChange={(e) => setQuestionsYaml(e.target.value)}
-                multiline
-                minRows={18}
-                fullWidth
-                required
-                spellCheck={false}
-                placeholder={YAML_PLACEHOLDER}
-                helperText="Drop a .yaml file here to fill this field"
-              />
-            </Box>
-
             <Box
               onDragOver={csvDrop.onDragOver}
               onDragLeave={csvDrop.onDragLeave}
