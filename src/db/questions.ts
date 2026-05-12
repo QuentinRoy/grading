@@ -1,8 +1,7 @@
 import { type Prisma, RubricType } from "@prisma/client";
 import { cacheLife, cacheTag } from "next/cache";
-
-import { prisma } from "../db/prisma";
 import type { Rubric } from "../rubrics/rubric";
+import { prisma } from "./prisma";
 
 export type { Rubric } from "../rubrics/rubric";
 
@@ -170,7 +169,7 @@ async function loadQuestionsFromDb(): Promise<QuestionRow[]> {
   }));
 }
 
-export default async function loadQuestions(): Promise<Grid> {
+export async function loadQuestions(): Promise<Grid> {
   const rows = await loadQuestionsFromDb();
 
   return Object.fromEntries(

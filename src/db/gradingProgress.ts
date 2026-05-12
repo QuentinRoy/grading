@@ -1,5 +1,5 @@
 import { cacheLife, cacheTag } from "next/cache";
-import { prisma } from "../db/prisma";
+import { prisma } from "./prisma";
 
 type ProgressMetric = {
   completed: number;
@@ -119,6 +119,6 @@ async function loadGlobalProgressFromDb(): Promise<GlobalGradingProgress> {
   };
 }
 
-export default async function loadGlobalProgress(): Promise<GlobalGradingProgress> {
+export async function loadGlobalProgress(): Promise<GlobalGradingProgress> {
   return loadGlobalProgressFromDb();
 }

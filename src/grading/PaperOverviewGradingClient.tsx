@@ -6,7 +6,7 @@ import Typography from "@mui/material/Typography";
 import NextLink from "next/link";
 import type { ReactElement } from "react";
 import { useMemo } from "react";
-import type { Paper as GradingPaper } from "../papers/loadPapers";
+import type { Paper as GradingPaper } from "../db/papers";
 import { type SaveError, useSaveErrors } from "../shared/SaveErrorsProvider";
 import GradingProgressSummary from "./GradingProgressSummary";
 import { type GradedRubric, type Grading } from "./grading";

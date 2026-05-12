@@ -2,7 +2,7 @@
 
 import { produce } from "immer";
 import { startTransition, useOptimistic, useReducer } from "react";
-import type { Paper } from "../papers/loadPapers";
+import type { Paper } from "../db/papers";
 import { attachGrading, type GradedRubric, type Grading } from "./grading";
 import { getPaperNavigation } from "./paperNavigation";
 

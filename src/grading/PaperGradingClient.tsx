@@ -5,7 +5,7 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import NextLink from "next/link";
 import type { ReactElement } from "react";
-import type { Paper } from "../papers/loadPapers";
+import type { Paper } from "../db/papers";
 import { type SaveError, useSaveErrors } from "../shared/SaveErrorsProvider";
 import GradingProgressSummary from "./GradingProgressSummary";
 import { type GradedRubric, type Grading } from "./grading";

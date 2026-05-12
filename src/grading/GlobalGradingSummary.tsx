@@ -3,7 +3,7 @@ import LinearProgress from "@mui/material/LinearProgress";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import type { ReactElement } from "react";
-import type { GlobalGradingProgress } from "./loadGlobalProgress";
+import type { GlobalGradingProgress } from "../db/gradingProgress";
 
 type GlobalGradingSummaryProps = {
   progress: GlobalGradingProgress;

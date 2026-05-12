@@ -1,12 +1,11 @@
 import { cacheTag } from "next/cache";
-import { prisma } from "../db/prisma";
+import type { RubricGrading } from "./assessmentTypes";
+import { prisma } from "./prisma";
 
-export type RubricGrading = string | number | boolean;
-
-// Returns a map from rubricId (external id) to grading
+// Returns a map from rubricId (external id) to grading.
 export async function loadAssessment(
-  paperId: string, // id
-  questionId: string, // id
+  paperId: string,
+  questionId: string,
 ): Promise<Map<string, RubricGrading>> {
   "use cache";
   cacheTag(`assessments:${paperId}:${questionId}`);

@@ -1,5 +1,5 @@
 import { cacheLife, cacheTag } from "next/cache";
-import { prisma } from "../db/prisma";
+import { prisma } from "./prisma";
 
 export type Paper = {
   id: string;
@@ -11,12 +11,13 @@ async function loadPapersFromDb() {
   "use cache";
   cacheTag("papers");
   cacheLife({ revalidate: 60 });
+
   return prisma.paper.findMany({
     orderBy: { id: "asc" },
   });
 }
 
-export default async function loadPapers(): Promise<Paper[]> {
+export async function loadPapers(): Promise<Paper[]> {
   const papers = await loadPapersFromDb();
 
   return papers.map((paper) => ({

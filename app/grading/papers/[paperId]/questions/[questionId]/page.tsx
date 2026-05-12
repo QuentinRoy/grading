@@ -4,11 +4,11 @@ import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import { cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
+import { loadAssessment } from "@/db/loadAssessment";
+import { loadPapers } from "@/db/papers";
+import { loadQuestion } from "@/db/questions";
 import { attachGrading } from "../../../../../../src/grading/grading";
-import { loadAssessment } from "../../../../../../src/grading/loadAssessment";
 import PaperGradingClient from "../../../../../../src/grading/PaperGradingClient";
-import loadPapers from "../../../../../../src/papers/loadPapers";
-import { loadQuestion } from "../../../../../../src/questions/loadQuestions";
 import CodeSnippet from "../../../../../../src/shared/CodeSnippet";
 import MuiNextLink from "../../../../../../src/shared/MuiNextLink";
 
@@ -106,4 +106,3 @@ async function PaperRubricSection({
     />
   );
 }
-

@@ -1,3 +1,4 @@
+import "server-only";
 import { parse as parseCSV } from "csv-parse/sync";
 import yaml from "js-yaml";
 import { z } from "zod";

@@ -6,8 +6,8 @@ import {
   ListItemText,
   Typography,
 } from "@mui/material";
-import loadPapers from "../../src/papers/loadPapers";
-import loadQuestions from "../../src/questions/loadQuestions";
+import { loadPapers } from "@/db/papers";
+import { loadQuestions } from "@/db/questions";
 import QuestionList from "../../src/questions/QuestionList";
 
 export default function GradingPage() {

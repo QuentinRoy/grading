@@ -1,9 +1,8 @@
 "use server";
 
-import { Prisma, RubricType } from "@prisma/client";
 import { revalidateTag } from "next/cache";
 import { prettifyError, ZodError } from "zod";
-import { prisma } from "../db/prisma";
+import { persistImportData } from "../db/importData";
 import {
   buildPapersFromStudents,
   parseQuestionsYaml,
@@ -54,12 +53,7 @@ export async function importDataAction(
         position,
         description: rubric.description ?? null,
         label: rubric.label ?? null,
-        type:
-          rubric.type === "boolean"
-            ? RubricType.BOOLEAN
-            : rubric.type === "ordinal"
-              ? RubricType.ORDINAL
-              : RubricType.NUMERICAL,
+        type: rubric.type,
       })),
     );
 
@@ -69,7 +63,7 @@ export async function importDataAction(
           ? [
               {
                 rubricId: rubric.id,
-                marks: new Prisma.Decimal(rubric.marks),
+                marks: rubric.marks,
               },
             ]
           : [],
@@ -82,10 +76,10 @@ export async function importDataAction(
           ? [
               {
                 rubricId: rubric.id,
-                minScore: new Prisma.Decimal(rubric.minScore),
-                maxScore: new Prisma.Decimal(rubric.maxScore),
-                minMarks: new Prisma.Decimal(rubric.minMarks),
-                maxMarks: new Prisma.Decimal(rubric.maxMarks),
+                minScore: rubric.minScore,
+                maxScore: rubric.maxScore,
+                minMarks: rubric.minMarks,
+                maxMarks: rubric.maxMarks,
               },
             ]
           : [],
@@ -109,193 +103,15 @@ export async function importDataAction(
       rubricId,
     }));
 
-    const questionIds = questionsById.map((question) => question.id);
-    const rubricIds = rubricRows.map((rubric) => rubric.id);
-    const ordinalRubricIds = ordinalRubricRows.map((rubric) => rubric.rubricId);
-    const rubricTypeById = new Map(
-      rubricRows.map((rubric) => [rubric.id, rubric.type]),
-    );
-
-    const result = await prisma.$transaction(async (tx) => {
-      const existingRubrics = await tx.rubric.findMany({
-        where: { id: { in: rubricIds } },
-        select: {
-          id: true,
-          type: true,
-        },
-      });
-
-      const rubricsToRecreate = existingRubrics.flatMap((rubric) => {
-        const nextType = rubricTypeById.get(rubric.id);
-
-        if (nextType == null || nextType === rubric.type) {
-          return [];
-        }
-
-        return [rubric.id];
-      });
-
-      if (rubricsToRecreate.length > 0) {
-        await tx.rubric.deleteMany({
-          where: { id: { in: rubricsToRecreate } },
-        });
-      }
-
-      await Promise.all([
-        ...questionsById.map((question) =>
-          tx.question.upsert({
-            where: { id: question.id },
-            create: question,
-            update: {
-              label: question.label,
-              position: question.position,
-            },
-          }),
-        ),
-        ...papersById.map((paper) =>
-          tx.paper.upsert({
-            where: { id: paper.id },
-            create: paper,
-            update: {
-              label: paper.label,
-              team: paper.team,
-            },
-          }),
-        ),
-      ]);
-
-      await Promise.all(
-        studentsWithPaper.map((student) =>
-          tx.student.upsert({
-            where: { id: student.id },
-            create: student,
-            update: {
-              familyName: student.familyName,
-              firstName: student.firstName,
-              team: student.team,
-              paperId: student.paperId,
-            },
-          }),
-        ),
-      );
-
-      await Promise.all(
-        rubricRows.map((rubric) =>
-          tx.rubric.upsert({
-            where: { id: rubric.id },
-            create: rubric,
-            update: {
-              questionId: rubric.questionId,
-              position: rubric.position,
-              description: rubric.description,
-              label: rubric.label,
-            },
-          }),
-        ),
-      );
-
-      await Promise.all([
-        ...booleanRubricRows.map((booleanRubric) =>
-          tx.booleanRubric.upsert({
-            where: { rubricId: booleanRubric.rubricId },
-            create: {
-              rubricId: booleanRubric.rubricId,
-              marks: booleanRubric.marks,
-            },
-            update: {
-              marks: booleanRubric.marks,
-            },
-          }),
-        ),
-        ...ordinalRubricRows.map((ordinalRubric) =>
-          tx.ordinalRubric.upsert({
-            where: { rubricId: ordinalRubric.rubricId },
-            create: {
-              rubricId: ordinalRubric.rubricId,
-            },
-            update: {},
-          }),
-        ),
-        ...numericalRubricRows.map((numericalRubric) =>
-          tx.numericalRubric.upsert({
-            where: { rubricId: numericalRubric.rubricId },
-            create: {
-              rubricId: numericalRubric.rubricId,
-              minScore: numericalRubric.minScore,
-              maxScore: numericalRubric.maxScore,
-              minMarks: numericalRubric.minMarks,
-              maxMarks: numericalRubric.maxMarks,
-            },
-            update: {
-              minScore: numericalRubric.minScore,
-              maxScore: numericalRubric.maxScore,
-              minMarks: numericalRubric.minMarks,
-              maxMarks: numericalRubric.maxMarks,
-            },
-          }),
-        ),
-      ]);
-
-      await tx.rubric.deleteMany({
-        where: {
-          questionId: { in: questionIds },
-          id: { notIn: rubricIds },
-        },
-      });
-
-      if (ordinalRubricSources.length > 0) {
-        // Fetch the upserted ordinal rubric IDs to use in value rows
-        const persistedOrdinalRubrics = await tx.ordinalRubric.findMany({
-          where: {
-            rubricId: { in: ordinalRubricIds },
-          },
-          select: {
-            id: true,
-            rubricId: true,
-          },
-        });
-
-        const ordinalRubricIdByRubricId = new Map(
-          persistedOrdinalRubrics.map((r) => [r.rubricId, r.id]),
-        );
-
-        const ordinalValueRows = ordinalRubricSources.flatMap((rubric) => {
-          const ordinalRubricId = ordinalRubricIdByRubricId.get(
-            rubric.rubricId,
-          );
-
-          if (ordinalRubricId == null) {
-            return [];
-          }
-
-          return Object.entries(rubric.marks).map(([label, score]) => ({
-            ordinalRubricId,
-            label,
-            score: new Prisma.Decimal(score),
-          }));
-        });
-
-        await tx.ordinalRubricValue.deleteMany({
-          where: {
-            ordinalRubricId: {
-              in: persistedOrdinalRubrics.map((rubric) => rubric.id),
-            },
-          },
-        });
-
-        if (ordinalValueRows.length > 0) {
-          await tx.ordinalRubricValue.createMany({
-            data: ordinalValueRows,
-          });
-        }
-      }
-
-      return {
-        questionCount: questionsById.length,
-        rubricCount: rubricRows.length,
-        paperCount: papersById.length,
-        studentCount: studentsWithPaper.length,
-      };
+    const result = await persistImportData({
+      questionsById,
+      papersById,
+      studentsWithPaper,
+      rubricRows,
+      booleanRubricRows,
+      numericalRubricRows,
+      ordinalRubricSources,
+      ordinalRubricRows,
     });
 
     revalidateTag("questions", "seconds");
