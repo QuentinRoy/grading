@@ -1,5 +1,6 @@
 import { RubricType } from "@prisma/client";
 import { cacheTag, updateTag } from "next/cache";
+import { assertNever } from "@/utils/utils";
 import { prisma } from "./prisma";
 import type { AssessmentRubricValue } from "./types";
 
@@ -12,6 +13,33 @@ export type SaveAssessmentParams = {
   questionId: string;
   rubric: AssessmentRubricValue;
 };
+
+function toDbRubricType(type: AssessmentRubricValue["type"]): RubricType {
+  switch (type) {
+    case "boolean":
+      return RubricType.BOOLEAN;
+    case "ordinal":
+      return RubricType.ORDINAL;
+    case "numerical":
+      return RubricType.NUMERICAL;
+    default:
+      assertNever(type);
+  }
+}
+function toAssessmentRubricType(
+  type: RubricType,
+): AssessmentRubricValue["type"] {
+  switch (type) {
+    case RubricType.BOOLEAN:
+      return "boolean";
+    case RubricType.ORDINAL:
+      return "ordinal";
+    case RubricType.NUMERICAL:
+      return "numerical";
+    default:
+      assertNever(type);
+  }
+}
 
 // Returns typed rubric values for a paper/question assessment.
 export async function loadAssessment(
@@ -126,13 +154,11 @@ export async function saveAssessment({
     return { success: false, error: "Rubric not found." };
   }
 
-  if (
-    (rubric.type === RubricType.BOOLEAN && rubricValue.type !== "boolean") ||
-    (rubric.type === RubricType.ORDINAL && rubricValue.type !== "ordinal") ||
-    (rubric.type === RubricType.NUMERICAL && rubricValue.type !== "numerical")
-  ) {
+  if (toAssessmentRubricType(rubric.type) !== rubricValue.type) {
     return { success: false, error: "Rubric type mismatch." };
   }
+
+  const rubricScoreType = toDbRubricType(rubricValue.type);
 
   const assessment = await prisma.assessment.upsert({
     where: {
@@ -152,20 +178,10 @@ export async function saveAssessment({
     create: {
       assessmentId: assessment.id,
       rubricId,
-      type:
-        rubric.type === RubricType.BOOLEAN
-          ? RubricType.BOOLEAN
-          : rubric.type === RubricType.ORDINAL
-            ? RubricType.ORDINAL
-            : RubricType.NUMERICAL,
+      type: rubricScoreType,
     },
     update: {
-      type:
-        rubric.type === RubricType.BOOLEAN
-          ? RubricType.BOOLEAN
-          : rubric.type === RubricType.ORDINAL
-            ? RubricType.ORDINAL
-            : RubricType.NUMERICAL,
+      type: rubricScoreType,
     },
   });
 
