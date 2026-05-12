@@ -8,14 +8,14 @@ type OrdinalGradeControlProps = {
   value?: string;
   marks: Record<string, number>;
   disabled: boolean;
-  onGrade: (value: string) => void;
+  onAssess: (value: string) => void;
 };
 
 export default function OrdinalGradeControl({
   value,
   marks,
   disabled,
-  onGrade,
+  onAssess,
 }: OrdinalGradeControlProps): ReactElement {
   return (
     <ToggleButtonGroup
@@ -24,7 +24,7 @@ export default function OrdinalGradeControl({
       exclusive
       onChange={(_, value: string | null) => {
         if (value != null) {
-          onGrade(value);
+          onAssess(value);
         }
       }}
       aria-label="Ordinal rubric assessment"

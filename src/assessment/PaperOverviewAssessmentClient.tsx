@@ -74,7 +74,7 @@ export default function PaperOverviewAssessmentClient({
     nextPaper,
     optimisticRubrics,
     pendingByIndex,
-    grade,
+    assess,
   } = useAssessmentSession<Omit<SaveError, "id">>({
     initialRubrics,
     papers,
@@ -187,9 +187,9 @@ export default function PaperOverviewAssessmentClient({
                     0: flatIndex != null ? (pendingByIndex[flatIndex] ?? 0) : 0,
                   }}
                   disabled={false}
-                  onGrade={(_, assessment) => {
+                  onAssess={(_, assessment) => {
                     if (flatIndex != null) {
-                      grade(flatIndex, assessment);
+                      assess(flatIndex, assessment);
                     }
                   }}
                 />

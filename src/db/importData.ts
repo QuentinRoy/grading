@@ -248,10 +248,10 @@ export async function persistImportData({
           return [];
         }
 
-        return Object.entries(rubric.marks).map(([label, score]) => ({
+        return Object.entries(rubric.marks).map(([label, marks]) => ({
           ordinalRubricId,
           label,
-          score: new Prisma.Decimal(score),
+          marks: new Prisma.Decimal(marks),
         }));
       });
 

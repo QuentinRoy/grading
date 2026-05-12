@@ -18,7 +18,7 @@ function toRubric(data: {
   description: string | null;
   label: string | null;
   booleanRubric: { marks: number } | null;
-  ordinalRubric: { marks: { label: string; score: number }[] } | null;
+  ordinalRubric: { marks: { label: string; marks: number }[] } | null;
   numericalRubric: {
     minScore: number;
     maxScore: number;
@@ -28,7 +28,7 @@ function toRubric(data: {
 }): Rubric {
   if (data.type === RubricType.ORDINAL && data.ordinalRubric) {
     const marks = Object.fromEntries(
-      data.ordinalRubric.marks.map((item) => [item.label, item.score]),
+      data.ordinalRubric.marks.map((item) => [item.label, item.marks]),
     );
     return {
       id: data.id,
@@ -70,7 +70,7 @@ type QuestionRow = {
     description: string | null;
     label: string | null;
     booleanRubric: { marks: number } | null;
-    ordinalRubric: { marks: { label: string; score: number }[] } | null;
+    ordinalRubric: { marks: { label: string; marks: number }[] } | null;
     numericalRubric: {
       minScore: number;
       maxScore: number;
@@ -99,9 +99,9 @@ async function loadQuestionsFromDb(): Promise<QuestionRow[]> {
           ordinalRubric: {
             select: {
               marks: {
-                select: { label: true, score: true },
+                select: { label: true, marks: true },
                 orderBy: [
-                  { score: "desc" as const },
+                  { marks: "desc" as const },
                   { label: "asc" as const },
                 ],
               },
@@ -129,7 +129,7 @@ async function loadQuestionsFromDb(): Promise<QuestionRow[]> {
       const ordinalMarkEntries =
         rubric.ordinalRubric?.marks.map((item) => ({
           label: item.label,
-          score: toNumber(item.score),
+          marks: toNumber(item.marks),
         })) ?? [];
 
       return {

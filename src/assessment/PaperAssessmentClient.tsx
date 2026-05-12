@@ -41,7 +41,7 @@ export default function PaperAssessmentClient({
     nextPaper,
     optimisticRubrics,
     pendingByIndex,
-    grade,
+    assess,
   } = useAssessmentSession<Omit<SaveError, "id">>({
     initialRubrics,
     papers,
@@ -132,7 +132,7 @@ export default function PaperAssessmentClient({
         rubrics={optimisticRubrics}
         pendingByIndex={pendingByIndex}
         disabled={currentPaper == null}
-        onGrade={(index, assessment) => grade(index, assessment)}
+        onAssess={(index, assessment) => assess(index, assessment)}
       />
 
       <AssessmentProgressSummary

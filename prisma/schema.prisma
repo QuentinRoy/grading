@@ -96,7 +96,7 @@ model OrdinalRubricValue {
   id              String        @id @default(cuid())
   ordinalRubricId String
   label           String
-  score           Decimal       @db.Decimal(10, 2)
+  marks           Decimal       @db.Decimal(10, 2)
   ordinalRubric   OrdinalRubric @relation(fields: [ordinalRubricId], references: [id], onDelete: Cascade)
 
   @@unique([ordinalRubricId, label])

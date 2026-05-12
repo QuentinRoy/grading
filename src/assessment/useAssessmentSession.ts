@@ -28,7 +28,7 @@ export type UseAssessmentSessionResult = {
   nextPaper: Paper | undefined;
   optimisticRubrics: AssessedRubric[];
   pendingByIndex: Record<number, number>;
-  grade: (index: number, assessment: AssessmentRubricValue) => void;
+  assess: (index: number, assessment: AssessmentRubricValue) => void;
 };
 
 type State = {
@@ -70,7 +70,7 @@ export function useAssessmentSession<TError>({
   const { currentPaperIndex, currentPaper, previousPaper, nextPaper } =
     getPaperNavigation(papers, currentPaperId);
 
-  function grade(index: number, assessment: AssessmentRubricValue) {
+  function assess(index: number, assessment: AssessmentRubricValue) {
     const rubric = savedRubrics[index];
 
     if (rubric == null || isSameAssessment(rubric, assessment)) {
@@ -101,7 +101,7 @@ export function useAssessmentSession<TError>({
     nextPaper,
     optimisticRubrics,
     pendingByIndex,
-    grade,
+    assess,
   };
 }
 

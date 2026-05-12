@@ -8,7 +8,7 @@ const meta = {
   tags: ["autodocs"],
   parameters: { layout: "centered" },
   args: {
-    onGrade: fn(),
+    onAssess: fn(),
     disabled: false,
     minScore: 0,
     maxScore: 10,

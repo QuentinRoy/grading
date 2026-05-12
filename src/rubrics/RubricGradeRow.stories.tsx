@@ -9,7 +9,7 @@ const meta = {
   component: RubricGradeRow,
   tags: ["autodocs"],
   args: {
-    onGrade: fn(),
+    onAssess: fn(),
     disabled: false,
     isPending: false,
   },

@@ -8,7 +8,7 @@ type NumericalGradeControlProps = {
   minScore: number;
   maxScore: number;
   disabled: boolean;
-  onGrade: (value: number) => void;
+  onAssess: (value: number) => void;
 };
 
 export default function NumericalGradeControl({
@@ -16,7 +16,7 @@ export default function NumericalGradeControl({
   minScore,
   maxScore,
   disabled,
-  onGrade,
+  onAssess,
 }: NumericalGradeControlProps): ReactElement {
   const [draft, setDraft] = useState(value != null ? String(value) : "");
 
@@ -35,7 +35,7 @@ export default function NumericalGradeControl({
     }
     if (parsed < minScore) parsed = minScore;
     else if (parsed > maxScore) parsed = maxScore;
-    onGrade(parsed);
+    onAssess(parsed);
   }
 
   return (

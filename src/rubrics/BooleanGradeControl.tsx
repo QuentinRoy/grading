@@ -9,13 +9,13 @@ import type { ReactElement } from "react";
 type BooleanGradeControlProps = {
   value?: boolean;
   disabled: boolean;
-  onGrade: (value: boolean) => void;
+  onAssess: (value: boolean) => void;
 };
 
 export default function BooleanGradeControl({
   value,
   disabled,
-  onGrade,
+  onAssess,
 }: BooleanGradeControlProps): ReactElement {
   const buttonValue = value ?? null;
 
@@ -25,7 +25,7 @@ export default function BooleanGradeControl({
       exclusive
       onChange={(_, value: boolean | null) => {
         if (value != null) {
-          onGrade(value);
+          onAssess(value);
         }
       }}
       aria-label="Boolean rubric assessment"

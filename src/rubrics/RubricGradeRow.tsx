@@ -16,14 +16,14 @@ type RubricGradeRowProps = {
   rubric: AssessedRubric;
   isPending: boolean;
   disabled: boolean;
-  onGrade: (assessment: AssessmentRubricValue) => void;
+  onAssess: (assessment: AssessmentRubricValue) => void;
 };
 
 export default function RubricGradeRow({
   rubric,
   isPending,
   disabled,
-  onGrade,
+  onAssess,
 }: RubricGradeRowProps): ReactElement {
   const { description, assessment, id, label, type } = rubric;
   const displayDescription = description ?? label ?? id;
@@ -37,8 +37,8 @@ export default function RubricGradeRow({
         value={assessment?.selectedLabel}
         marks={rubric.marks}
         disabled={disabled}
-        onGrade={(selectedLabel) =>
-          onGrade({
+        onAssess={(selectedLabel) =>
+          onAssess({
             rubricId: id,
             type: "ordinal",
             selectedLabel,
@@ -53,8 +53,8 @@ export default function RubricGradeRow({
         minScore={rubric.minScore}
         maxScore={rubric.maxScore}
         disabled={disabled}
-        onGrade={(score) =>
-          onGrade({
+        onAssess={(score) =>
+          onAssess({
             rubricId: id,
             type: "numerical",
             score,
@@ -67,8 +67,8 @@ export default function RubricGradeRow({
       <BooleanGradeControl
         value={assessment?.passed}
         disabled={disabled}
-        onGrade={(passed) =>
-          onGrade({
+        onAssess={(passed) =>
+          onAssess({
             rubricId: id,
             type: "boolean",
             passed,

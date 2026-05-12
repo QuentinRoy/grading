@@ -10,17 +10,17 @@ type RubricAssessmentSectionProps = {
   rubrics: AssessedRubric[];
   pendingByIndex: Record<number, number>;
   disabled: boolean;
-  onGrade: (index: number, assessment: AssessmentRubricValue) => void;
+  onAssess: (index: number, assessment: AssessmentRubricValue) => void;
 };
 
 export default function RubricGradeList({
   rubrics,
   pendingByIndex,
   disabled,
-  onGrade,
+  onAssess,
 }: RubricAssessmentSectionProps): ReactElement {
   const handleAssessment = (index: number, assessment: AssessmentRubricValue) =>
-    onGrade(index, assessment);
+    onAssess(index, assessment);
 
   return (
     <Grid container spacing={2} sx={{ mb: 2, alignItems: "center" }}>
@@ -33,7 +33,7 @@ export default function RubricGradeList({
             rubric={rubric}
             isPending={isPending}
             disabled={disabled}
-            onGrade={(assessment) => handleAssessment(index, assessment)}
+            onAssess={(assessment) => handleAssessment(index, assessment)}
           />
         );
       })}

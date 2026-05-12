@@ -97,7 +97,7 @@ function HelpDialog({ open, onClose }: HelpDialogProps): React.ReactElement {
               <Chip size="small" label="boolean" variant="outlined" />
               <Chip
                 size="small"
-                label="ordinal — label: grade map, no marks"
+                label="ordinal — label: marks map"
                 variant="outlined"
               />
               <Chip size="small" label="numerical" variant="outlined" />
