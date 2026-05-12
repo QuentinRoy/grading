@@ -23,7 +23,7 @@ describe("parseExportOptions", () => {
   it("throws on invalid include", () => {
     expect(() =>
       parseExportOptions(new URLSearchParams("include=foo")),
-    ).toThrowError("Invalid include option: foo");
+    ).toThrow("Invalid include option: foo");
   });
 });
 
@@ -69,13 +69,13 @@ describe("submission CSV ordering", () => {
       "submissionId",
       "submissionType",
       "submitter",
-      "q1:r1 assessment",
-      "q1:r1 marks",
-      "q1:r2 assessment",
-      "q1:r2 marks",
+      "q1:r1",
+      "q1:r1:marks",
+      "q1:r2",
+      "q1:r2:marks",
       "q1",
-      "q2:r3 assessment",
-      "q2:r3 marks",
+      "q2:r3",
+      "q2:r3:marks",
       "q2",
       "grand total marks",
     ]);
@@ -154,6 +154,6 @@ describe("submission CSV ordering", () => {
         },
         valuesByKey: new Map(),
       }),
-    ).toThrowError("Submission sub-team has type TEAM but no team is linked.");
+    ).toThrow("Submission sub-team has type TEAM but no team is linked.");
   });
 });
