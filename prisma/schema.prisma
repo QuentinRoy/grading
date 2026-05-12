@@ -73,7 +73,7 @@ model Rubric {
   booleanRubric   BooleanRubric?
   ordinalRubric   OrdinalRubric?
   numericalRubric NumericalRubric?
-  scores          RubricScore[]
+  assessments     RubricAssessment[]
 
   @@unique([questionId, position])
 }
@@ -121,12 +121,12 @@ model Assessment {
   updatedAt  DateTime      @updatedAt
   paper      Paper         @relation(fields: [paperId], references: [id], onDelete: Cascade)
   question   Question      @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  scores     RubricScore[]
+  assessments RubricAssessment[]
 
   @@unique([paperId, questionId])
 }
 
-model RubricScore {
+model RubricAssessment {
   id             String               @id @default(cuid())
   assessmentId   String
   rubricId       String
@@ -135,30 +135,30 @@ model RubricScore {
   updatedAt      DateTime             @updatedAt
   assessment     Assessment           @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
   rubric         Rubric               @relation(fields: [rubricId], references: [id], onDelete: Cascade)
-  booleanScore   BooleanRubricScore?
-  ordinalScore   OrdinalRubricScore?
-  numericalScore NumericalRubricScore?
+  booleanAssessment   BooleanRubricAssessment?
+  ordinalAssessment   OrdinalRubricAssessment?
+  numericalAssessment NumericalRubricAssessment?
 
   @@unique([assessmentId, rubricId])
 }
 
-model BooleanRubricScore {
-  id            String      @id @default(cuid())
-  rubricScoreId String      @unique
+model BooleanRubricAssessment {
+  id                 String           @id @default(cuid())
+  rubricAssessmentId String           @unique
   passed        Boolean
-  rubricScore   RubricScore @relation(fields: [rubricScoreId], references: [id], onDelete: Cascade)
+  rubricAssessment   RubricAssessment @relation(fields: [rubricAssessmentId], references: [id], onDelete: Cascade)
 }
 
-model OrdinalRubricScore {
-  id            String      @id @default(cuid())
-  rubricScoreId String      @unique
+model OrdinalRubricAssessment {
+  id                 String           @id @default(cuid())
+  rubricAssessmentId String           @unique
   selectedLabel String
-  rubricScore   RubricScore @relation(fields: [rubricScoreId], references: [id], onDelete: Cascade)
+  rubricAssessment   RubricAssessment @relation(fields: [rubricAssessmentId], references: [id], onDelete: Cascade)
 }
 
-model NumericalRubricScore {
-  id            String      @id @default(cuid())
-  rubricScoreId String      @unique
+model NumericalRubricAssessment {
+  id                 String           @id @default(cuid())
+  rubricAssessmentId String           @unique
   score         Decimal     @db.Decimal(10, 6)
-  rubricScore   RubricScore @relation(fields: [rubricScoreId], references: [id], onDelete: Cascade)
+  rubricAssessment   RubricAssessment @relation(fields: [rubricAssessmentId], references: [id], onDelete: Cascade)
 }

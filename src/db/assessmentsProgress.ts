@@ -9,7 +9,7 @@ async function loadGlobalAssessmentProgressFromDb(): Promise<GlobalAssessmentPro
   cacheTag("assessments");
   cacheLife({ revalidate: 60 });
 
-  const [papers, questions, assessments, rubricScoresCount] = await Promise.all(
+  const [papers, questions, assessments, rubricAssessmentsCount] = await Promise.all(
     [
       prisma.paper.findMany({ select: { id: true } }),
       prisma.question.findMany({
@@ -22,10 +22,10 @@ async function loadGlobalAssessmentProgressFromDb(): Promise<GlobalAssessmentPro
         select: {
           paperId: true,
           questionId: true,
-          _count: { select: { scores: true } },
+          _count: { select: { assessments: true } },
         },
       }),
-      prisma.rubricScore.count(),
+      prisma.rubricAssessment.count(),
     ],
   );
 
@@ -40,7 +40,7 @@ async function loadGlobalAssessmentProgressFromDb(): Promise<GlobalAssessmentPro
     (sum, question) => sum + question._count.rubrics,
     0,
   );
-  const totalExpectedRubricScores = totalPapers * totalRubricsInProject;
+  const totalExpectedRubricAssessments = totalPapers * totalRubricsInProject;
 
   const zeroRubricQuestionCount = questions.filter(
     (question) => question._count.rubrics === 0,
@@ -61,7 +61,7 @@ async function loadGlobalAssessmentProgressFromDb(): Promise<GlobalAssessmentPro
       continue;
     }
 
-    if (assessment._count.scores >= requiredRubricCount) {
+    if (assessment._count.assessments >= requiredRubricCount) {
       completedQuestionAssessmentsByQuestionId.set(
         assessment.questionId,
         (completedQuestionAssessmentsByQuestionId.get(assessment.questionId) ??
@@ -103,8 +103,11 @@ async function loadGlobalAssessmentProgressFromDb(): Promise<GlobalAssessmentPro
       total: totalQuestions,
     },
     rubrics: {
-      completed: Math.min(rubricScoresCount, totalExpectedRubricScores),
-      total: totalExpectedRubricScores,
+      completed: Math.min(
+        rubricAssessmentsCount,
+        totalExpectedRubricAssessments,
+      ),
+      total: totalExpectedRubricAssessments,
     },
   };
 }

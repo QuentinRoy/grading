@@ -17,3 +17,8 @@
 ## Performance
 
 - Avoid successive asynchronous operations that can be run in parallel. For example, if you need to fetch data from multiple APIs, use `Promise.all` to fetch them concurrently instead of awaiting each one sequentially.
+
+## Env variables and scripting
+
+- Project use dotenvx to manage env variables (e.g. for database connection).
+- Most of the time, `package.json` scripts should be preferred over standalone scripts. They usually include the dotenvx setup.

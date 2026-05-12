@@ -55,21 +55,21 @@ export async function loadAssessment(
       question: { id: questionId },
     },
     include: {
-      scores: {
+      assessments: {
         select: {
           rubricId: true,
           type: true,
-          booleanScore: {
+          booleanAssessment: {
             select: {
               passed: true,
             },
           },
-          ordinalScore: {
+          ordinalAssessment: {
             select: {
               selectedLabel: true,
             },
           },
-          numericalScore: {
+          numericalAssessment: {
             select: {
               score: true,
             },
@@ -82,32 +82,32 @@ export async function loadAssessment(
   const result: AssessmentRubricValue[] = [];
   if (assessment == null) return result;
 
-  for (const score of assessment.scores) {
-    if (score.booleanScore != null) {
+  for (const rubricAssessment of assessment.assessments) {
+    if (rubricAssessment.booleanAssessment != null) {
       result.push({
-        rubricId: score.rubricId,
+        rubricId: rubricAssessment.rubricId,
         type: "boolean",
-        passed: score.booleanScore.passed,
+        passed: rubricAssessment.booleanAssessment.passed,
       });
       continue;
     }
 
-    if (score.ordinalScore != null) {
+    if (rubricAssessment.ordinalAssessment != null) {
       result.push({
-        rubricId: score.rubricId,
+        rubricId: rubricAssessment.rubricId,
         type: "ordinal",
-        selectedLabel: score.ordinalScore.selectedLabel,
+        selectedLabel: rubricAssessment.ordinalAssessment.selectedLabel,
       });
       continue;
     }
 
-    if (score.numericalScore != null) {
+    if (rubricAssessment.numericalAssessment != null) {
       const numericScore =
-        typeof score.numericalScore.score === "number"
-          ? score.numericalScore.score
-          : parseFloat(String(score.numericalScore.score));
+        typeof rubricAssessment.numericalAssessment.score === "number"
+          ? rubricAssessment.numericalAssessment.score
+          : parseFloat(String(rubricAssessment.numericalAssessment.score));
       result.push({
-        rubricId: score.rubricId,
+        rubricId: rubricAssessment.rubricId,
         type: "numerical",
         score: numericScore,
       });
@@ -158,7 +158,7 @@ export async function saveAssessment({
     return { success: false, error: "Rubric type mismatch." };
   }
 
-  const rubricScoreType = toDbRubricType(rubricValue.type);
+  const rubricAssessmentType = toDbRubricType(rubricValue.type);
 
   const assessment = await prisma.assessment.upsert({
     where: {
@@ -168,7 +168,7 @@ export async function saveAssessment({
     update: {},
   });
 
-  const rubricScore = await prisma.rubricScore.upsert({
+  const rubricAssessment = await prisma.rubricAssessment.upsert({
     where: {
       assessmentId_rubricId: {
         assessmentId: assessment.id,
@@ -178,28 +178,28 @@ export async function saveAssessment({
     create: {
       assessmentId: assessment.id,
       rubricId,
-      type: rubricScoreType,
+      type: rubricAssessmentType,
     },
     update: {
-      type: rubricScoreType,
+      type: rubricAssessmentType,
     },
   });
 
   if (rubricValue.type === "boolean") {
     await Promise.all([
-      prisma.booleanRubricScore.upsert({
-        where: { rubricScoreId: rubricScore.id },
+      prisma.booleanRubricAssessment.upsert({
+        where: { rubricAssessmentId: rubricAssessment.id },
         create: {
-          rubricScoreId: rubricScore.id,
+          rubricAssessmentId: rubricAssessment.id,
           passed: rubricValue.passed,
         },
         update: { passed: rubricValue.passed },
       }),
-      prisma.ordinalRubricScore.deleteMany({
-        where: { rubricScoreId: rubricScore.id },
+      prisma.ordinalRubricAssessment.deleteMany({
+        where: { rubricAssessmentId: rubricAssessment.id },
       }),
-      prisma.numericalRubricScore.deleteMany({
-        where: { rubricScoreId: rubricScore.id },
+      prisma.numericalRubricAssessment.deleteMany({
+        where: { rubricAssessmentId: rubricAssessment.id },
       }),
     ]);
   } else if (rubricValue.type === "ordinal") {
@@ -211,19 +211,19 @@ export async function saveAssessment({
     }
 
     await Promise.all([
-      prisma.ordinalRubricScore.upsert({
-        where: { rubricScoreId: rubricScore.id },
+      prisma.ordinalRubricAssessment.upsert({
+        where: { rubricAssessmentId: rubricAssessment.id },
         create: {
-          rubricScoreId: rubricScore.id,
+          rubricAssessmentId: rubricAssessment.id,
           selectedLabel: rubricValue.selectedLabel,
         },
         update: { selectedLabel: rubricValue.selectedLabel },
       }),
-      prisma.booleanRubricScore.deleteMany({
-        where: { rubricScoreId: rubricScore.id },
+      prisma.booleanRubricAssessment.deleteMany({
+        where: { rubricAssessmentId: rubricAssessment.id },
       }),
-      prisma.numericalRubricScore.deleteMany({
-        where: { rubricScoreId: rubricScore.id },
+      prisma.numericalRubricAssessment.deleteMany({
+        where: { rubricAssessmentId: rubricAssessment.id },
       }),
     ]);
   } else {
@@ -254,16 +254,16 @@ export async function saveAssessment({
     }
 
     await Promise.all([
-      prisma.numericalRubricScore.upsert({
-        where: { rubricScoreId: rubricScore.id },
-        create: { rubricScoreId: rubricScore.id, score: parsed },
+      prisma.numericalRubricAssessment.upsert({
+        where: { rubricAssessmentId: rubricAssessment.id },
+        create: { rubricAssessmentId: rubricAssessment.id, score: parsed },
         update: { score: parsed },
       }),
-      prisma.booleanRubricScore.deleteMany({
-        where: { rubricScoreId: rubricScore.id },
+      prisma.booleanRubricAssessment.deleteMany({
+        where: { rubricAssessmentId: rubricAssessment.id },
       }),
-      prisma.ordinalRubricScore.deleteMany({
-        where: { rubricScoreId: rubricScore.id },
+      prisma.ordinalRubricAssessment.deleteMany({
+        where: { rubricAssessmentId: rubricAssessment.id },
       }),
     ]);
   }
