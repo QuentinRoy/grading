@@ -8,12 +8,14 @@ Related: `docs/type-audit-report.md`
 
 | Field | Current value |
 | --- | --- |
-| Current phase | Phase 0 — Investigation and decision record |
-| Overall status | Not started |
+| Current phase | Phase 1 — Domain model stabilization |
+| Overall status | Phase 0 completed |
 | Current blocker | None |
-| Open uncertainties | Submission architecture; ordinal export representation; import staging and naming |
-| Last confirmed decisions | Domain-first architecture; `Rubric`/`AssessmentRubricValue` canonical; `switch` + `assertNever`; strict import |
+| Open uncertainties | Submission split naming/details during implementation |
+| Last confirmed decisions | Domain-first architecture; submission concerns should be split; domain `marks` canonical; `switch` + `assertNever`; strict import |
 | Last updated | 2026-05-13 |
+
+
 
 ## Purpose
 
@@ -115,38 +117,120 @@ Resolve open domain questions before changing core architecture.
 
 #### 0.1 Submission model investigation
 
-- [ ] Find every usage of `Submission`.
-- [ ] Find every usage of `SubmissionType`.
-- [ ] Find every usage of `studentName`, `studentId`, and `teamName` in submission-related flows.
-- [ ] Identify whether current `Submission` is acting as domain type, display type, export type, DB projection, or a mix.
-- [ ] Determine whether canonical submission identity is owner-oriented, display-oriented, or needs to be split.
-- [ ] Decide whether to keep one main `Submission` type or split into purposeful domain-facing types.
+- [x] Find every usage of `Submission`.
+- [x] Find every usage of `SubmissionType`.
+- [x] Find every usage of `studentName`, `studentId`, and `teamName` in submission-related flows.
+- [x] Identify whether current `Submission` is acting as domain type, display type, export type, DB projection, or a mix.
+- [x] Determine whether canonical submission identity is owner-oriented, display-oriented, or needs to be split.
+- [x] Decide whether to keep one main `Submission` type or split into purposeful domain-facing types.
+
+
+**Findings so far**
+
+- `Submission` from `src/db/types.ts` is consumed mainly by UI and assessment-session flows, not by DB write logic.
+- `loadSubmissions()` in `src/db/submissions.ts` builds `Submission` as a display-oriented object with `displayLabel`, `memberNames`, and `searchKeys`.
+- For individuals, the current domain shape carries `studentName`, which is presentation-oriented rather than a stable owner identifier.
+- Export code does not use `Submission`; it uses a weaker `SubmissionIdentity` built from DB join output and keyed by `studentId`/`teamName`.
+- DB persistence uses `submission.studentId` / `submission.teamId`, which are ownership fields not represented directly in the current domain `Submission` type.
+
+**Current assessment**
+
+`Submission` is currently a mixed display/domain projection rather than a pure canonical submission identity type. There is strong evidence that submission concerns should likely be split into purposeful types instead of continuing to overload one shape.
+
 
 #### 0.2 Ordinal rubric representation investigation
 
-- [ ] Find every usage of `marksByLabel`.
-- [ ] Determine whether `marksByLabel` is only export-specific or has broader architectural value.
-- [ ] Compare export needs against domain `marks: Record<string, number>`.
+- [x] Find every usage of `marksByLabel`.
+- [x] Determine whether `marksByLabel` is only export-specific or has broader architectural value.
+- [x] Compare export needs against domain `marks: Record<string, number>`.
 - [ ] Decide whether ordinal export planning should adapt at the final edge or keep a distinct internal export shape.
+
+**Findings so far**
+
+- `marksByLabel` appears in the export plan type, the export DB loader, and export tests.
+- No evidence has been found that `marksByLabel` has domain value outside export-specific row generation.
+- The domain rubric type already models ordinal data as `marks: Record<string, number>`, which is semantically equivalent for current export needs.
+- Current usage suggests `marksByLabel` is a local export convenience name rather than a distinct concept.
+
+**Current assessment**
+
+The current evidence suggests `marksByLabel` should probably not remain a separate architectural concept. The likely direction is to use domain `marks` consistently and adapt only where the CSV edge truly requires it.
+
 
 #### 0.3 Import pipeline investigation
 
-- [ ] Trace assessment import from parse to validation to normalization to save.
-- [ ] Identify where broad CSV rows can become validated rows.
-- [ ] Identify where normalization helpers should exist.
-- [ ] Determine whether `ImportedSubmission` and related names still match actual lifecycle semantics.
+- [x] Trace assessment import from parse to validation to normalization to save.
+- [x] Identify where broad CSV rows can become validated rows.
+- [x] Identify where normalization helpers should exist.
+- [x] Determine whether `ImportedSubmission` and related names still match actual lifecycle semantics.
+
+**Findings so far**
+
+- Assessment import currently flows as `parseAssessmentsCsv()` -> `saveAssessments()`.
+- `parseAssessmentsCsv()` returns `Array<Record<string, string>>` with no dedicated assessment-specific validated type.
+- `saveAssessments()` performs header recognition and required-column checks, which is the natural point to transition from broad parsed rows to validated rows.
+- `saveAssessments()` also contains normalization and interpretation logic that could be split into helpers after row validation.
+- `ImportedSubmission` is used by student import grouping/saving, not by assessment import. The name is tolerable but it represents normalized internal import staging data rather than raw external input.
+
+**Current assessment**
+
+Assessment import should move toward at least two stages: broad parsed rows and validated rows. A further normalized helper layer also looks justified. `ImportedSubmission` naming is not currently blocking, but it may deserve reconsideration when import types are cleaned up.
+
 
 ### Phase 0 deliverables
 
-- [ ] Add a short decision summary to this document for submission modeling.
-- [ ] Add a short decision summary to this document for ordinal rubric representation.
-- [ ] Add a short decision summary to this document for import staging.
+- [x] Add a short decision summary to this document for submission modeling.
+- [x] Add a short decision summary to this document for ordinal rubric representation.
+- [x] Add a short decision summary to this document for import staging.
+
+### Phase 0 provisional decision summaries
+
+#### Submission modeling
+
+Provisional direction: split current mixed-purpose submission concerns.
+
+Reasoning:
+
+- current `Submission` is display-oriented in practice
+- export needs a different owner-identity-oriented shape
+- DB persistence uses ownership fields not represented in the current domain-facing shape
+
+Confirmed decision:
+
+- split submission concerns into purposeful types rather than keeping one overloaded `Submission` shape
+
+Implementation note:
+
+- exact naming and final boundaries can still be refined during Phase 1, but the architectural direction is now decided
+
+
+#### Ordinal rubric representation
+
+Provisional direction: treat domain `marks` as canonical and avoid keeping `marksByLabel` as a broader architectural concept unless later implementation reveals a concrete benefit.
+
+Reasoning:
+
+- `marksByLabel` currently appears export-local only
+- domain `marks` already expresses the same semantic information
+
+#### Import staging
+
+Provisional direction: move assessment import toward parsed row -> validated row -> normalization helpers.
+
+Reasoning:
+
+- header validation already exists in `saveAssessments()`
+- downstream logic can become less stringly-typed after that validation boundary
+- this supports the agreed strict-import direction
+
 
 ### Phase 0 exit criteria
 
-- [ ] There is a clear decision on `Submission` architecture direction.
-- [ ] There is a clear decision on ordinal rubric representation strategy.
-- [ ] There is a clear decision on import row staging.
+- [x] There is a clear decision on `Submission` architecture direction.
+- [x] There is a clear decision on ordinal rubric representation strategy.
+- [x] There is a clear decision on import row staging.
+
+
 
 ---
 
@@ -370,19 +454,25 @@ This section should be updated iteratively during execution.
 
 ### Open decisions
 
-- Submission architecture after usage investigation: pending
-- Ordinal export representation strategy: pending
-- Import staging shape and naming: pending
+- Submission split naming/details during implementation: pending
+- Ordinal export representation strategy implementation details: pending if export code reveals a concrete edge-only shape need
+- Import staging naming details: pending
+
+
 
 ### Confirmed decisions
 
 - Domain-first architecture
 - `Rubric` and `AssessmentRubricValue` are canonical unions
+- Submission concerns should be split into purposeful types rather than kept in one overloaded `Submission` shape
+- Domain ordinal `marks` should remain canonical unless implementation reveals a concrete export-only reason to keep a separate edge shape
+- Assessment import should move toward parsed row -> validated row -> normalization helpers
 - Prefer `switch` + `assertNever`
 - No visitor abstraction without a concrete need
 - Strict import behavior
 - Large refactors and renames are acceptable
 - DB changes are allowed if validated safely
+
 
 ### Non-goals unless evidence justifies them
 
