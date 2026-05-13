@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { AssessmentRubricValue } from "@/db/types";
+import type { AssessmentRubricValue, SubmissionSubmitter } from "@/db/types";
 import {
   buildSubmissionExportHeaders,
   buildSubmissionExportRow,
+  getSubmissionExportIdentifier,
   parseExportOptions,
 } from "./submissionExportCsv";
 
@@ -38,7 +39,7 @@ describe("submission CSV ordering", () => {
           id: "r2",
           label: "R2",
           type: "ordinal" as const,
-          marksByLabel: { A: 3, B: 1 },
+          marks: { A: 3, B: 1 },
         },
       ],
     },
@@ -174,22 +175,18 @@ describe("submission CSV ordering", () => {
     expect(row[1]).toBe("Team A");
   });
 
-  it("throws when individual submission has no student id", () => {
-    expect(() =>
-      buildSubmissionExportRow({
-        submission: {
-          id: "sub-ind-1",
-          type: "individual",
-        },
-        questions,
-        options: {
-          includeRubricAssessment: false,
-          includeRubricMarks: false,
-        },
-        valuesByKey: new Map(),
-      }),
-    ).toThrow(
-      "Submission sub-ind-1 has type individual but no student is linked.",
-    );
+  it("requires student id for individual submissions at the type level", () => {
+    type IndividualSubmitter = Extract<
+      SubmissionSubmitter,
+      { type: "individual" }
+    >;
+
+    // @ts-expect-error missing studentId for individual submission
+    const invalidIndividualSubmitter: IndividualSubmitter = {
+      id: "sub-ind-1",
+      type: "individual",
+    };
+
+    expect(invalidIndividualSubmitter).toBeDefined();
   });
 });

@@ -3,20 +3,6 @@ import { cacheLife, cacheTag } from "next/cache";
 import { db } from "./kysely";
 import type { Submission } from "./types";
 
-type SubmissionRow = {
-  id: number;
-  type: "individual" | "team";
-  studentFamilyName: string | null;
-  studentFirstName: string | null;
-  teamName: string | null;
-};
-
-type TeamMemberRow = {
-  submissionId: number;
-  studentFamilyName: string;
-  studentFirstName: string;
-};
-
 function normalizeSearchValue(value: string): string {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
@@ -25,10 +11,7 @@ function formatStudentName(familyName: string, firstName: string): string {
   return `${familyName} ${firstName}`.trim();
 }
 
-async function loadSubmissionsFromDb(): Promise<{
-  submissions: SubmissionRow[];
-  teamMembersBySubmissionId: Map<string, string[]>;
-}> {
+async function loadSubmissionsFromDb() {
   "use cache";
   cacheTag("submissions");
   cacheLife({ revalidate: 60 });
@@ -65,7 +48,11 @@ async function loadSubmissionsFromDb(): Promise<{
 
   const teamMembersBySubmissionId = new Map<string, string[]>();
 
-  for (const row of teamMemberRows as TeamMemberRow[]) {
+  for (const row of teamMemberRows) {
+    if (row.studentFamilyName == null || row.studentFirstName == null) {
+      continue;
+    }
+
     const submissionId = String(row.submissionId);
     const formattedName = formatStudentName(
       row.studentFamilyName,
@@ -80,7 +67,7 @@ async function loadSubmissionsFromDb(): Promise<{
   }
 
   return {
-    submissions: submissions as SubmissionRow[],
+    submissions,
     teamMembersBySubmissionId,
   };
 }
