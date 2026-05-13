@@ -2,27 +2,301 @@
 
 Date: 2026-05-13
 Scope: `app/**`, `src/**` (focus on domain types, import/export boundaries, DB mapping, and UI-facing contracts)
+Related execution plan: `docs/type-system-migration-plan.md`
+
 
 ## Executive Summary
 
-The repository already has a solid foundation with:
+The repo still has a strong type foundation:
 
 - generated DB types from Kysely codegen (`src/db/generated/db.ts`)
-- domain-level discriminated unions (`src/db/types.ts`)
-- runtime validation with Zod for import payloads (`src/import/schemas.ts`)
+- domain-level discriminated unions in `src/db/types.ts`
+- Zod-backed import validation in `src/import/schemas.ts`
 
-The main type-safety gap is not missing types, but overlap and parallel shape definitions that can drift:
+Since the previous report, some of the earlier high-value cleanup opportunities are still present, and the current codebase now makes a few of them easier to confirm concretely:
 
-1. Similar discriminated unions are re-specified in several files (rubrics and rubric assessments).
-2. Export/import boundary types duplicate existing domain types with small structural differences.
-3. Several query row/result shapes are handwritten inline rather than derived from existing types or query outputs.
-4. Some broad types (`Record<string, string>`) weaken guarantees where stronger inferred types are possible.
+1. Export planning types are still parallel to domain rubric types rather than derived from them.
+2. Submission export identity is still a standalone shape instead of being derived from domain submission semantics.
+3. Assessment import rows are still modeled as fully dynamic string maps, even though the importer now validates a known set of required columns.
+4. A UI-local `Question` type still overlaps in name with the domain `Question` type.
+5. The `Submission` union still contains an asymmetric `studentId?: undefined` field on the team branch.
+
+Compared with the previous version of this report, the notable update is that some suspected issues can now be classified more precisely:
+
+- the export layer definitely reconstructs rubric variants in `src/db/submissionExport.ts`
+- the assessment importer already performs runtime header validation, so strengthening the post-validation row type is now a low-risk improvement
+- the earlier concern about broad rubric/assessment duplication across many modules appears less urgent than the export/import boundary duplication that is visible in the current code
 
 ## Findings
 
-## 1) Rubric/Assessment discriminant logic is duplicated across many modules
+## 1) `ExportRubricPlan` still duplicates domain rubric variants
 
 ### Where
+
+- `src/export/submissionExportCsv.ts`
+- `src/db/submissionExport.ts`
+- `src/db/types.ts`
+
+### Current State
+
+`ExportRubricPlan` is still handwritten as a discriminated union with the same variant tags as domain `Rubric`:
+
+- `boolean`
+- `ordinal`
+- `numerical`
+
+The export shape is close to the domain shape, with the main intentional difference being ordinal marks represented as `marksByLabel` instead of `marks`.
+
+### Why it matters
+
+This is still one of the clearest drift points in the codebase:
+
+- if a shared rubric field changes, export types must be updated manually
+- `loadQuestionPlan()` reconstructs every branch locally, which increases maintenance cost
+- variant logic is duplicated across type definitions and data mapping code
+
+### Updated Assessment
+
+This remains a top refactor candidate. The overlap is no longer theoretical; it is directly visible in the export plan type and the DB-to-export projection logic.
+
+### Recommended Direction
+
+Derive export variants from `Rubric` first, then layer on export-only transformations.
+
+Example direction:
+
+- `type ExportRubricBase = Pick<Rubric, "id" | "type"> & { label: string }`
+- boolean and numerical variants can largely be derived via `Extract<Rubric, { type: ... }>`
+- ordinal can be derived with an explicit remap from `marks` to `marksByLabel`
+
+### Priority
+
+High.
+
+---
+
+## 2) `SubmissionIdentity` is still parallel to `Submission`
+
+### Where
+
+- `src/export/submissionExportCsv.ts`
+- `src/db/submissionExport.ts`
+- `src/db/types.ts`
+
+### Current State
+
+`SubmissionIdentity` is still defined as:
+
+- `id`
+- `type`
+- `teamName?: string | null`
+- `studentId?: string | null`
+
+This mirrors submission ownership semantics already encoded in the domain `Submission` union, but in a weaker form.
+
+### Why it matters
+
+The current arrangement pushes invariants into runtime checks in `getSubmissionExportIdentifier()` instead of expressing more of them in the type system.
+
+That is workable, but it means:
+
+- export code uses a looser identity shape than the domain model
+- ownership rules are partially re-expressed rather than reused
+- future submission-model changes can drift from export assumptions
+
+### Updated Assessment
+
+This is still worth addressing, but the best payoff is probably a shared assertion/helper rather than forcing the entire export stream into the exact `Submission` domain type.
+
+### Recommended Direction
+
+A balanced improvement would be:
+
+- derive the base identity fields from domain types where practical
+- keep nullable join fields for streaming rows
+- centralize invariant enforcement in a shared assertion/helper that returns a narrowed validated identity
+
+### Priority
+
+Medium-high.
+
+---
+
+## 3) `ImportedAssessmentRow` is still too broad, but now the runtime validation path is clearer
+
+### Where
+
+- `src/import/types.ts`
+- `src/import/saveAssessments.ts`
+
+### Current State
+
+`ImportedAssessmentRow` is still:
+
+- `Record<string, string>`
+
+At the same time, `saveAssessments()` clearly depends on known required columns:
+
+- `submission_type`
+- `submitter`
+- optionally recognized rubric/question-derived columns
+- `grand_total_marks`
+
+It also validates header columns up front against a recognized column set.
+
+### Why it matters
+
+Because header validation already exists, the current broad row type is now more obviously wider than necessary.
+
+This weakens compile-time help in the most important importer path:
+
+- required columns are not reflected in the type
+- downstream indexing stays stringly-typed
+- typo resistance is lower than it needs to be after validation has already succeeded
+
+### Updated Assessment
+
+This is now a lower-risk improvement than before. The runtime guardrails are already there, so the type system can safely tighten around the validated state.
+
+### Recommended Direction
+
+Split the notion of row shape into two phases:
+
+- raw parsed CSV row: still broad
+- validated assessment row: stronger type used after header checks
+
+A pragmatic next step would be something like:
+
+- known required columns plus `Record<string, string>`
+- optionally a dedicated `ValidatedAssessmentRow` alias returned after header validation
+
+### Priority
+
+High.
+
+---
+
+## 4) UI-local `Question` still collides with domain `Question`
+
+### Where
+
+- `src/questions/QuestionList.tsx`
+- `src/db/types.ts`
+
+### Current State
+
+`src/questions/QuestionList.tsx` still defines a local type named `Question` with fields:
+
+- `id`
+- `label`
+- `href`
+
+This is distinct from the domain `Question` type, which contains rubric and solution data.
+
+### Why it matters
+
+This is a naming-only problem, but it still creates friction:
+
+- imports are more mentally expensive
+- code review requires extra context to know which `Question` is meant
+- the UI type is really a navigation/view-model item, not a domain question
+
+### Updated Assessment
+
+Still a small but worthwhile cleanup.
+
+### Recommended Direction
+
+Rename it to something purpose-specific such as:
+
+- `QuestionListItem`
+- `QuestionNavItem`
+
+### Priority
+
+Low, but easy.
+
+---
+
+## 5) `Submission` still has an asymmetric team-branch field
+
+### Where
+
+- `src/db/types.ts`
+
+### Current State
+
+`Submission` is still defined with:
+
+- individual branch: `studentName: string; teamName?: undefined`
+- team branch: `studentId?: undefined; teamName: string`
+
+The team variant uses `studentId?: undefined`, even though the individual variant uses `studentName`, not `studentId`.
+
+### Why it matters
+
+This looks inconsistent and may represent either:
+
+- a typo left over from an earlier shape
+- an intentional exclusion field that no longer matches the actual branch structure
+
+Either way, it makes the union harder to reason about.
+
+### Updated Assessment
+
+This still looks suspicious and should be confirmed. It is not necessarily causing active breakage, but it is a real clarity issue in a foundational domain type.
+
+### Recommended Direction
+
+Confirm intended semantics, then either:
+
+- remove the field if it is accidental, or
+- redesign the branches so they exclude the correct counterpart fields consistently
+
+### Priority
+
+Medium.
+
+---
+
+## 6) Query/result mapping is still manually shaped in export and import paths
+
+### Where
+
+- `src/db/submissionExport.ts`
+- `src/import/saveAssessments.ts`
+
+### Current State
+
+The current code still defines and builds several intermediate data shapes manually:
+
+- `rubricsByKey` value objects in the importer
+- export question/rubric plans in `loadQuestionPlan()`
+- streaming submission state reconstructed from joined rows
+
+### Why it matters
+
+These are not necessarily wrong, but they are places where selected columns and local types can diverge over time.
+
+### Updated Assessment
+
+This remains a valid architectural observation, but it is less urgent than the concrete boundary issues above. The code is understandable today; the main opportunity is reducing long-term drift and making helper return types more reusable.
+
+### Recommended Direction
+
+Prefer deriving intermediate types from helper return values or extracting typed loader helpers where the same shapes are reused.
+
+### Priority
+
+Medium-low.
+
+---
+
+## 7) Earlier rubric/assessment duplication concern should be re-prioritized
+
+### Where
+
+Previously suspected across:
 
 - `src/db/types.ts`
 - `src/assessment/assessment.ts`
@@ -32,249 +306,32 @@ The main type-safety gap is not missing types, but overlap and parallel shape de
 - `src/export/submissionExportCsv.ts`
 - `src/import/saveAssessments.ts`
 
-### Overlap Pattern
+### Updated Assessment
 
-The same `type` discriminant branches (`"boolean" | "ordinal" | "numerical"`) and field mapping are repeated with local reconstruction of objects.
+After checking the current code surfaced by this audit pass, the strongest confirmed duplication is not a broad cross-repo repetition of shared discriminant utility types, but rather these narrower boundary issues:
 
-### Risk
+- export plan duplication
+- submission identity duplication
+- broad import row typing
 
-- behavioral drift when one branch changes and others are not updated
-- impossible states accepted at compile-time in one path but rejected in another
-- more `as const`/manual narrowing than needed
+That means the previous recommendation to prioritize a new shared `src/types/rubric.ts` utility module is still reasonable, but it should no longer be treated as obviously the first thing to do unless a wider search confirms repeated discriminant helpers are actively causing friction.
 
-### Better Leverage
+### Priority
 
-Define and reuse shared derivations in one place, for example:
+Revised from very high to medium.
 
-- `RubricOf<T extends RubricType> = Extract<Rubric, { type: T }>`
-- `AssessmentOf<T extends RubricType> = Extract<AssessmentRubricValue, { type: T }>`
-- `AssessmentInputOf<T> = Omit<AssessmentOf<T>, "rubricId">`
+## Updated Prioritized Refactor Plan
 
-Then use these aliases everywhere branching logic is implemented.
+1. Tighten assessment import typing in `src/import/saveAssessments.ts` by introducing a validated row type after header checks.
+2. Refactor `ExportRubricPlan` in `src/export/submissionExportCsv.ts` to derive as much as possible from domain `Rubric`.
+3. Add a shared submission export assertion/helper so export identity invariants are expressed once.
+4. Confirm and clean the `Submission` union field inconsistency in `src/db/types.ts`.
+5. Rename the UI-local `Question` type in `src/questions/QuestionList.tsx`.
+6. Optionally revisit shared rubric discriminant utility aliases if broader duplication is confirmed in a deeper pass.
 
-### Options
+## Suggested Type Utilities
 
-- Option A (low effort): add shared aliases only, no runtime logic change.
-- Option B (medium): also extract reusable constructors/parsers for rubric-assessment values.
-- Option C (high): centralize rubric-type dispatch through a typed visitor/helper to eliminate repeated `if (type === ...)` trees.
-
-## 2) `ExportRubricPlan` and `ExportQuestionPlan` overlap strongly with domain `Rubric`/`Question`
-
-### Where
-
-- `src/export/submissionExportCsv.ts`
-- `src/db/submissionExport.ts`
-- `src/db/types.ts`
-
-### Overlap Pattern
-
-`ExportRubricPlan` mirrors `Rubric` variants with a small transformation (`ordinal` uses `marksByLabel` instead of `marks`).
-
-### Risk
-
-When domain rubric fields evolve, export plans can lag behind silently.
-
-### Better Leverage
-
-Use derivation from domain types first, then add only export-specific deltas. Example strategy:
-
-- `BaseExportRubric = Pick<Rubric, "id" | "type"> & { label: string }`
-- `ExportRubricPlan` variants derived from `Extract<Rubric, { type: ... }>`
-
-For ordinal, use explicit mapped transform type instead of redefining all fields.
-
-### Options
-
-- Option A: derive only `id`/`type`/shared fields from `Rubric`.
-- Option B: derive full per-variant plan types from `Extract<Rubric, ...>` and remap ordinal marks type.
-- Option C: return domain `Rubric` from DB loader and perform an isolated projection function near CSV serialization.
-
-## 3) Submission identity types are duplicated and could be derived
-
-### Where
-
-- `src/db/types.ts` (`Submission`)
-- `src/export/submissionExportCsv.ts` (`SubmissionIdentity`)
-- `src/db/submissionExport.ts` (stream local fields)
-
-### Overlap Pattern
-
-`SubmissionIdentity` repeats a subset of `SubmissionType`-based union semantics while adding nullable DB join fields.
-
-### Risk
-
-Invariants can diverge (team/student requirements, display id logic).
-
-### Better Leverage
-
-Derive `SubmissionIdentity` from `Submission` plus export-specific nullable fields:
-
-- `type SubmissionIdentity = Pick<Submission, "id" | "type"> & { teamName?: string | null; studentId?: string | null }`
-
-And move invariant checks to a shared type-guard/assert helper used by both export modules.
-
-### Options
-
-- Option A: shared `assertSubmissionIdentity` helper only.
-- Option B: derive type + shared helper.
-- Option C: introduce branded validated identity type returned only by the assertion function.
-
-## 4) Import schema output and import domain types partially duplicate each other
-
-### Where
-
-- `src/import/schemas.ts`
-- `src/import/types.ts`
-
-### Overlap Pattern
-
-`ImportedRubric`, `ImportedQuestion`, and `ImportedStudent` are mostly derived correctly from Zod outputs, but `ImportedSubmission` is handwritten and conceptually overlaps submission domain modeling.
-
-### Risk
-
-Import shapes and downstream expectations can drift if one side changes.
-
-### Better Leverage
-
-- Keep schema as source of truth where possible.
-- Introduce explicit mapping layer types:
-  - `Imported*` (raw validated external shape)
-  - `Normalized*` (internal domain-ready shape)
-
-If `ImportedSubmission` is not directly parsed from input, rename it to `NormalizedSubmissionImport` to make lifecycle explicit.
-
-### Options
-
-- Option A: naming clarification + comments.
-- Option B: add dedicated normalized types and mapper functions.
-- Option C: expand schema coverage so more types are inferred end-to-end.
-
-## 5) `ImportedAssessmentRow = Record<string, string>` is too broad
-
-### Where
-
-- `src/import/types.ts`
-- `src/import/parseAssessments.ts`
-- `src/import/saveAssessments.ts`
-
-### Overlap Pattern
-
-Assessment CSV rows are unbounded maps, while downstream logic assumes required keys and known conventions.
-
-### Risk
-
-- misspelled/missing columns only fail late at runtime
-- no compile-time guidance around required keys (`submission_type`, `submitter`)
-
-### Better Leverage
-
-Use a minimally structured intersection type:
-
-- required known columns + dynamic rubric columns
-- e.g. `{ submission_type: string; submitter: string; grand_total_marks?: string } & Record<string, string>`
-
-Then parse/normalize once and operate on a stronger type.
-
-### Options
-
-- Option A: add a stricter type alias for post-validation rows.
-- Option B: add a parser that returns a discriminated result (`ok`/`error`) with typed successful rows.
-- Option C: model rubric columns explicitly via template-literal keys (e.g. `${questionId}:${rubricId}`) after header analysis.
-
-## 6) Inline query row types are repeated and partially inferred manually
-
-### Where
-
-- `src/db/questions.ts` (`QuestionRow` and nested shapes)
-- `src/db/submissionExport.ts` (streaming row local fields)
-- `src/import/saveAssessments.ts` (`rubricsByKey` value shape)
-
-### Overlap Pattern
-
-Intermediate result shapes are manually defined next to query logic, often re-encoding domain relationships.
-
-### Risk
-
-- accidental mismatch between selected columns and local row types
-- fragile maintenance when query columns evolve
-
-### Better Leverage
-
-Prefer derivation from query results when practical:
-
-- `type Row = Awaited<ReturnType<typeof fn>>[number]` for helper loaders
-- central helper return types for repeated loading patterns
-
-### Options
-
-- Option A: derive local types from helper return values.
-- Option B: split complex query+mapping into typed helper modules with exported row/result aliases.
-- Option C: use Kysely selection helpers/builders consistently to avoid manual row contracts.
-
-## 7) UI-local `Question` type overlaps with domain naming
-
-### Where
-
-- `src/questions/QuestionList.tsx`
-- `src/db/types.ts`
-
-### Overlap Pattern
-
-A UI navigation item is called `Question`, while domain `Question` has rubric payloads.
-
-### Risk
-
-Naming collision causes import ambiguity and cognitive load.
-
-### Better Leverage
-
-Rename UI type to purpose-specific alias (`QuestionListItem` or `QuestionNavItem`) and derive from props where possible.
-
-### Options
-
-- Option A: rename local type only.
-- Option B: export reusable UI DTO from a dedicated view-model module.
-
-## 8) Potential inconsistency in `Submission` union fields
-
-### Where
-
-- `src/db/types.ts`
-
-### Overlap Pattern
-
-`Submission` union includes:
-
-- individual variant with `studentName`
-- team variant with `teamName`
-- team variant currently carries `studentId?: undefined` (which is unusual for this shape)
-
-### Risk
-
-This appears to be either a typo or dead field and may confuse consumers.
-
-### Better Leverage
-
-Cleanly separate display-oriented submission domain type from DB identity fields, or ensure variant-only optional fields are intentional and symmetric.
-
-### Options
-
-- Option A: remove unintended optional field.
-- Option B: model two explicit types (`SubmissionIdentity`, `SubmissionDisplay`) and compose.
-
-## Prioritized Refactor Plan
-
-1. Create `src/types/rubric.ts` (or similar) with shared discriminant derivations:
-   - `RubricOf<T>`
-   - `AssessmentOf<T>`
-   - helper mapped types for inputs/outputs
-2. Refactor export plan types in `src/export/submissionExportCsv.ts` to derive from `Rubric` via `Extract` and `Pick`.
-3. Tighten assessment import row typing after header validation in `src/import/saveAssessments.ts`.
-4. Reduce manual row typing by deriving from helper return signatures in `src/db/questions.ts` and `src/db/submissionExport.ts`.
-5. Rename UI-local `Question` in `src/questions/QuestionList.tsx`.
-6. Confirm and clean `Submission` union field consistency in `src/db/types.ts`.
-
-## Suggested Type Utilities (Reusable)
+These are still useful, but they should now be framed as optional enablers rather than assumed immediate requirements:
 
 ```ts
 export type RubricOf<T extends RubricType> = Extract<Rubric, { type: T }>;
@@ -294,10 +351,10 @@ export type WithRequired<T, K extends keyof T> = T & {
 
 ## Rationale Summary
 
-Deriving types from a single source of truth reduces drift, improves discriminant narrowing reliability, and makes schema/domain/export boundaries explicit. In this codebase, the biggest gains will come from consolidating rubric-related variant logic and tightening CSV/import boundary contracts rather than introducing more new standalone types.
+The biggest current type-system opportunities are at import/export boundaries, not in the core existence of domain models. The repo already has good domain unions; the next gains come from deriving boundary types from those unions more consistently and from making post-validation importer code operate on stronger row contracts.
 
 ## Implementation Strategy Matrix
 
-- Conservative (lowest risk): alias extraction + naming cleanup + stricter import row type after runtime validation.
-- Balanced (recommended): conservative steps + refactor export plan to derived types + shared submission assertion helper.
-- Aggressive (highest payoff): balanced steps + central typed rubric dispatch abstraction + broader query-row type derivation via helper layers.
+- Conservative: tighten validated assessment row typing, rename UI-local `Question`, and confirm `Submission` branch consistency.
+- Balanced (recommended): conservative steps + derive `ExportRubricPlan` from `Rubric` where practical + add a shared submission identity assertion helper.
+- Aggressive: balanced steps + broader extraction of rubric/assessment discriminant utility types after a deeper repo-wide pass confirms enough duplication to justify centralization.
