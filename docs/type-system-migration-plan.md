@@ -8,11 +8,11 @@ Related: `docs/type-audit-report.md`
 
 | Field | Current value |
 | --- | --- |
-| Current phase | Phase 5 — Naming and local type cleanup |
-| Overall status | Phase 4 completed |
+| Current phase | Phase 6 — Consistency pass and docs refresh |
+| Overall status | Phase 5 completed |
 | Current blocker | None |
-| Open uncertainties | Potential follow-up alias cleanup outside import module |
-| Last confirmed decisions | Domain-first architecture; export boundary derives from domain types; assessment CSV rows parse through Zod; import normalization helpers extracted; `SubmissionSubmitter` adopted in export path; domain `marks` canonical in export; `switch` + `assertNever`; strict import |
+| Open uncertainties | Final docs synchronization scope (`type-audit-report` refresh detail level) |
+| Last confirmed decisions | Domain-first architecture; export/import boundaries now derive from validated domain-oriented types; assessment CSV rows parse through Zod; import normalization helpers extracted; `SubmissionSubmitter` adopted in export path; domain `marks` canonical in export; `switch` + `assertNever`; strict import |
 | Last updated | 2026-05-13 16:30 |
 
 
@@ -472,13 +472,17 @@ Remove ambiguous local names and low-value overlap.
 
 ### Checklist
 
-- [ ] Rename UI-local `Question` in `src/questions/QuestionList.tsx` to a purpose-specific name.
-- [ ] Rename any other local DTO types whose names collide with domain concepts.
-- [ ] Remove stale type aliases made obsolete by the migration.
+- [x] Rename UI-local `Question` in `src/questions/QuestionList.tsx` to a purpose-specific name.
+- [x] Rename any other local DTO types whose names collide with domain concepts. (No additional collisions found in this pass.)
+- [x] Remove stale type aliases made obsolete by the migration. (Import-side aliases already cleaned in Phase 4.)
+
+**Phase 5 progress update**
+
+- Renamed local `Question` to `QuestionListItem` in `src/questions/QuestionList.tsx` to avoid collision with domain `Question` in `src/db/types.ts`.
 
 ### Phase 5 exit criteria
 
-- [ ] Local UI and boundary types no longer create obvious naming confusion.
+- [x] Local UI and boundary types no longer create obvious naming confusion.
 
 ---
 
@@ -532,7 +536,7 @@ This section should be updated iteratively during execution.
 ### Open decisions
 
 - Whether to keep `ExportRubricPlan` as a dedicated export type or to move toward direct `Rubric` usage closer to row serialization in a later pass: deferred
-- Potential follow-up alias cleanup outside import module: pending
+- Final docs synchronization scope (`type-audit-report` update depth): pending
 
 
 
@@ -554,6 +558,7 @@ This section should be updated iteratively during execution.
 - Export CSV helpers now consume `SubmissionSubmitter` directly (without `SubmissionIdentity` alias)
 - Phase 3 export boundary refactor completed with CSV behavior validated
 - Assessment import rows now parse through Zod on the server with extracted normalization helpers in `saveAssessments(...)`
+- UI-local `Question` naming collision removed via `QuestionListItem` in `src/questions/QuestionList.tsx`
 - Prefer `switch` + `assertNever`
 - Avoid `as` when possible; do not use `any`
 - No visitor abstraction without a concrete need
