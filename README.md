@@ -1,175 +1,196 @@
 # Grading
 
+A Next.js app for rubric-based assessment workflows:
+
+- Import questions, students, and assessment values.
+- Grade submissions by submission or by question.
+- Export assessment data as CSV.
+- Track overall grading progress.
+
+## Tech Stack
+
+- Next.js 16 (App Router) + React 19
+- Material UI
+- PostgreSQL
+- Kysely (query + migrations)
+- Vitest + Testcontainers
+- Biome (format/lint)
+
 ## Prerequisites
 
-- Node.js and pnpm
-- Docker (for local Postgres)
+- Node.js 22+
+- pnpm 11+
+- Docker (for local PostgreSQL and containerized tests)
 
-## Setup
+## Quick Start
 
-1. Install dependencies:
+1. Install dependencies.
 
 ```bash
 pnpm install
 ```
 
-2. Create environment variables in `.env`:
+2. Create `.env` at the repository root.
 
 ```bash
 POSTGRES_USER=grading
 POSTGRES_PASSWORD=grading_dev_password
 POSTGRES_DB=grading
 POSTGRES_PORT=5432
-DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public
+DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}
 ```
 
-3. Start Postgres:
+3. Start PostgreSQL.
 
 ```bash
 pnpm db:up
 ```
 
-4. Apply migrations:
+4. Run database migrations.
 
 ```bash
-pnpm prisma:migrate:dev -- --name init
+pnpm db:migrate:up
 ```
 
-5. Generate Prisma client:
-
-```bash
-pnpm prisma:generate
-```
-
-6. Start the app:
+5. Start the app.
 
 ```bash
 pnpm dev
 ```
 
-Stop Postgres when done:
+6. Open http://localhost:3000.
+
+When finished:
 
 ```bash
 pnpm db:down
 ```
 
-## Useful Commands
+## Development Commands
 
-Validate Prisma schema:
+### App and UI
 
 ```bash
-pnpm prisma:validate
+pnpm dev
+pnpm build
+pnpm start
+pnpm storybook
+pnpm storybook:build
 ```
 
-Open Prisma Studio:
+### Quality
 
 ```bash
-pnpm prisma:studio
+pnpm check --fix
+pnpm check-types
+pnpm test
+pnpm test:watch
 ```
 
-View DB logs:
+### Database
 
 ```bash
+pnpm db:up
+pnpm db:down
 pnpm db:logs
+
+pnpm db:migrate:status
+pnpm db:migrate:up
+pnpm db:migrate:down
+
+pnpm db:types:generate
 ```
 
 ## App Workflow
 
-1. Open the import page in the app.
-2. Paste/upload Questions YAML and Students CSV.
-3. Submit import.
-4. Grade papers from the grading pages.
+1. Open the home page at `/`.
+2. Use **Import** to load Questions, Students, and optionally Assessments.
+3. Open `/assessments` to grade by submission or by question.
+4. Use **Export CSV** from the home page to download assessment data.
 
-## Import Data Formats
-
-The import page expects two inputs:
-
-1. Questions YAML
-2. Students CSV
+## Import Formats
 
 ### Questions YAML
 
-Top-level shape:
-
 ```yaml
 questions:
-  - id: question-1
-    label: "Optional question label"
+  - id: q1
+    label: Question 1
     rubrics:
-      - id: correct-answer
+      - id: r1
         type: boolean
-        description: "Optional description"
-        label: "Optional display label"
+        label: Correctness
         marks: 2
 
-      - id: performance
+      - id: r2
         type: ordinal
+        label: Quality
         marks:
-          bad: 0
-          medium: 2
-          good: 4
+          poor: 0
+          good: 1
+          excellent: 2
 
-      - id: numerical-score
+      - id: r3
         type: numerical
+        label: Score
         minScore: 0
-        maxScore: 1
+        maxScore: 10
         minMarks: 0
-        maxMarks: 6
+        maxMarks: 5
 ```
 
-Validation rules:
+Rules:
 
-- `questions` must be an array.
-- Question `id` is required and must be non-empty.
-- Question `label` is optional; if provided it must be non-empty.
-- Question ids must be unique.
-- Each question must contain a `rubrics` array.
-- Rubric ids must be unique within the same question.
-- Rubric `description` and `label` are optional; if provided they must be non-empty.
-
-Boolean rubric:
-
-- `type` must be `boolean`.
-- `marks` is required and must be a number >= 0.
-
-Ordinal rubric:
-
-- `type` must be `ordinal`.
-- `marks` is required and must be a map of `label -> number`.
-- Mark labels must be non-empty.
-- All mark values must be numbers >= 0.
-- At least 2 entries are required in ordinal `marks`.
-
-Numerical rubric:
-
-- `type` must be `numerical`.
-- `minMarks` and `maxMarks` are optional individually, but at least one must be provided.
-- If `minMarks` is omitted, it defaults to `0` and `maxMarks` must be > `0`.
-- If `maxMarks` is omitted, it defaults to `0` and `minMarks` must be < `0`.
-- After defaults, `minMarks <= maxMarks`.
-- `minScore` defaults to `0` when omitted.
-- `maxScore` defaults to `1` when omitted.
-- If `minScore` is provided, `maxScore` must also be provided.
-- `maxScore` can be provided without `minScore` (`minScore` then defaults to `0`).
-- After defaults, `minScore < maxScore`.
+- `questions` is required and must contain unique question ids.
+- Each question requires `id` and `rubrics`.
+- Rubric ids must be unique within each question.
+- Boolean rubric: `marks` must be a non-negative number.
+- Ordinal rubric: `marks` must contain at least 2 label/value pairs with non-negative numbers.
+- Numerical rubric:
+  - `minMarks` or `maxMarks` must be provided.
+  - `minScore` defaults to `0`, `maxScore` defaults to `1`.
+  - Final values must satisfy `minMarks <= maxMarks` and `minScore < maxScore`.
 
 ### Students CSV
 
-Header and sample rows:
-
 ```csv
 family_name,first_name,id,team
-Smith,Alice,s1001,
-Johnson,Bob,s1002,
-Williams,Carol,s1003,group-a
-Davis,Dan,s1004,group-a
+Doe,John,john_doe,
+Smith,Jane,jane_smith,
+Johnson,Bob,bob_johnson,Team A
 ```
 
-Validation rules:
+Rules:
 
 - Required columns: `family_name`, `first_name`, `id`.
 - Optional column: `team`.
-- `family_name`, `first_name`, and `id` must be non-empty.
-- Blank `team` values are treated as missing.
-- Rows with the same `team` are grouped into the same paper.
-- Rows without `team` are grouped as one paper per student id.
+- Empty `team` means individual submission.
+- Same `team` groups students into one team submission.
+
+### Assessments CSV
+
+```csv
+submission_type,submitter,q1:r1,q2:r2
+individual,jane_smith,,
+individual,john_doe,true,good
+team,Team A,false,excellent
+```
+
+Rules:
+
+- Required columns: `submission_type`, `submitter`.
+- `submission_type` must be `individual` or `team`.
+- Assessment columns use `questionId:rubricId`.
+- Values by rubric type:
+  - boolean: `true` or `false`
+  - ordinal: one of the rubric labels
+  - numerical: numeric score
+- Empty assessment cells are ignored.
+- Unknown columns are rejected.
+- Missing submissions are skipped.
+- Export-only columns like question totals, `:marks`, and `grand_total_marks` are allowed and ignored on import.
+
+## Notes
+
+- Environment variables are loaded through dotenvx in package scripts.
+- Db migrations are handled by Kysely in `src/db/migrate.ts`.
