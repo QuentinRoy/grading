@@ -72,10 +72,15 @@ function parseAssessmentValue(params: {
 
   switch (rubricInfo.type) {
     case "boolean": {
+      const normalizedValue = value.toLowerCase();
+      if (normalizedValue !== "true" && normalizedValue !== "false") {
+        throw new Error(`Invalid boolean value "${value}"`);
+      }
+
       return {
         rubricId: rubricInfo.id,
         type: "boolean",
-        passed: value.toLowerCase() === "true",
+        passed: normalizedValue === "true",
       };
     }
     case "ordinal": {
@@ -117,28 +122,29 @@ export async function saveAssessments(
 ): Promise<{
   assessmentCount: number;
 }> {
-  const rubrics = await db
-    .selectFrom("rubric")
-    .innerJoin("question", "question.id", "rubric.questionId")
-    .leftJoin("booleanRubric", "booleanRubric.rubricId", "rubric.id")
-    .leftJoin("ordinalRubric", "ordinalRubric.rubricId", "rubric.id")
-    .leftJoin(
-      "ordinalRubricValue",
-      "ordinalRubricValue.ordinalRubricId",
-      "ordinalRubric.id",
-    )
-    .leftJoin("numericalRubric", "numericalRubric.rubricId", "rubric.id")
-    .select([
-      "rubric.id",
-      "rubric.type",
-      "rubric.questionId",
-      "question.id as questionId",
-      "booleanRubric.marks",
-      "ordinalRubricValue.label",
-      "numericalRubric.minScore",
-      "numericalRubric.maxScore",
-    ])
-    .execute();
+  const [rubrics, questions] = await Promise.all([
+    db
+      .selectFrom("rubric")
+      .leftJoin("booleanRubric", "booleanRubric.rubricId", "rubric.id")
+      .leftJoin("ordinalRubric", "ordinalRubric.rubricId", "rubric.id")
+      .leftJoin(
+        "ordinalRubricValue",
+        "ordinalRubricValue.ordinalRubricId",
+        "ordinalRubric.id",
+      )
+      .leftJoin("numericalRubric", "numericalRubric.rubricId", "rubric.id")
+      .select([
+        "rubric.id",
+        "rubric.type",
+        "rubric.questionId",
+        "booleanRubric.marks",
+        "ordinalRubricValue.label",
+        "numericalRubric.minScore",
+        "numericalRubric.maxScore",
+      ])
+      .execute(),
+    db.selectFrom("question").select("id").execute(),
+  ]);
 
   const rubricsByKey = new Map<string, ImportedRubricInfo>();
 
@@ -173,11 +179,10 @@ export async function saveAssessments(
   for (const [key] of rubricsByKey) {
     recognizedColumns.add(key);
     recognizedColumns.add(`${key}:marks`);
-    const [questionId] = key.split(":");
-    if (questionId == null || questionId.length === 0) {
-      throw new Error(`Invalid rubric key: "${key}"`);
-    }
-    recognizedColumns.add(questionId);
+  }
+
+  for (const question of questions) {
+    recognizedColumns.add(question.id);
   }
 
   assertRecognizedAssessmentColumns({

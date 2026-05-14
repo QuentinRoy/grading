@@ -181,6 +181,7 @@ Rules:
 - Required columns: `submission_type`, `submitter`.
 - `submission_type` must be `individual` or `team`.
 - Assessment columns use `questionId:rubricId`.
+- For export/import round-trip, export must include rubric assessment columns (`questionId:rubricId`). Marks-only exports (`questionId:rubricId:marks`) do not contain importable assessment values.
 - Values by rubric type:
   - boolean: `true` or `false`
   - ordinal: one of the rubric labels

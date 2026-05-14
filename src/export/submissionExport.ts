@@ -346,7 +346,9 @@ export async function createSubmissionExport(options: ExportOptions): Promise<{
           rubrics: question.rubrics.map((rubric) =>
             attachAssessment(
               rubric,
-              currentValuesByKey.get(buildAssessmentKey(question.id, rubric.id)),
+              currentValuesByKey.get(
+                buildAssessmentKey(question.id, rubric.id),
+              ),
             ),
           ),
         }),

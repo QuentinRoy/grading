@@ -38,9 +38,11 @@ export default function AssessmentsImportForm({
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
             Assessment columns use the format <code>questionId:rubricId</code>.
-            Values depend on rubric type: boolean uses <code>true</code>/
-            <code>false</code>, ordinal uses a label value, and numerical uses a
-            numeric score.
+            For export/import round-trip, the exported CSV must include these
+            assessment columns; marks-only columns are not importable assessment
+            values. Values depend on rubric type: boolean uses <code>true</code>
+            /<code>false</code>, ordinal uses a label value, and numerical uses
+            a numeric score.
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
             Empty assessment cells are ignored. Missing submissions are silently
