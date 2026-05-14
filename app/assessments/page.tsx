@@ -46,10 +46,7 @@ async function AssessmentPageContent() {
             key={submission.id}
             href={`/assessments/submissions/${submission.id}`}
           >
-            <ListItemText
-              primary={getSubmissionLabel(submission)}
-              secondary={submission.id}
-            />
+            <ListItemText primary={getSubmissionLabel(submission)} />
           </ListItemButton>
         ))}
       </List>
