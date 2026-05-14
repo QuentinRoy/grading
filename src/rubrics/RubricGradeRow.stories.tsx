@@ -68,6 +68,34 @@ export const BooleanPending: Story = {
   },
 };
 
+export const BooleanZeroMaxUnset: Story = {
+  args: {
+    rubric: {
+      id: "r1",
+      type: "boolean",
+      marks: 0,
+      falseMarks: -1,
+      label: "Penalty only",
+      description: "No marks for passing; penalty for failing. Shows (?/-1).",
+      assessment: null,
+    },
+  },
+};
+
+export const BooleanZeroMaxGraded: Story = {
+  args: {
+    rubric: {
+      id: "r1",
+      type: "boolean",
+      marks: 0,
+      falseMarks: -1,
+      label: "Penalty only",
+      description: "No marks for passing; penalty for failing. Shows (0/-1).",
+      assessment: { passed: true },
+    },
+  },
+};
+
 export const NumericalUnset: Story = {
   args: {
     rubric: {

@@ -37,6 +37,19 @@ export function getRubricMaxMarks(rubric: Rubric): number {
   }
 }
 
+export function getRubricMinMarks(rubric: Rubric): number {
+  switch (rubric.type) {
+    case "boolean":
+      return Math.min(rubric.marks, rubric.falseMarks);
+    case "ordinal":
+      return Math.min(0, ...Object.values(rubric.marks));
+    case "numerical":
+      return rubric.minMarks;
+    default:
+      assertNever(rubric);
+  }
+}
+
 export function markNumericalRubric(
   rubric: Extract<Rubric, { type: "numerical" }>,
   score: number,

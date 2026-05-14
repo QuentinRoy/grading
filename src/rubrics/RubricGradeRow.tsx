@@ -11,7 +11,9 @@ import NumericalGradeControl from "./NumericalGradeControl";
 import OrdinalGradeControl from "./OrdinalGradeControl";
 import {
   type AssessedRubric,
-  getRubricMaxMarks as computeMarks,
+  getRubricMaxMarks,
+  getRubricMinMarks,
+  markRubric,
 } from "./rubric";
 
 type RubricGradeRowProps = {
@@ -29,7 +31,9 @@ export default function RubricGradeRow({
 }: RubricGradeRowProps): ReactElement {
   const { description, assessment, id, label, type } = rubric;
   const displayLabel = label ?? id;
-  const rubricMarks = computeMarks(rubric);
+  const maxMarks = getRubricMaxMarks(rubric);
+  const rubricBound = maxMarks === 0 ? getRubricMinMarks(rubric) : maxMarks;
+  const currentMarks = assessment != null ? markRubric(rubric) : null;
 
   let control: ReactElement;
 
@@ -109,7 +113,10 @@ export default function RubricGradeRow({
         </Box>
       </Grid>
       <Grid size={{ xs: 12, sm: 1 }}>
-        <Typography variant="body2">({rubricMarks})</Typography>
+        <Typography variant="body2">
+          ({currentMarks != null ? currentMarks : "?"}&nbsp;/&nbsp;{rubricBound}
+          )
+        </Typography>
       </Grid>
     </>
   );
