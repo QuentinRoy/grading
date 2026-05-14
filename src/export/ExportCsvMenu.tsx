@@ -60,8 +60,8 @@ export default function ExportCsvMenu(): ReactElement {
 
     const query = searchParams.toString();
     return query.length > 0
-      ? `/assessments/submissions/export?${query}`
-      : "/assessments/submissions/export";
+      ? `/export/submissions?${query}`
+      : "/export/submissions";
   }, [options]);
 
   const handleOpen = (event: MouseEvent<HTMLButtonElement>) => {
