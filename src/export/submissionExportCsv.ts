@@ -172,13 +172,19 @@ export function buildSubmissionExportRow(params: {
   ];
 
   let grandTotalMarks = 0;
+  let hasMissingAssessment = false;
 
   for (const question of questions) {
     let questionTotalMarks = 0;
+    let isQuestionFullyAssessed = true;
 
     for (const rubric of question.rubrics) {
       const rubricMarks =
         rubric.assessment != null ? markRubric(rubric) : undefined;
+
+      if (rubric.assessment == null) {
+        isQuestionFullyAssessed = false;
+      }
 
       if (options.includeRubricAssessment) {
         row.push(getRubricAssessmentDisplay(rubric));
@@ -193,10 +199,16 @@ export function buildSubmissionExportRow(params: {
       }
     }
 
-    grandTotalMarks += questionTotalMarks;
-    row.push(String(questionTotalMarks));
+    if (isQuestionFullyAssessed) {
+      grandTotalMarks += questionTotalMarks;
+      row.push(String(questionTotalMarks));
+      continue;
+    }
+
+    hasMissingAssessment = true;
+    row.push("");
   }
 
-  row.push(String(grandTotalMarks));
+  row.push(hasMissingAssessment ? "" : String(grandTotalMarks));
   return row;
 }

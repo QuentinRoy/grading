@@ -261,11 +261,11 @@ describe("submission CSV ordering", () => {
       "-1",
       "",
       "",
-      "-1",
       "",
       "",
-      "0",
-      "-1",
+      "",
+      "",
+      "",
     ]);
   });
 
@@ -295,13 +295,12 @@ describe("submission CSV ordering", () => {
       },
       questions: unassessedQuestions,
       options: {
-        includeRubricAssessment: false,
+        includeRubricAssessment: true,
         includeRubricMarks: false,
       },
     });
 
-    expect(row[0]).toBe("team");
-    expect(row[1]).toBe("Team A");
+    expect(row).toEqual(["team", "Team A", "", "", "", "", "", ""]);
   });
 
   it("requires student id for individual submissions at the type level", () => {
