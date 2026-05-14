@@ -224,34 +224,53 @@ export default function SubmissionOverviewAssessmentClient({
           No questions found in database.
         </Typography>
       ) : (
-        optimisticQuestions.map((question) => (
-          <Box key={question.questionId} sx={{ mb: 4 }}>
-            <Box sx={{ mb: 2 }}>
-              <Typography component="h2" variant="h5">
-                {question.questionLabel}
-              </Typography>
-            </Box>
+        optimisticQuestions.map((question) => {
+          const { marks: questionMarks, maxMarks: questionMaxMarks } =
+            summarizeRubrics(question.rubrics);
 
-            {question.rubrics.map((rubric, localIndex) => {
-              const flatIndex = question.flatIndices[localIndex];
-              return (
-                <RubricGradeList
-                  key={rubric.id}
-                  rubrics={[rubric]}
-                  pendingByIndex={{
-                    0: flatIndex != null ? (pendingByIndex[flatIndex] ?? 0) : 0,
-                  }}
-                  disabled={false}
-                  onAssess={(_, assessment) => {
-                    if (flatIndex != null) {
-                      assess(flatIndex, assessment);
-                    }
-                  }}
-                />
-              );
-            })}
-          </Box>
-        ))
+          return (
+            <Box key={question.questionId} sx={{ mb: 4 }}>
+              <Box
+                sx={{
+                  mb: 2,
+                  display: "flex",
+                  alignItems: "baseline",
+                  justifyContent: "space-between",
+                  gap: 1,
+                }}
+              >
+                <Typography component="h2" variant="h5">
+                  {question.questionLabel}
+                </Typography>
+                <Typography variant="body2">
+                  ({questionMarks}&nbsp;/&nbsp;{questionMaxMarks})
+                </Typography>
+              </Box>
+
+              {question.rubrics.map((rubric, localIndex) => {
+                const flatIndex = question.flatIndices[localIndex];
+                return (
+                  <RubricGradeList
+                    key={rubric.id}
+                    rubrics={[rubric]}
+                    pendingByIndex={{
+                      0:
+                        flatIndex != null
+                          ? (pendingByIndex[flatIndex] ?? 0)
+                          : 0,
+                    }}
+                    disabled={false}
+                    onAssess={(_, assessment) => {
+                      if (flatIndex != null) {
+                        assess(flatIndex, assessment);
+                      }
+                    }}
+                  />
+                );
+              })}
+            </Box>
+          );
+        })
       )}
 
       <AssessmentProgressSummary

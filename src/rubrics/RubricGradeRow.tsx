@@ -106,14 +106,14 @@ export default function RubricGradeRow({
         <Box>
           {displayLabel}
           {description != null && (
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="textSecondary">
               {description}
             </Typography>
           )}
         </Box>
       </Grid>
       <Grid size={{ xs: 12, sm: 1 }}>
-        <Typography variant="body2">
+        <Typography variant="body2" color="textSecondary">
           ({currentMarks != null ? currentMarks : "?"}&nbsp;/&nbsp;{rubricBound}
           )
         </Typography>
