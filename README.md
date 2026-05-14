@@ -97,6 +97,7 @@ pnpm db:logs
 pnpm db:migrate:status
 pnpm db:migrate:up
 pnpm db:migrate:down
+pnpm db:types:generate
 
 pnpm db:types:generate
 ```
@@ -144,11 +145,14 @@ Rules:
 - `questions` is required and must contain unique question ids.
 - Each question requires `id` and `rubrics`.
 - Rubric ids must be unique within each question.
-- Boolean rubric: `marks` must be a non-negative number.
+- Boolean rubric: `marks` is the number of marks awarded when true. `falseMarks` (optional) sets marks for a false result (defaults to `0`).
 - Ordinal rubric: `marks` must contain at least 2 label/value pairs with non-negative numbers.
 - Numerical rubric:
-  - `minMarks` or `maxMarks` must be provided.
-  - `minScore` defaults to `0`, `maxScore` defaults to `1`.
+  - At least one of `minMarks` or `maxMarks` must be provided.
+  - When only `maxMarks` is given, `minMarks` defaults to `0` and `maxMarks` must be `> 0`.
+  - When only `minMarks` is given, `maxMarks` defaults to `0` and `minMarks` must be `< 0`.
+  - `minScore` defaults to `0`, `maxScore` defaults to `1`. If `minScore` is provided, `maxScore` must also be provided.
+  - `reversed` (optional boolean): reverses the score-to-marks mapping direction.
   - Final values must satisfy `minMarks <= maxMarks` and `minScore < maxScore`.
 
 ### Students CSV
