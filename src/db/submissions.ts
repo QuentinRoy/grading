@@ -14,7 +14,6 @@ function formatStudentName(lastName: string, firstName: string): string {
 async function loadSubmissionsFromDb() {
   "use cache";
   cacheTag("submissions");
-  cacheLife({ revalidate: 60 });
 
   const [submissions, teamMemberRows] = await Promise.all([
     db

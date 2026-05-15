@@ -6,6 +6,7 @@ import {
   ListItemText,
   Typography,
 } from "@mui/material";
+import { cacheTag } from "next/cache";
 import { loadQuestions } from "@/db/questions";
 import { loadSubmissions } from "@/db/submissions";
 import { getSubmissionLabel } from "@/submissions/getSubmissionLabel";
@@ -16,6 +17,9 @@ export default function AssessmentPage() {
 }
 
 async function AssessmentPageContent() {
+  "use cache";
+  cacheTag("assessments");
+
   const [grid, submissions] = await Promise.all([
     loadQuestions(),
     loadSubmissions(),

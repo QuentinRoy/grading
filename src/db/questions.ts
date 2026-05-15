@@ -209,6 +209,9 @@ async function loadQuestionsFromDb(): Promise<QuestionRow[]> {
 }
 
 export async function loadQuestions(): Promise<Grid> {
+  "use cache";
+  cacheTag("questions");
+
   const rows = await loadQuestionsFromDb();
 
   return Object.fromEntries(
