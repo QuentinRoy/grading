@@ -1,6 +1,7 @@
 import "server-only";
 import { CamelCasePlugin, Kysely, PostgresDialect } from "kysely";
 import { Pool, types as pgTypes } from "pg";
+import Cursor from "pg-cursor";
 import type { DB } from "./types";
 
 const PG_NUMERIC_OID = 1700;
@@ -17,9 +18,7 @@ function createKyselyClient() {
   const pool = new Pool({ connectionString });
 
   return new Kysely<DB>({
-    dialect: new PostgresDialect({
-      pool,
-    }),
+    dialect: new PostgresDialect({ pool, cursor: Cursor }),
     plugins: [new CamelCasePlugin()],
   });
 }
