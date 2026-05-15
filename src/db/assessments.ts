@@ -14,74 +14,6 @@ export type SaveAssessmentParams = {
   rubric: AssessmentRubricValue;
 };
 
-async function loadBooleanRubricValue(params: {
-  rubricAssessmentId: number;
-  rubricId: string;
-}): Promise<AssessmentRubricValue | undefined> {
-  const booleanAssessment = await db
-    .selectFrom("booleanRubricAssessment")
-    .where("rubricAssessmentId", "=", params.rubricAssessmentId)
-    .select("passed")
-    .executeTakeFirst();
-
-  if (booleanAssessment == null) {
-    return undefined;
-  }
-
-  return {
-    rubricId: params.rubricId,
-    type: "boolean",
-    passed: booleanAssessment.passed,
-  };
-}
-
-async function loadOrdinalRubricValue(params: {
-  rubricAssessmentId: number;
-  rubricId: string;
-}): Promise<AssessmentRubricValue | undefined> {
-  const ordinalAssessment = await db
-    .selectFrom("ordinalRubricAssessment")
-    .where("rubricAssessmentId", "=", params.rubricAssessmentId)
-    .select("selectedLabel")
-    .executeTakeFirst();
-
-  if (ordinalAssessment == null) {
-    return undefined;
-  }
-
-  return {
-    rubricId: params.rubricId,
-    type: "ordinal",
-    selectedLabel: ordinalAssessment.selectedLabel,
-  };
-}
-
-async function loadNumericalRubricValue(params: {
-  rubricAssessmentId: number;
-  rubricId: string;
-}): Promise<AssessmentRubricValue | undefined> {
-  const numericalAssessment = await db
-    .selectFrom("numericalRubricAssessment")
-    .where("rubricAssessmentId", "=", params.rubricAssessmentId)
-    .select("score")
-    .executeTakeFirst();
-
-  if (numericalAssessment == null) {
-    return undefined;
-  }
-
-  const numericScore =
-    typeof numericalAssessment.score === "number"
-      ? numericalAssessment.score
-      : parseFloat(String(numericalAssessment.score));
-
-  return {
-    rubricId: params.rubricId,
-    type: "numerical",
-    score: numericScore,
-  };
-}
-
 // Returns typed rubric values for a submission/question assessment.
 export async function loadAssessment(
   submissionId: string,
@@ -103,44 +35,77 @@ export async function loadAssessment(
 
   const rubricAssessments = await db
     .selectFrom("rubricAssessment")
-    .where("assessmentId", "=", assessment.id)
-    .select(["id", "rubricId", "type"])
+    .leftJoin(
+      "booleanRubricAssessment",
+      "booleanRubricAssessment.rubricAssessmentId",
+      "rubricAssessment.id",
+    )
+    .leftJoin(
+      "ordinalRubricAssessment",
+      "ordinalRubricAssessment.rubricAssessmentId",
+      "rubricAssessment.id",
+    )
+    .leftJoin(
+      "numericalRubricAssessment",
+      "numericalRubricAssessment.rubricAssessmentId",
+      "rubricAssessment.id",
+    )
+    .where("rubricAssessment.assessmentId", "=", assessment.id)
+    .select([
+      "rubricAssessment.rubricId as rubricId",
+      "rubricAssessment.type as type",
+      "booleanRubricAssessment.passed as passed",
+      "ordinalRubricAssessment.selectedLabel as selectedLabel",
+      "numericalRubricAssessment.score as score",
+    ])
     .execute();
 
   const result: AssessmentRubricValue[] = [];
 
   for (const rubricAssessment of rubricAssessments) {
-    let value: AssessmentRubricValue | undefined;
-
     switch (rubricAssessment.type) {
       case "boolean": {
-        value = await loadBooleanRubricValue({
-          rubricAssessmentId: rubricAssessment.id,
+        if (rubricAssessment.passed == null) {
+          break;
+        }
+
+        result.push({
           rubricId: rubricAssessment.rubricId,
+          type: "boolean",
+          passed: rubricAssessment.passed,
         });
         break;
       }
       case "ordinal": {
-        value = await loadOrdinalRubricValue({
-          rubricAssessmentId: rubricAssessment.id,
+        if (rubricAssessment.selectedLabel == null) {
+          break;
+        }
+
+        result.push({
           rubricId: rubricAssessment.rubricId,
+          type: "ordinal",
+          selectedLabel: rubricAssessment.selectedLabel,
         });
         break;
       }
       case "numerical": {
-        value = await loadNumericalRubricValue({
-          rubricAssessmentId: rubricAssessment.id,
+        if (rubricAssessment.score == null) {
+          break;
+        }
+
+        result.push({
           rubricId: rubricAssessment.rubricId,
+          type: "numerical",
+          score:
+            typeof rubricAssessment.score === "number"
+              ? rubricAssessment.score
+              : parseFloat(String(rubricAssessment.score)),
         });
         break;
       }
       default: {
         assertNever(rubricAssessment.type);
       }
-    }
-
-    if (value != null) {
-      result.push(value);
     }
   }
 
