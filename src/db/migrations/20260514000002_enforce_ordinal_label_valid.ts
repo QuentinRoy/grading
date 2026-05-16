@@ -12,6 +12,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       SELECT EXISTS (
         SELECT 1
         FROM "rubric_assessment" ra
+        INNER JOIN "ordinal_rubric" orub ON orub.rubric_id = ra.rubric_id
         INNER JOIN "ordinal_rubric_value" orv ON orv.ordinal_rubric_id = orub.id
         WHERE ra.id = NEW.rubric_assessment_id
           AND orv.label = NEW.selected_label
