@@ -6,7 +6,6 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  type DialogProps,
   DialogTitle,
   Stack,
   TextField,
@@ -18,20 +17,22 @@ import {
   buildDeleteConfirmationPhrase,
   matchesDeleteConfirmation,
 } from "@/shared/useDeleteConfirmation";
-import type { QuestionsActionState } from "./state";
-import type { QuestionManagementItem } from "./types";
 
-type DeleteQuestionDialogProps = {
+export type DeleteRubricDialogProps = {
   open: boolean;
-  question?: QuestionManagementItem;
+  rubric?: { id: string; assessmentCount: number };
   action: (formData: FormData) => void;
-  actionState: QuestionsActionState;
+  actionState: {
+    status: string;
+    formErrors?: string[];
+    fieldErrors?: { confirmationText?: string };
+    message?: string;
+  };
   onClose: () => void;
 };
 
 function DeleteButton({ disabled }: { disabled: boolean }): ReactElement {
   const { pending } = useFormStatus();
-
   return (
     <Button
       type="submit"
@@ -39,37 +40,34 @@ function DeleteButton({ disabled }: { disabled: boolean }): ReactElement {
       variant="contained"
       disabled={disabled || pending}
     >
-      {pending ? "Deleting..." : "Delete question"}
+      {pending ? "Deleting..." : "Delete rubric"}
     </Button>
   );
 }
 
-export default function DeleteQuestionDialog({
+export default function DeleteRubricDialog({
   open,
-  question,
+  rubric,
   action,
   actionState,
   onClose,
-}: DeleteQuestionDialogProps): ReactElement {
+}: DeleteRubricDialogProps): ReactElement {
   const [confirmationText, setConfirmationText] = useState("");
 
   const expectedPhrase = useMemo(() => {
-    if (question == null) {
-      return "";
-    }
-
+    if (rubric == null) return "";
     return buildDeleteConfirmationPhrase(
-      "question",
-      question.id,
-      question.assessmentCount,
+      "rubric",
+      rubric.id,
+      rubric.assessmentCount,
     );
-  }, [question]);
+  }, [rubric]);
 
   const isMatch = matchesDeleteConfirmation(confirmationText, expectedPhrase);
   const confirmationError = actionState.fieldErrors?.confirmationText;
 
   const payload = JSON.stringify({
-    questionId: question?.id,
+    rubricId: rubric?.id,
     confirmationText,
     expectedPhrase,
   });
@@ -81,16 +79,23 @@ export default function DeleteQuestionDialog({
 
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>Delete Question</DialogTitle>
+      <DialogTitle>Delete Rubric</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
-          {question == null ? null : (
+          {rubric == null ? null : (
             <>
-              <Typography>
-                This will delete question <strong>{question.id}</strong> and
-                also remove <strong>{question.assessmentCount}</strong> linked
-                assessments.
-              </Typography>
+              {rubric.assessmentCount > 0 ? (
+                <Typography>
+                  This will delete rubric <strong>{rubric.id}</strong> and{" "}
+                  <strong>{rubric.assessmentCount}</strong> corresponding
+                  assessments.
+                </Typography>
+              ) : (
+                <Typography>
+                  This will delete rubric <strong>{rubric.id}</strong>. There is
+                  no corresponding assessments.
+                </Typography>
+              )}
               <Typography color="text.secondary">
                 Type this phrase to confirm:
               </Typography>
@@ -100,13 +105,11 @@ export default function DeleteQuestionDialog({
             </>
           )}
 
-          {actionState.status === "error" &&
-          actionState.formErrors != null &&
-          actionState.formErrors.length > 0 ? (
+          {actionState.status === "error" && actionState.formErrors?.length ? (
             <Alert severity="error">{actionState.formErrors.join(" | ")}</Alert>
           ) : null}
 
-          {actionState.status === "success" && actionState.message != null ? (
+          {actionState.status === "success" && actionState.message ? (
             <Alert severity="success">{actionState.message}</Alert>
           ) : null}
 
@@ -124,7 +127,7 @@ export default function DeleteQuestionDialog({
                 <Button variant="outlined" onClick={handleClose}>
                   Cancel
                 </Button>
-                <DeleteButton disabled={question == null || !isMatch} />
+                <DeleteButton disabled={rubric == null || !isMatch} />
               </DialogActions>
             </Stack>
           </form>
