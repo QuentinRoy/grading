@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import {
   deleteManagedQuestion,
   getQuestionDeleteImpact,
+  reorderQuestions,
   saveManagedQuestion,
 } from "@/db/questions";
 import { toQuestionsValidationError } from "./errors";
@@ -101,4 +102,10 @@ export async function deleteQuestionAction(
       formErrors,
     };
   }
+}
+
+export async function reorderQuestionsAction(
+  updates: Array<{ id: string; position: number }>,
+): Promise<void> {
+  await reorderQuestions(updates);
 }

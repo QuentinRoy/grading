@@ -1,4 +1,5 @@
 import "server-only";
+import { sql } from "kysely";
 import { cacheLife, cacheTag, updateTag } from "next/cache";
 import { QuestionsValidationError } from "@/questions/errors";
 import { db } from "./kysely";
@@ -717,4 +718,28 @@ export async function deleteManagedQuestion(
   updateTag(`assessments:question:${questionId}`);
 
   return impact;
+}
+
+export async function reorderQuestions(
+  updates: Array<{ id: string; position: number }>,
+): Promise<void> {
+  if (updates.length === 0) {
+    return;
+  }
+
+  const questionIds = updates.map((u) => u.id);
+  const conditions = updates.map(
+    ({ id, position }) =>
+      sql`when ${sql.ref("id")} = ${sql.lit(id)} then ${sql.lit(position)}`,
+  );
+
+  await db
+    .updateTable("question")
+    .set({
+      position: sql`case ${sql.join(conditions, sql` `)} end`,
+    })
+    .where("id", "in", questionIds)
+    .execute();
+
+  updateTag("questions");
 }
