@@ -17,6 +17,7 @@ export async function assessmentsImportAction(
     const result = await saveAssessments(assessments);
 
     revalidateTag("assessments", "max");
+    revalidateTag("assessments:all", "max");
 
     return {
       status: "success",

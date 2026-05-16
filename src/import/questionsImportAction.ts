@@ -18,6 +18,7 @@ export async function questionsImportAction(
 
     revalidateTag("questions", "max");
     revalidateTag("assessments", "max");
+    revalidateTag("assessments:all", "max");
 
     return {
       status: "success",

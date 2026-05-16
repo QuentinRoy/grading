@@ -22,6 +22,7 @@ export async function studentsImportAction(
 
     revalidateTag("submissions", "max");
     revalidateTag("assessments", "max");
+    revalidateTag("assessments:all", "max");
 
     return {
       status: "success",

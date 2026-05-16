@@ -13,7 +13,11 @@ export async function loadSubmissionQuestionProgress(
   "use cache";
   cacheTag("submissions");
   cacheTag("questions");
-  cacheTag("assessments");
+  // Use a question-scoped tag so that saving a rubric for question Q only
+  // invalidates the progress cache for Q, not for every other question.
+  // "assessments:all" is busted only by bulk imports, not by individual saves.
+  cacheTag(`assessments:question:${questionId}`);
+  cacheTag("assessments:all");
   cacheTag(`questions:${questionId}`);
   cacheLife({ revalidate: 60 });
 

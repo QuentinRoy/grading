@@ -358,6 +358,7 @@ export async function saveAssessment({
 
     updateTag(`assessments:${submissionId}:${questionId}`);
     updateTag("assessments");
+    updateTag(`assessments:question:${questionId}`);
 
     return { success: true };
   });

@@ -88,6 +88,12 @@ async function SubmissionRubricSection({
   questionId: string;
   submissionId: string;
 }) {
+  "use cache";
+  cacheTag(`assessments:${submissionId}:${questionId}`);
+  cacheTag(`assessments:question:${questionId}`);
+  cacheTag(`questions:${questionId}`);
+  cacheTag("submissions");
+
   const [question, submissions, assessments, progressBySubmissionId] =
     await Promise.all([
       loadQuestion(questionId),

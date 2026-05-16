@@ -156,6 +156,7 @@ export default function SubmissionAssessmentClient({
         <Button
           component={NextLink}
           href={`/assessments/submissions/${previousSubmission?.id ?? currentSubmissionId}/questions/${questionId}`}
+          prefetch={previousSubmission != null}
           variant="outlined"
           color={isCompleted ? "primary" : "secondary"}
           disabled={previousSubmission == null}
@@ -165,6 +166,7 @@ export default function SubmissionAssessmentClient({
         <Button
           component={NextLink}
           href={`/assessments/submissions/${nextSubmission?.id ?? currentSubmissionId}/questions/${questionId}`}
+          prefetch={nextSubmission != null}
           variant="outlined"
           color={isCompleted ? "primary" : "secondary"}
           disabled={nextSubmission == null}
