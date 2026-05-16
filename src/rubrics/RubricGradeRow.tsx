@@ -1,7 +1,6 @@
 "use client";
 
 import Box from "@mui/material/Box";
-import CircularProgress from "@mui/material/CircularProgress";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { type ReactElement } from "react";
@@ -9,6 +8,7 @@ import type { AssessmentRubricValue } from "../db/types";
 import BooleanGradeControl from "./BooleanGradeControl";
 import NumericalGradeControl from "./NumericalGradeControl";
 import OrdinalGradeControl from "./OrdinalGradeControl";
+import RubricStatusMarker from "./RubricStatusMarker";
 import {
   type AssessedRubric,
   getRubricMaxMarks,
@@ -34,6 +34,11 @@ export default function RubricGradeRow({
   const maxMarks = getRubricMaxMarks(rubric);
   const rubricBound = maxMarks === 0 ? getRubricMinMarks(rubric) : maxMarks;
   const currentMarks = assessment != null ? markRubric(rubric) : null;
+  const markerStatus = isPending
+    ? "saving"
+    : assessment != null
+      ? "assessed"
+      : "unassessed";
 
   let control: ReactElement;
 
@@ -85,25 +90,23 @@ export default function RubricGradeRow({
   }
 
   return (
-    <>
-      <Grid size={2}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+    <Grid size={12}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          minWidth: 0,
+          py: 0.5,
+        }}
+      >
+        <RubricStatusMarker status={markerStatus} />
+        <Box
+          sx={{ display: "flex", alignItems: "center", gap: 1, flexShrink: 0 }}
+        >
           {control}
-          <Box
-            sx={{
-              width: 16,
-              height: 16,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {isPending ? <CircularProgress size={12} thickness={6} /> : null}
-          </Box>
         </Box>
-      </Grid>
-      <Grid size={8}>
-        <Box>
+        <Box sx={{ minWidth: 0 }}>
           {displayLabel}
           {description != null && (
             <Typography variant="body2" color="textSecondary">
@@ -111,13 +114,13 @@ export default function RubricGradeRow({
             </Typography>
           )}
         </Box>
-      </Grid>
-      <Grid size={2} sx={{ textAlign: "right" }}>
-        <Typography variant="body2" color="textSecondary">
-          ({currentMarks != null ? currentMarks : "_"}&nbsp;/&nbsp;{rubricBound}
-          )
-        </Typography>
-      </Grid>
-    </>
+        <Box sx={{ ml: "auto", textAlign: "right", flexShrink: 0 }}>
+          <Typography variant="body2" color="textSecondary">
+            ({currentMarks != null ? currentMarks : "_"}&nbsp;/&nbsp;
+            {rubricBound})
+          </Typography>
+        </Box>
+      </Box>
+    </Grid>
   );
 }
