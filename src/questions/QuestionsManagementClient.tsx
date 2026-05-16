@@ -1,6 +1,7 @@
 "use client";
 
-import { Box, Container, Stack, Typography } from "@mui/material";
+import { Box, Container, Link, Stack, Typography } from "@mui/material";
+import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import {
   type ReactElement,
@@ -58,14 +59,17 @@ export default function QuestionsManagementClient({
   return (
     <Container component="main" maxWidth="xl" sx={{ py: 5 }}>
       <Stack spacing={3}>
-        <Box>
+        <Stack spacing={2}>
           <Typography component="h1" variant="h3" sx={{ mb: 1 }}>
             Questions Management
           </Typography>
           <Typography color="text.secondary">
             Inspect, add, edit, and delete questions with rubric definitions.
           </Typography>
-        </Box>
+          <Link component={NextLink} href="/" underline="hover">
+            Back to home
+          </Link>
+        </Stack>
 
         <Stack direction={{ xs: "column", lg: "row" }} spacing={3}>
           <Box sx={{ flex: "1 1 0" }}>
