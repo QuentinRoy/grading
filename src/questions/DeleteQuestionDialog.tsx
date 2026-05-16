@@ -14,12 +14,12 @@ import {
 } from "@mui/material";
 import { type ReactElement, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
+import type { QuestionsActionState } from "./state";
+import type { QuestionManagementItem } from "./types";
 import {
   buildDeleteConfirmationPhrase,
   matchesDeleteConfirmation,
-} from "@/shared/useDeleteConfirmation";
-import type { QuestionsActionState } from "./state";
-import type { QuestionManagementItem } from "./types";
+} from "./useDeleteConfirmation";
 
 type DeleteQuestionDialogProps = {
   open: boolean;
@@ -58,11 +58,7 @@ export default function DeleteQuestionDialog({
       return "";
     }
 
-    return buildDeleteConfirmationPhrase(
-      "question",
-      question.id,
-      question.assessmentCount,
-    );
+    return buildDeleteConfirmationPhrase(question.id, question.assessmentCount);
   }, [question]);
 
   const isMatch = matchesDeleteConfirmation(confirmationText, expectedPhrase);
@@ -88,8 +84,8 @@ export default function DeleteQuestionDialog({
             <>
               <Typography>
                 This will delete question <strong>{question.id}</strong> and
-                also remove <strong>{question.assessmentCount}</strong> linked
-                assessments.
+                cascade delete <strong>{question.assessmentCount}</strong>{" "}
+                linked assessments.
               </Typography>
               <Typography color="text.secondary">
                 Type this phrase to confirm:

@@ -54,7 +54,6 @@
     "@biomejs/biome": "2.4.15",
     "@dotenvx/dotenvx": "^1.65.0",
     "@storybook/nextjs": "^10.3.6",
-    "@storybook/react": "^10.4.0",
     "@testcontainers/postgresql": "^11.14.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.12.2",
