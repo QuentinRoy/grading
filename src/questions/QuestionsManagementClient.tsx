@@ -13,27 +13,43 @@ import { reorderQuestionsAction, saveQuestionAction } from "./actions";
 import QuestionForm from "./QuestionForm";
 import QuestionTable from "./QuestionTable";
 import SelectedQuestionPane from "./SelectedQuestionPane";
+import type { QuestionsActionState } from "./state";
 import { initialQuestionsActionState } from "./state";
 import {
   createEmptyQuestionEditorValue,
   type QuestionManagementItem,
+  toEditorValue,
 } from "./types";
 
 type QuestionsManagementClientProps = {
   questions: QuestionManagementItem[];
+  saveAction: (
+    state: QuestionsActionState,
+    formData: FormData,
+  ) => Promise<QuestionsActionState>;
+  deleteAction: (
+    state: QuestionsActionState,
+    formData: FormData,
+  ) => Promise<QuestionsActionState>;
+  reorderAction: (
+    updates: Array<{ id: string; position: number }>,
+  ) => Promise<void>;
 };
 
 export default function QuestionsManagementClient({
   questions,
+  saveAction,
+  deleteAction,
+  reorderAction,
 }: QuestionsManagementClientProps): ReactElement {
   const router = useRouter();
-  const [mode, setMode] = useState<"view" | "create">("view");
+  const [mode, setMode] = useState<"view" | "create" | "edit">("view");
   const [selectedQuestionId, setSelectedQuestionId] = useState<
     string | undefined
   >(questions[0]?.id);
 
   const [saveState, saveFormAction] = useActionState(
-    saveQuestionAction,
+    saveAction,
     initialQuestionsActionState,
   );
 
@@ -70,7 +86,7 @@ export default function QuestionsManagementClient({
         <Stack direction={{ xs: "column", lg: "row" }} spacing={3}>
           <Box sx={{ flex: "1 1 0" }}>
             <QuestionTable
-              onReorder={reorderQuestionsAction}
+              onReorder={reorderAction}
               questions={questions}
               selectedQuestionId={selectedQuestionId}
               onSelectQuestion={(questionId) => {
@@ -82,10 +98,17 @@ export default function QuestionsManagementClient({
           </Box>
 
           <Box sx={{ flex: "1 1 0" }}>
-            {mode === "create" ? (
+            {mode === "create" || mode === "edit" ? (
               <QuestionForm
-                mode="create"
-                initialValue={createEmptyQuestionEditorValue()}
+                mode={mode}
+                originalQuestionId={
+                  mode === "edit" ? selectedQuestion?.id : undefined
+                }
+                initialValue={
+                  mode === "edit" && selectedQuestion != null
+                    ? toEditorValue(selectedQuestion)
+                    : createEmptyQuestionEditorValue()
+                }
                 action={saveFormAction}
                 actionState={saveState}
                 onCancel={() => setMode("view")}
@@ -93,9 +116,12 @@ export default function QuestionsManagementClient({
             ) : (
               <SelectedQuestionPane
                 question={selectedQuestion}
+                deleteAction={deleteAction}
+                onEdit={() => setMode("edit")}
                 onDeleteSuccess={() => {
                   router.refresh();
                   setSelectedQuestionId(undefined);
+                  setMode("view");
                 }}
               />
             )}

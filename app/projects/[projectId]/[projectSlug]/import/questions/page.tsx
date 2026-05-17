@@ -1,0 +1,36 @@
+import { notFound, redirect } from "next/navigation";
+import { Suspense } from "react";
+import { loadProjectByPublicId } from "@/db/projects";
+import QuestionsImportForm from "@/import/QuestionsImportForm";
+import { questionsImportAction } from "@/import/questionsImportAction";
+import { projectImportQuestionsPath } from "@/projects/routes";
+
+type ProjectImportQuestionsPageProps = {
+  params: Promise<{
+    projectId: string;
+    projectSlug: string;
+  }>;
+};
+
+export default async function ProjectImportQuestionsPage({
+  params,
+}: ProjectImportQuestionsPageProps) {
+  const { projectId, projectSlug } = await params;
+  const project = await loadProjectByPublicId(projectId);
+
+  if (project == null) {
+    notFound();
+  }
+
+  if (project.slug !== projectSlug) {
+    redirect(projectImportQuestionsPath(project.publicId, project.slug));
+  }
+
+  return (
+    <Suspense>
+      <QuestionsImportForm
+        action={questionsImportAction.bind(null, project.id)}
+      />
+    </Suspense>
+  );
+}

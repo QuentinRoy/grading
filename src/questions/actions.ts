@@ -1,9 +1,7 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import {
   deleteManagedQuestion,
-  getQuestionDeleteImpact,
   reorderQuestions,
   saveManagedQuestion,
 } from "@/db/questions";
@@ -16,6 +14,7 @@ import {
 import { type QuestionsActionState } from "./state";
 
 export async function saveQuestionAction(
+  projectId: number,
   _previousState: QuestionsActionState,
   formData: FormData,
 ): Promise<QuestionsActionState> {
@@ -23,7 +22,7 @@ export async function saveQuestionAction(
 
   try {
     const payload = parseManagedQuestionPayload(payloadRaw);
-    const result = await saveManagedQuestion(payload);
+    const result = await saveManagedQuestion(payload, projectId);
 
     return {
       status: "success",
@@ -39,34 +38,8 @@ export async function saveQuestionAction(
   }
 }
 
-export async function editQuestionAction(
-  _previousState: QuestionsActionState,
-  formData: FormData,
-): Promise<QuestionsActionState> {
-  const payloadRaw = String(formData.get("payload") ?? "{}");
-
-  try {
-    const payload = parseManagedQuestionPayload(payloadRaw);
-    await saveManagedQuestion(payload);
-  } catch (error) {
-    const { fieldErrors, formErrors } = toQuestionsValidationError(error);
-    return {
-      status: "error",
-      fieldErrors,
-      formErrors,
-    };
-  }
-
-  redirect("/questions");
-}
-
-export async function getDeleteImpactAction(questionId: string): Promise<{
-  assessmentCount: number;
-}> {
-  return getQuestionDeleteImpact(questionId);
-}
-
 export async function deleteQuestionAction(
+  projectId: number,
   _previousState: QuestionsActionState,
   formData: FormData,
 ): Promise<QuestionsActionState> {
@@ -88,7 +61,7 @@ export async function deleteQuestionAction(
       };
     }
 
-    const result = await deleteManagedQuestion(payload.questionId);
+    const result = await deleteManagedQuestion(payload.questionId, projectId);
 
     return {
       status: "success",
@@ -105,7 +78,8 @@ export async function deleteQuestionAction(
 }
 
 export async function reorderQuestionsAction(
+  projectId: number,
   updates: Array<{ id: string; position: number }>,
 ): Promise<void> {
-  await reorderQuestions(updates);
+  await reorderQuestions(updates, projectId);
 }

@@ -1,0 +1,167 @@
+import Box from "@mui/material/Box";
+import Breadcrumbs from "@mui/material/Breadcrumbs";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import { cacheTag } from "next/cache";
+import { notFound, redirect } from "next/navigation";
+import SubmissionAssessmentClient from "@/assessment/SubmissionAssessmentClient";
+import { loadAssessment } from "@/db/assessments";
+import { loadProjectByPublicId } from "@/db/projects";
+import { loadQuestion } from "@/db/questions";
+import { loadSubmissionQuestionProgress } from "@/db/submissionProgress";
+import { loadSubmissions } from "@/db/submissions";
+import { projectAssessmentsPath } from "@/projects/routes";
+import { attachAssessment } from "@/rubrics/rubric";
+import CodeSnippet from "@/shared/CodeSnippet";
+import MuiNextLink from "@/shared/MuiNextLink";
+
+type PageParams = {
+  projectId: string;
+  projectSlug: string;
+  submissionId: string;
+  questionId: string;
+};
+
+type QuestionSubmissionPageProps = {
+  params: Promise<PageParams>;
+};
+
+export default function ProjectQuestionSubmissionPage({
+  params,
+}: QuestionSubmissionPageProps) {
+  return <ProjectQuestionSubmissionPageContent params={params} />;
+}
+
+async function ProjectQuestionSubmissionPageContent({
+  params,
+}: QuestionSubmissionPageProps) {
+  const { projectId, projectSlug, submissionId, questionId } = await params;
+  const project = await loadProjectByPublicId(projectId);
+
+  if (project == null) {
+    notFound();
+  }
+
+  if (project.slug !== projectSlug) {
+    redirect(
+      `/projects/${project.publicId}/${project.slug}/assessments/submissions/${submissionId}/questions/${questionId}`,
+    );
+  }
+
+  return (
+    <Container maxWidth="md" sx={{ py: 5 }}>
+      <QuestionHeaderSection projectId={projectId} questionId={questionId} />
+      <SubmissionRubricSection
+        questionId={questionId}
+        submissionId={submissionId}
+        projectId={projectId}
+      />
+    </Container>
+  );
+}
+
+async function QuestionHeaderSection({
+  projectId,
+  questionId,
+}: {
+  projectId: string;
+  questionId: string;
+}) {
+  "use cache";
+  cacheTag("questions", `questions:${questionId}`);
+
+  const project = await loadProjectByPublicId(projectId);
+
+  if (project == null) {
+    notFound();
+  }
+
+  const question = await loadQuestion(questionId, project.id);
+
+  if (question == null) {
+    notFound();
+  }
+
+  return (
+    <>
+      <Box component="header" sx={{ pb: 2 }}>
+        <Breadcrumbs aria-label="breadcrumb">
+          <MuiNextLink
+            color="inherit"
+            href={projectAssessmentsPath(project.publicId, project.slug)}
+          >
+            Assessments
+          </MuiNextLink>
+          <Typography color="textPrimary">
+            {question.label ?? questionId}
+          </Typography>
+        </Breadcrumbs>
+      </Box>
+
+      <Box component="section">
+        <Typography component="h1" variant="h4" gutterBottom>
+          {question.label ?? questionId}
+        </Typography>
+
+        {question.solution && (
+          <Box sx={{ mb: 2 }}>
+            <CodeSnippet>{question.solution}</CodeSnippet>
+          </Box>
+        )}
+      </Box>
+    </>
+  );
+}
+
+async function SubmissionRubricSection({
+  questionId,
+  submissionId,
+  projectId,
+}: {
+  questionId: string;
+  submissionId: string;
+  projectId: string;
+}) {
+  "use cache";
+  cacheTag(`assessments:${submissionId}:${questionId}`);
+  cacheTag(`assessments:question:${questionId}`);
+  cacheTag(`questions:${questionId}`);
+  cacheTag("submissions");
+
+  const project = await loadProjectByPublicId(projectId);
+
+  if (project == null) {
+    notFound();
+  }
+
+  const [question, submissions, assessments, progressBySubmissionId] =
+    await Promise.all([
+      loadQuestion(questionId, project.id),
+      loadSubmissions(project.id),
+      loadAssessment(submissionId, questionId),
+      loadSubmissionQuestionProgress(questionId, project.id),
+    ]);
+  const hasSubmission = submissions.some(
+    (submission) => submission.id === submissionId,
+  );
+
+  if (question == null || !hasSubmission) {
+    notFound();
+  }
+
+  const rubricsWithAssessments = question.rubrics.map((rubric) =>
+    attachAssessment(rubric, assessments),
+  );
+
+  return (
+    <SubmissionAssessmentClient
+      key={`${questionId}-${submissionId}`}
+      questionId={questionId}
+      questionLabel={question.label}
+      rubrics={rubricsWithAssessments}
+      submissions={submissions}
+      progressBySubmissionId={progressBySubmissionId}
+      currentSubmissionId={submissionId}
+    />
+  );
+}

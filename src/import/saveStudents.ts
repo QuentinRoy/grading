@@ -4,6 +4,7 @@ import type { NormalizedImportedSubmission } from "./types";
 
 export async function saveStudents(
   submissions: NormalizedImportedSubmission[],
+  projectId: number,
 ): Promise<{
   submissionCount: number;
   studentCount: number;
@@ -51,9 +52,27 @@ export async function saveStudents(
     const teamsByName = new Map<string, number>();
 
     if (teamNames.size > 0) {
+      const conflictingTeams = await tx
+        .selectFrom("team")
+        .select(["name", "projectId"])
+        .where("name", "in", Array.from(teamNames))
+        .where("projectId", "!=", projectId)
+        .execute();
+
+      if (conflictingTeams.length > 0) {
+        throw new Error(
+          `Team names already belong to another project: ${conflictingTeams.map((team) => team.name).join(", ")}`,
+        );
+      }
+
       await tx
         .insertInto("team")
-        .values(Array.from(teamNames).map((teamName) => ({ name: teamName })))
+        .values(
+          Array.from(teamNames).map((teamName) => ({
+            name: teamName,
+            projectId,
+          })),
+        )
         .onConflict((conflict) => conflict.column("name").doNothing())
         .execute();
 
@@ -61,6 +80,7 @@ export async function saveStudents(
         .selectFrom("team")
         .select(["id", "name"])
         .where("name", "in", Array.from(teamNames))
+        .where("projectId", "=", projectId)
         .execute();
 
       for (const team of teamResults) {
@@ -69,6 +89,23 @@ export async function saveStudents(
     }
 
     if (studentsWithTeam.length > 0) {
+      const conflictingStudents = await tx
+        .selectFrom("student")
+        .select(["id", "projectId"])
+        .where(
+          "id",
+          "in",
+          studentsWithTeam.map((student) => student.id),
+        )
+        .where("projectId", "!=", projectId)
+        .execute();
+
+      if (conflictingStudents.length > 0) {
+        throw new Error(
+          `Student ids already belong to another project: ${conflictingStudents.map((student) => student.id).join(", ")}`,
+        );
+      }
+
       await tx
         .insertInto("student")
         .values(
@@ -76,12 +113,14 @@ export async function saveStudents(
             id: student.id,
             lastName: student.lastName,
             firstName: student.firstName,
+            projectId,
           })),
         )
         .onConflict((conflict) =>
           conflict.column("id").doUpdateSet((expressionBuilder) => ({
             lastName: expressionBuilder.ref("excluded.lastName"),
             firstName: expressionBuilder.ref("excluded.firstName"),
+            projectId: expressionBuilder.ref("excluded.projectId"),
           })),
         )
         .execute();
@@ -143,6 +182,7 @@ export async function saveStudents(
       return [
         {
           type: "team" as const,
+          projectId,
           teamId,
           studentId: null,
         },
@@ -156,6 +196,8 @@ export async function saveStudents(
         .onConflict((conflict) =>
           conflict.column("teamId").doUpdateSet({
             type: "team",
+            projectId: (expressionBuilder) =>
+              expressionBuilder.ref("excluded.projectId"),
             teamId: (expressionBuilder) =>
               expressionBuilder.ref("excluded.teamId"),
             studentId: null,
@@ -176,6 +218,7 @@ export async function saveStudents(
       return [
         {
           type: "individual" as const,
+          projectId,
           studentId: submission.studentId,
           teamId: null,
         },
@@ -189,6 +232,8 @@ export async function saveStudents(
         .onConflict((conflict) =>
           conflict.column("studentId").doUpdateSet({
             type: "individual",
+            projectId: (expressionBuilder) =>
+              expressionBuilder.ref("excluded.projectId"),
             studentId: (expressionBuilder) =>
               expressionBuilder.ref("excluded.studentId"),
             teamId: null,

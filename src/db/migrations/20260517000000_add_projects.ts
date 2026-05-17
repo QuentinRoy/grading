@@ -1,59 +1,80 @@
-import { type Kysely, sql } from "kysely";
+import { randomUUID } from "node:crypto";
+import { type Generated, type Kysely, sql } from "kysely";
 
-const DEFAULT_PROJECT_SLUG = "default";
 const DEFAULT_PROJECT_NAME = "Default";
+const DEFAULT_PROJECT_PUBLIC_ID = `p-${randomUUID().slice(0, 8)}`;
 
-type ProjectRow = {
-  id: number;
-};
+const tablesWithProjectEntries = (
+  ["question", "rubric", "student", "team", "submission", "assessment"] as const
+).map((table) => ({
+  table,
+  constraint:
+    `${table?.[0]?.toUpperCase() + table.slice(1)}_projectId_fkey` as const,
+  index: `${table}_project_id_idx` as const,
+}));
 
-async function addProjectIdColumn(params: {
-  db: Kysely<unknown>;
-  tableName: string;
+type TableWithProjectName = (typeof tablesWithProjectEntries)[number]["table"];
+
+type MigrationDB = {
+  project: {
+    id: Generated<number>;
+    public_id: string;
+    name: string;
+  };
+} & Record<TableWithProjectName, { project_id: number | null }>;
+
+async function addProjectIdColumn({
+  db,
+  table,
+  defaultProjectId,
+  constraint,
+}: {
+  db: Kysely<MigrationDB>;
+  table: TableWithProjectName;
   defaultProjectId: number;
-  constraintName: string;
+  constraint: string;
 }): Promise<void> {
-  const { db, tableName, defaultProjectId, constraintName } = params;
-  const defaultProjectIdSql = sql.raw(String(defaultProjectId));
+  await db.schema
+    .alterTable(table)
+    .addColumn("project_id", "integer")
+    .execute();
 
-  await sql`
-    ALTER TABLE ${sql.table(tableName)}
-    ADD COLUMN project_id integer;
-  `.execute(db);
+  await db
+    .updateTable(table)
+    .set({ project_id: defaultProjectId })
+    .where("project_id", "is", null)
+    .execute();
 
-  await sql`
-    UPDATE ${sql.table(tableName)}
-    SET project_id = ${defaultProjectIdSql}
-    WHERE project_id IS NULL;
-  `.execute(db);
+  await db.schema
+    .alterTable(table)
+    .alterColumn("project_id", (column) => column.setNotNull())
+    .execute();
 
-  await sql`
-    ALTER TABLE ${sql.table(tableName)}
-    ALTER COLUMN project_id SET NOT NULL;
-  `.execute(db);
+  await db.schema
+    .alterTable(table)
+    .addForeignKeyConstraint(
+      constraint,
+      ["project_id"],
+      "project",
+      ["id"],
+      (constraint) => constraint.onDelete("cascade").onUpdate("cascade"),
+    )
+    .execute();
 
-  await sql`
-    ALTER TABLE ${sql.table(tableName)}
-    ADD CONSTRAINT ${sql.id(constraintName)}
-    FOREIGN KEY (project_id)
-    REFERENCES project(id)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE;
-  `.execute(db);
-
-  await sql`
-    CREATE INDEX ${sql.id(`${tableName}_project_id_idx`)}
-    ON ${sql.table(tableName)} (project_id);
-  `.execute(db);
+  await db.schema
+    .createIndex(`${table}_project_id_idx`)
+    .on(table)
+    .column("project_id")
+    .execute();
 }
 
-export async function up(db: Kysely<unknown>): Promise<void> {
+export async function up(db: Kysely<MigrationDB>): Promise<void> {
   await db.schema
     .createTable("project")
     .addColumn("id", "integer", (column) =>
       column.generatedAlwaysAsIdentity().primaryKey().notNull(),
     )
-    .addColumn("slug", "text", (column) => column.notNull().unique())
+    .addColumn("public_id", "text", (column) => column.notNull().unique())
     .addColumn("name", "text", (column) => column.notNull())
     .addColumn("created_at", "timestamp(3)", (column) =>
       column.notNull().defaultTo(sql`CURRENT_TIMESTAMP`),
@@ -63,88 +84,34 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     )
     .execute();
 
-  await sql`
-    INSERT INTO project (slug, name)
-    VALUES (${DEFAULT_PROJECT_SLUG}, ${DEFAULT_PROJECT_NAME})
-    ON CONFLICT (slug) DO NOTHING;
-  `.execute(db);
-
-  const defaultProject = await sql<ProjectRow>`
-    SELECT id
-    FROM project
-    WHERE slug = ${DEFAULT_PROJECT_SLUG}
-    LIMIT 1;
-  `.execute(db);
-
-  const defaultProjectId = defaultProject.rows[0]?.id;
+  const defaultProjectId = await db
+    .insertInto("project")
+    .values({
+      public_id: DEFAULT_PROJECT_PUBLIC_ID,
+      name: DEFAULT_PROJECT_NAME,
+    })
+    .returning("id")
+    .executeTakeFirstOrThrow()
+    .then((row) => row.id);
 
   if (defaultProjectId == null) {
     throw new Error("Default project could not be resolved in migration.");
   }
 
-  await addProjectIdColumn({
-    db,
-    tableName: "question",
-    defaultProjectId,
-    constraintName: "Question_projectId_fkey",
-  });
-
-  await addProjectIdColumn({
-    db,
-    tableName: "rubric",
-    defaultProjectId,
-    constraintName: "Rubric_projectId_fkey",
-  });
-
-  await addProjectIdColumn({
-    db,
-    tableName: "student",
-    defaultProjectId,
-    constraintName: "Student_projectId_fkey",
-  });
-
-  await addProjectIdColumn({
-    db,
-    tableName: "team",
-    defaultProjectId,
-    constraintName: "Team_projectId_fkey",
-  });
-
-  await addProjectIdColumn({
-    db,
-    tableName: "submission",
-    defaultProjectId,
-    constraintName: "Submission_projectId_fkey",
-  });
-
-  await addProjectIdColumn({
-    db,
-    tableName: "assessment",
-    defaultProjectId,
-    constraintName: "Assessment_projectId_fkey",
-  });
+  await Promise.all(
+    tablesWithProjectEntries.map((table) =>
+      addProjectIdColumn({ db, defaultProjectId, ...table }),
+    ),
+  );
 }
 
-export async function down(db: Kysely<unknown>): Promise<void> {
-  const tables = [
-    "assessment",
-    "submission",
-    "team",
-    "student",
-    "rubric",
-    "question",
-  ];
-
-  for (const tableName of tables) {
-    await sql`
-      DROP INDEX IF EXISTS ${sql.id(`${tableName}_project_id_idx`)};
-    `.execute(db);
-
-    await sql`
-      ALTER TABLE ${sql.table(tableName)}
-      DROP COLUMN IF EXISTS project_id;
-    `.execute(db);
-  }
+export async function down(db: Kysely<MigrationDB>): Promise<void> {
+  await Promise.all(
+    tablesWithProjectEntries.map(async ({ table, index }) => {
+      await db.schema.dropIndex(index).execute();
+      await db.schema.alterTable(table).dropColumn("project_id").execute();
+    }),
+  );
 
   await db.schema.dropTable("project").ifExists().execute();
 }

@@ -1,43 +1,73 @@
-export function projectBasePath(projectSlug: string): string {
-  return `/projects/${projectSlug}`;
+export function projectBasePath(
+  projectId: string,
+  projectSlug: string,
+): string {
+  return `/projects/${projectId}/${projectSlug}`;
 }
 
-export function projectDashboardPath(projectSlug: string): string {
-  return projectBasePath(projectSlug);
+export function projectDashboardPath(
+  projectId: string,
+  projectSlug: string,
+): string {
+  return projectBasePath(projectId, projectSlug);
 }
 
 export function changeProjectPath(): string {
   return "/projects";
 }
 
-export function projectAssessmentsPath(projectSlug: string): string {
-  return `${projectBasePath(projectSlug)}/assessments`;
+export function projectAssessmentsPath(
+  projectId: string,
+  projectSlug: string,
+): string {
+  return `${projectBasePath(projectId, projectSlug)}/assessments`;
 }
 
-export function projectOverviewPath(projectSlug: string): string {
-  return `${projectBasePath(projectSlug)}/assessments/overview`;
+export function projectOverviewPath(
+  projectId: string,
+  projectSlug: string,
+): string {
+  return `${projectBasePath(projectId, projectSlug)}/assessments/overview`;
 }
 
-export function projectQuestionsPath(projectSlug: string): string {
-  return `${projectBasePath(projectSlug)}/questions`;
+export function projectQuestionsPath(
+  projectId: string,
+  projectSlug: string,
+): string {
+  return `${projectBasePath(projectId, projectSlug)}/questions`;
 }
 
-export function projectImportQuestionsPath(projectSlug: string): string {
-  return `${projectBasePath(projectSlug)}/import/questions`;
+export function projectImportQuestionsPath(
+  projectId: string,
+  projectSlug: string,
+): string {
+  return `${projectBasePath(projectId, projectSlug)}/import/questions`;
 }
 
-export function projectImportStudentsPath(projectSlug: string): string {
-  return `${projectBasePath(projectSlug)}/import/students`;
+export function projectImportStudentsPath(
+  projectId: string,
+  projectSlug: string,
+): string {
+  return `${projectBasePath(projectId, projectSlug)}/import/students`;
 }
 
-export function projectImportAssessmentsPath(projectSlug: string): string {
-  return `${projectBasePath(projectSlug)}/import/assessments`;
+export function projectImportAssessmentsPath(
+  projectId: string,
+  projectSlug: string,
+): string {
+  return `${projectBasePath(projectId, projectSlug)}/import/assessments`;
 }
 
-export function projectExportSubmissionsPath(projectSlug: string): string {
-  return `${projectBasePath(projectSlug)}/export/submissions`;
+export function projectExportSubmissionsPath(
+  projectId: string,
+  projectSlug: string,
+): string {
+  return `${projectBasePath(projectId, projectSlug)}/export/submissions`;
 }
 
-export function projectExportQuestionsPath(projectSlug: string): string {
-  return `${projectBasePath(projectSlug)}/export/questions`;
+export function projectExportQuestionsPath(
+  projectId: string,
+  projectSlug: string,
+): string {
+  return `${projectBasePath(projectId, projectSlug)}/export/questions`;
 }

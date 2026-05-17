@@ -87,7 +87,7 @@ export interface Project {
   createdAt: Generated<Timestamp>;
   id: Generated<number>;
   name: string;
-  slug: string;
+  publicId: string;
   updatedAt: Generated<Timestamp>;
 }
 

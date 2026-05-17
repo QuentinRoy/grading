@@ -19,7 +19,6 @@ import Typography from "@mui/material/Typography";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { type ReactNode, useMemo, useState } from "react";
-import { DEFAULT_PROJECT_SLUG } from "@/db/projects";
 import {
   changeProjectPath,
   projectAssessmentsPath,
@@ -72,13 +71,25 @@ type AppShellProps = {
   children: ReactNode;
 };
 
-function getProjectSlug(pathname: string): string {
-  const match = pathname.match(/^\/projects\/([^/]+)/);
-  if (match?.[1] == null || match[1].length === 0) {
-    return DEFAULT_PROJECT_SLUG;
+type ProjectRouteContext = {
+  projectId: string;
+  projectSlug: string;
+};
+
+function getProjectRouteContext(pathname: string): ProjectRouteContext | null {
+  const segments = pathname.split("/").filter((segment) => segment.length > 0);
+  if (
+    segments[0] !== "projects" ||
+    segments[1] == null ||
+    segments[2] == null
+  ) {
+    return null;
   }
 
-  return match[1];
+  return {
+    projectId: segments[1],
+    projectSlug: segments[2],
+  };
 }
 
 function displayProjectName(projectSlug: string): string {
@@ -121,9 +132,11 @@ function NavigationZone({
 }
 
 function DrawerContent({
+  projectId,
   projectSlug,
   onNavigate,
 }: {
+  projectId: string;
   projectSlug: string;
   onNavigate?: () => void;
 }): ReactNode {
@@ -135,23 +148,35 @@ function DrawerContent({
     );
 
   const assessmentItems: NavigationItem[] = [
-    { label: "Assessments", href: projectAssessmentsPath(projectSlug) },
-    { label: "Rubric overview", href: projectOverviewPath(projectSlug) },
+    {
+      label: "Assessments",
+      href: projectAssessmentsPath(projectId, projectSlug),
+    },
+    {
+      label: "Rubric overview",
+      href: projectOverviewPath(projectId, projectSlug),
+    },
   ];
 
   const managementItems: NavigationItem[] = [
-    { label: "Manage Questions", href: projectQuestionsPath(projectSlug) },
+    {
+      label: "Manage Questions",
+      href: projectQuestionsPath(projectId, projectSlug),
+    },
   ];
 
   const importItems: NavigationItem[] = [
     {
       label: "Import Questions",
-      href: projectImportQuestionsPath(projectSlug),
+      href: projectImportQuestionsPath(projectId, projectSlug),
     },
-    { label: "Import Students", href: projectImportStudentsPath(projectSlug) },
+    {
+      label: "Import Students",
+      href: projectImportStudentsPath(projectId, projectSlug),
+    },
     {
       label: "Import Assessments",
-      href: projectImportAssessmentsPath(projectSlug),
+      href: projectImportAssessmentsPath(projectId, projectSlug),
     },
   ];
 
@@ -167,10 +192,10 @@ function DrawerContent({
     }
 
     const query = searchParams.toString();
-    const basePath = projectExportSubmissionsPath(projectSlug);
+    const basePath = projectExportSubmissionsPath(projectId, projectSlug);
 
     return query.length > 0 ? `${basePath}?${query}` : basePath;
-  }, [exportOptions, projectSlug]);
+  }, [exportOptions, projectId, projectSlug]);
 
   return (
     <>
@@ -268,7 +293,7 @@ function DrawerContent({
           </Typography>
           <Button
             component={NextLink}
-            href={projectExportQuestionsPath(projectSlug)}
+            href={projectExportQuestionsPath(projectId, projectSlug)}
             variant="outlined"
             fullWidth
             onClick={onNavigate}
@@ -283,7 +308,7 @@ function DrawerContent({
 
 export default function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
-  const projectSlug = getProjectSlug(pathname);
+  const projectRouteContext = getProjectRouteContext(pathname);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
@@ -305,7 +330,14 @@ export default function AppShell({ children }: AppShellProps) {
           <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
             <Typography
               component={NextLink}
-              href={projectDashboardPath(projectSlug)}
+              href={
+                projectRouteContext == null
+                  ? changeProjectPath()
+                  : projectDashboardPath(
+                      projectRouteContext.projectId,
+                      projectRouteContext.projectSlug,
+                    )
+              }
               variant="h6"
               sx={{ color: "inherit", textDecoration: "none" }}
             >
@@ -330,10 +362,19 @@ export default function AppShell({ children }: AppShellProps) {
             },
           }}
         >
-          <DrawerContent
-            projectSlug={projectSlug}
-            onNavigate={() => setDrawerOpen(false)}
-          />
+          {projectRouteContext == null ? (
+            <Toolbar>
+              <Typography component="p" variant="subtitle1">
+                Select a project
+              </Typography>
+            </Toolbar>
+          ) : (
+            <DrawerContent
+              projectId={projectRouteContext.projectId}
+              projectSlug={projectRouteContext.projectSlug}
+              onNavigate={() => setDrawerOpen(false)}
+            />
+          )}
         </Drawer>
       </Box>
 

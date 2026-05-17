@@ -33,7 +33,7 @@ export default async function ProjectsPage({
 
     try {
       const project = await createProject({ name });
-      redirect(projectDashboardPath(project.slug));
+      redirect(projectDashboardPath(project.publicId, project.slug));
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unable to create project.";
@@ -66,10 +66,13 @@ export default async function ProjectsPage({
               <ListItemButton
                 key={project.id}
                 component="a"
-                href={projectDashboardPath(project.slug)}
+                href={projectDashboardPath(project.publicId, project.slug)}
                 sx={{ borderRadius: 1, mb: 1 }}
               >
-                <ListItemText primary={project.name} secondary={project.slug} />
+                <ListItemText
+                  primary={project.name}
+                  secondary={`${project.publicId} / ${project.slug}`}
+                />
               </ListItemButton>
             ))}
           </List>

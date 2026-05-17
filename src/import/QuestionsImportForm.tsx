@@ -5,18 +5,23 @@ import Typography from "@mui/material/Typography";
 import { type ReactElement } from "react";
 import BaseImportForm from "./BaseImportForm";
 import { QUESTIONS_YAML_PLACEHOLDER } from "./constants";
-import { questionsImportAction } from "./questionsImportAction";
+import type { ImportState } from "./importState";
 
 type QuestionsImportFormProps = {
   defaultQuestionsYaml?: string;
+  action: (
+    previousState: ImportState,
+    formData: FormData,
+  ) => Promise<ImportState>;
 };
 
 export default function QuestionsImportForm({
+  action,
   defaultQuestionsYaml,
 }: QuestionsImportFormProps): ReactElement {
   return (
     <BaseImportForm
-      action={questionsImportAction}
+      action={action}
       defaultValue={defaultQuestionsYaml}
       title="Import Questions"
       description="Load question rubrics into the database."

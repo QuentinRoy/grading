@@ -1,12 +1,22 @@
 import "server-only";
-import { cacheLife, cacheTag, revalidateTag } from "next/cache";
+import { customAlphabet } from "nanoid";
+import { cacheLife, revalidateTag } from "next/cache";
+import { CACHE_TAGS, cacheTags, projectCacheTag } from "./cacheTags";
 import { db } from "./kysely";
 
-export const DEFAULT_PROJECT_SLUG = "default";
+const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 10);
+const createProjectPublicId = () => `p-${nanoid()}`;
 
 export type ProjectSummary = {
   id: number;
+  publicId: string;
   slug: string;
+  name: string;
+};
+
+type ProjectRow = {
+  id: number;
+  publicId: string;
   name: string;
 };
 
@@ -31,65 +41,90 @@ export function toProjectSlug(nameOrSlug: string): string {
   return normalized;
 }
 
-export async function loadProjects(): Promise<ProjectSummary[]> {
-  "use cache";
-  cacheTag("projects");
-  cacheLife({ revalidate: 60 });
-
-  return db
-    .selectFrom("project")
-    .select(["id", "slug", "name"])
-    .orderBy("name", "asc")
-    .execute();
+function toProjectSummary(row: ProjectRow): ProjectSummary {
+  return {
+    id: row.id,
+    publicId: row.publicId,
+    slug: toProjectSlug(row.name),
+    name: row.name,
+  };
 }
 
-export async function loadProjectBySlug(
-  slug: string,
-): Promise<ProjectSummary | undefined> {
+export async function loadProjects(): Promise<ProjectSummary[]> {
   "use cache";
-  cacheTag("projects");
-  cacheTag(`projects:${slug}`);
+  cacheTags(CACHE_TAGS.projects);
   cacheLife({ revalidate: 60 });
 
-  return db
+  const rows = await db
     .selectFrom("project")
-    .select(["id", "slug", "name"])
-    .where("slug", "=", slug)
+    .select(["id", "publicId", "name"])
+    .orderBy("name", "asc")
+    .execute();
+
+  return rows.map(toProjectSummary);
+}
+
+export async function loadProjectByPublicId(
+  publicId: string,
+): Promise<ProjectSummary | undefined> {
+  "use cache";
+  cacheTags(CACHE_TAGS.projects, projectCacheTag(publicId));
+  cacheLife({ revalidate: 60 });
+
+  const row = await db
+    .selectFrom("project")
+    .select(["id", "publicId", "name"])
+    .where("publicId", "=", publicId)
     .executeTakeFirst();
+
+  if (row == null) {
+    return undefined;
+  }
+
+  return toProjectSummary(row);
 }
 
 export async function createProject(input: {
   name: string;
-  slug?: string;
 }): Promise<ProjectSummary> {
   const name = input.name.trim();
   if (name.length === 0) {
     throw new Error("Project name is required.");
   }
 
-  const slug = toProjectSlug(input.slug ?? input.name);
+  let inserted: ProjectRow | undefined;
 
-  const existing = await db
-    .selectFrom("project")
-    .select(["id", "slug", "name"])
-    .where("slug", "=", slug)
-    .executeTakeFirst();
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const publicId = createProjectPublicId();
 
-  if (existing != null) {
-    throw new Error(`Project slug '${slug}' already exists.`);
+    try {
+      inserted = await db
+        .insertInto("project")
+        .values({
+          publicId,
+          name,
+        })
+        .returning(["id", "publicId", "name"])
+        .executeTakeFirstOrThrow();
+      break;
+    } catch (error) {
+      if (
+        typeof error !== "object" ||
+        error == null ||
+        !("code" in error) ||
+        error.code !== "23505"
+      ) {
+        throw error;
+      }
+    }
   }
 
-  const inserted = await db
-    .insertInto("project")
-    .values({
-      slug,
-      name,
-    })
-    .returning(["id", "slug", "name"])
-    .executeTakeFirstOrThrow();
+  if (inserted == null) {
+    throw new Error("Unable to create a unique project id.");
+  }
 
   revalidateTag("projects", "max");
-  revalidateTag(`projects:${slug}`, "max");
+  revalidateTag(projectCacheTag(inserted.publicId), "max");
 
-  return inserted;
+  return toProjectSummary(inserted);
 }

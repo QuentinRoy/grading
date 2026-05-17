@@ -10,26 +10,30 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useRouter } from "next/navigation";
 import { type ReactElement, useActionState, useState } from "react";
-import { deleteQuestionAction } from "./actions";
 import DeleteQuestionDialog from "./DeleteQuestionDialog";
 import { initialQuestionsActionState } from "./state";
 import type { QuestionManagementItem } from "./types";
 
 type SelectedQuestionPaneProps = {
   question?: QuestionManagementItem;
+  deleteAction: (
+    state: import("./state").QuestionsActionState,
+    formData: FormData,
+  ) => Promise<import("./state").QuestionsActionState>;
+  onEdit: () => void;
   onDeleteSuccess: () => void;
 };
 
 export default function SelectedQuestionPane({
   question,
+  deleteAction,
+  onEdit,
   onDeleteSuccess,
 }: SelectedQuestionPaneProps): ReactElement {
-  const router = useRouter();
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteState, deleteFormAction] = useActionState(
-    deleteQuestionAction,
+    deleteAction,
     initialQuestionsActionState,
   );
 
@@ -43,11 +47,7 @@ export default function SelectedQuestionPane({
         <Typography component="h2" variant="h5" sx={{ flex: 1 }}>
           Selected Question
         </Typography>
-        <Button
-          variant="outlined"
-          disabled={question == null}
-          onClick={() => router.push(`/questions/${question?.id}/edit`)}
-        >
+        <Button variant="outlined" disabled={question == null} onClick={onEdit}>
           Edit
         </Button>
         <Button

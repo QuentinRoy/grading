@@ -39,6 +39,7 @@ function assertRecognizedAssessmentColumns(params: {
 async function resolveSubmissionId(params: {
   submissionType: "team" | "individual";
   submitter: string;
+  projectId: number;
 }): Promise<string | null | "ambiguous"> {
   const submissions =
     params.submissionType === "team"
@@ -46,6 +47,7 @@ async function resolveSubmissionId(params: {
           .selectFrom("submission")
           .innerJoin("team", "team.id", "submission.teamId")
           .where("submission.type", "=", "team")
+          .where("submission.projectId", "=", params.projectId)
           .where("team.name", "=", params.submitter)
           .select("submission.id")
           .execute()
@@ -53,6 +55,7 @@ async function resolveSubmissionId(params: {
           .selectFrom("submission")
           .innerJoin("student", "student.id", "submission.studentId")
           .where("submission.type", "=", "individual")
+          .where("submission.projectId", "=", params.projectId)
           .where("student.id", "=", params.submitter)
           .select("submission.id")
           .execute();
@@ -119,6 +122,7 @@ function parseAssessmentValue(params: {
 
 export async function saveAssessments(
   assessmentRows: ImportedAssessmentRow[],
+  projectId: number,
 ): Promise<{
   assessmentCount: number;
 }> {
@@ -133,6 +137,7 @@ export async function saveAssessments(
         "ordinalRubric.id",
       )
       .leftJoin("numericalRubric", "numericalRubric.rubricId", "rubric.id")
+      .where("rubric.projectId", "=", projectId)
       .select([
         "rubric.id",
         "rubric.type",
@@ -143,7 +148,11 @@ export async function saveAssessments(
         "numericalRubric.maxScore",
       ])
       .execute(),
-    db.selectFrom("question").select("id").execute(),
+    db
+      .selectFrom("question")
+      .where("question.projectId", "=", projectId)
+      .select("id")
+      .execute(),
   ]);
 
   const rubricsByKey = new Map<string, ImportedRubricInfo>();
@@ -210,6 +219,7 @@ export async function saveAssessments(
     const submissionId = await resolveSubmissionId({
       submissionType,
       submitter,
+      projectId,
     });
 
     if (submissionId === "ambiguous") {

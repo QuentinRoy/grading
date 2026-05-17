@@ -1,6 +1,6 @@
 import "server-only";
-import { cacheTag, updateTag } from "next/cache";
 import { assertNever } from "../utils/utils";
+import { cacheTags, updateTags } from "./cacheTags";
 import { db } from "./kysely";
 import type { AssessmentRubricValue } from "./types";
 
@@ -20,7 +20,7 @@ export async function loadAssessment(
   questionId: string,
 ): Promise<AssessmentRubricValue[]> {
   "use cache";
-  cacheTag(`assessments:${submissionId}:${questionId}`);
+  cacheTags(`assessments:${submissionId}:${questionId}`);
 
   const assessment = await db
     .selectFrom("assessment")
@@ -364,9 +364,11 @@ export async function saveAssessment({
       return result;
     }
 
-    updateTag(`assessments:${submissionId}:${questionId}`);
-    updateTag("assessments");
-    updateTag(`assessments:question:${questionId}`);
+    updateTags(
+      `assessments:${submissionId}:${questionId}`,
+      "assessments",
+      `assessments:question:${questionId}`,
+    );
 
     return { success: true };
   });

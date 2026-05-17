@@ -84,8 +84,8 @@ beforeAll(async () => {
 
   defaultProjectId = await db
     .selectFrom("project")
-    .where("slug", "=", "default")
     .select("id")
+    .orderBy("id", "asc")
     .executeTakeFirstOrThrow()
     .then((row) => row.id);
 

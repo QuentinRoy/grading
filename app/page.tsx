@@ -1,7 +1,14 @@
 import { redirect } from "next/navigation";
-import { DEFAULT_PROJECT_SLUG } from "@/db/projects";
+import { loadProjects } from "@/db/projects";
 import { projectDashboardPath } from "@/projects/routes";
 
-export default function HomePage() {
-  redirect(projectDashboardPath(DEFAULT_PROJECT_SLUG));
+export default async function HomePage() {
+  const projects = await loadProjects();
+  const defaultProject = projects[0];
+
+  if (defaultProject == null) {
+    redirect("/projects");
+  }
+
+  redirect(projectDashboardPath(defaultProject.publicId, defaultProject.slug));
 }
