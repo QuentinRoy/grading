@@ -117,12 +117,13 @@ export interface Student {
   lastName: string;
   firstName: string;
   id: string;
+  rowId: Generated<number>;
   projectId: Generated<number>;
   updatedAt: Generated<Timestamp>;
 }
 
 export interface StudentToTeam {
-  studentId: string;
+  studentId: number;
   teamId: number;
 }
 
@@ -130,7 +131,7 @@ export interface Submission {
   createdAt: Generated<Timestamp>;
   id: Generated<number>;
   projectId: Generated<number>;
-  studentId: string | null;
+  studentId: number | null;
   teamId: number | null;
   type: Generated<SubmissionType>;
   updatedAt: Generated<Timestamp>;

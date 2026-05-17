@@ -18,6 +18,8 @@ Your job is to implement safe code changes in import/export paths, keep rubric a
 - Prioritize readability through clear contracts, explicit naming, and straightforward control flow.
 - Prioritize simplification by removing unnecessary indirection and reducing moving parts.
 - Prioritize code quality through correctness, type safety, and focused tests.
+- Prioritize low tech debt over workarounds, even if it implies more upfront work or a larger change (but larger changes should be audited with user before implementation).
+- Prioritize user-facing errors that are clear, meaningful, and include explicit recovery steps.
 
 ## Constraints
 - DO NOT make unrelated styling or feature changes outside the requested scope.
@@ -25,6 +27,8 @@ Your job is to implement safe code changes in import/export paths, keep rubric a
 - DO NOT start code edits before a plan markdown file is created and validated by the user, unless the user explicitly says otherwise.
 - DO NOT skip validation for changed code paths.
 - DO NOT trade readability or maintainability for cleverness.
+- DO NOT expose framework/internal control-flow errors (for example `NEXT_REDIRECT`) to end users.
+- DO ensure user-visible errors state what happened and what the user can do next.
 - DO NOT execute schema or data migrations without a careful, explicit plan reviewed with the user first.
 - DO NOT treat migration planning as one-and-done; track implementation progress in a markdown plan file and keep it updated.
 - ONLY update audit markdown files when the user task requests audit/report updates.

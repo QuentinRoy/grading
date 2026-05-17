@@ -31,7 +31,7 @@ export async function GET(
     return Response.json({ error: message }, { status: 400 });
   }
 
-  const exportData = await createSubmissionExport(options);
+  const exportData = await createSubmissionExport(options, project.id);
 
   const body = new ReadableStream<Uint8Array>({
     async start(controller) {

@@ -40,6 +40,7 @@ const __dirname = path.dirname(__filename);
 type AssessmentFixture = {
   questionId: string;
   studentId: string;
+  studentRowId: number;
   submissionId: string;
   rubricIds: {
     boolean: string;
@@ -115,12 +116,19 @@ async function createAssessmentFixture(): Promise<AssessmentFixture> {
     })
     .execute();
 
+  const studentRow = await db
+    .selectFrom("student")
+    .select(["rowId", "id"])
+    .where("projectId", "=", defaultProjectId)
+    .where("id", "=", studentId)
+    .executeTakeFirstOrThrow();
+
   const submission = await db
     .insertInto("submission")
     .values({
       projectId: defaultProjectId,
       type: "individual",
-      studentId,
+      studentId: studentRow.rowId,
     })
     .returning("id")
     .executeTakeFirstOrThrow();
@@ -211,6 +219,7 @@ async function createAssessmentFixture(): Promise<AssessmentFixture> {
   const fixture = {
     questionId,
     studentId,
+    studentRowId: studentRow.rowId,
     submissionId: String(submission.id),
     rubricIds: {
       boolean: booleanRubricId,
@@ -235,7 +244,10 @@ async function cleanupFixture(fixture: AssessmentFixture): Promise<void> {
     .where("id", "=", fixture.questionId)
     .execute();
 
-  await db.deleteFrom("student").where("id", "=", fixture.studentId).execute();
+  await db
+    .deleteFrom("student")
+    .where("rowId", "=", fixture.studentRowId)
+    .execute();
 }
 
 describe("assessment DB integration", () => {

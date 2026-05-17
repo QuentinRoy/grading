@@ -53,7 +53,7 @@ async function resolveSubmissionId(params: {
           .execute()
       : await db
           .selectFrom("submission")
-          .innerJoin("student", "student.id", "submission.studentId")
+          .innerJoin("student", "student.rowId", "submission.studentId")
           .where("submission.type", "=", "individual")
           .where("submission.projectId", "=", params.projectId)
           .where("student.id", "=", params.submitter)

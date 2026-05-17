@@ -18,7 +18,7 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, Suspense, useMemo, useState } from "react";
 import {
   changeProjectPath,
   projectAssessmentsPath,
@@ -69,11 +69,18 @@ function deserializeExportOptions(raw: string): ExportPersistedOptions {
 
 type AppShellProps = {
   children: ReactNode;
+  showNavigation?: boolean;
 };
 
 type ProjectRouteContext = {
   projectId: string;
   projectSlug: string;
+};
+
+type NavigationShellProps = {
+  showNavigation: boolean;
+  drawerOpen: boolean;
+  setDrawerOpen: (value: boolean | ((current: boolean) => boolean)) => void;
 };
 
 function getProjectRouteContext(pathname: string): ProjectRouteContext | null {
@@ -306,42 +313,34 @@ function DrawerContent({
   );
 }
 
-export default function AppShell({ children }: AppShellProps) {
-  const pathname = usePathname();
-  const projectRouteContext = getProjectRouteContext(pathname);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
+function NavigationFallback({
+  showNavigation,
+  drawerOpen,
+  setDrawerOpen,
+}: NavigationShellProps): ReactNode {
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+    <>
       <AppBar
         position="fixed"
         sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
       >
         <Toolbar>
-          <IconButton
-            color="inherit"
-            edge="start"
-            onClick={() => setDrawerOpen((current) => !current)}
-            aria-label="Open navigation drawer"
-          >
-            <MenuIcon />
-          </IconButton>
+          {showNavigation ? (
+            <IconButton
+              color="inherit"
+              edge="start"
+              onClick={() => setDrawerOpen((current) => !current)}
+              aria-label="Open navigation drawer"
+            >
+              <MenuIcon />
+            </IconButton>
+          ) : (
+            <Box sx={{ width: 48, flexShrink: 0 }} aria-hidden />
+          )}
 
           <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
-            <Typography
-              component={NextLink}
-              href={
-                projectRouteContext == null
-                  ? changeProjectPath()
-                  : projectDashboardPath(
-                      projectRouteContext.projectId,
-                      projectRouteContext.projectSlug,
-                    )
-              }
-              variant="h6"
-              sx={{ color: "inherit", textDecoration: "none" }}
-            >
-              BonPoint
+            <Typography variant="h6" sx={{ color: "inherit" }}>
+              {showNavigation ? "Project" : "BonPoint"}
             </Typography>
           </Box>
 
@@ -349,34 +348,145 @@ export default function AppShell({ children }: AppShellProps) {
         </Toolbar>
       </AppBar>
 
-      <Box component="nav">
-        <Drawer
-          variant="temporary"
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-          ModalProps={{ keepMounted: true }}
-          sx={{
-            "& .MuiDrawer-paper": {
-              width: DRAWER_WIDTH,
-              boxSizing: "border-box",
-            },
-          }}
-        >
-          {projectRouteContext == null ? (
+      {showNavigation && (
+        <Box component="nav">
+          <Drawer
+            variant="temporary"
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            ModalProps={{ keepMounted: true }}
+            sx={{
+              "& .MuiDrawer-paper": {
+                width: DRAWER_WIDTH,
+                boxSizing: "border-box",
+              },
+            }}
+          >
             <Toolbar>
               <Typography component="p" variant="subtitle1">
                 Select a project
               </Typography>
             </Toolbar>
+          </Drawer>
+        </Box>
+      )}
+    </>
+  );
+}
+
+function NavigationShell({
+  showNavigation,
+  drawerOpen,
+  setDrawerOpen,
+}: NavigationShellProps): ReactNode {
+  const pathname = usePathname();
+  const projectRouteContext = getProjectRouteContext(pathname);
+  const title =
+    showNavigation && projectRouteContext != null
+      ? displayProjectName(projectRouteContext.projectSlug)
+      : "BonPoint";
+
+  return (
+    <>
+      <AppBar
+        position="fixed"
+        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+      >
+        <Toolbar>
+          {showNavigation ? (
+            <IconButton
+              color="inherit"
+              edge="start"
+              onClick={() => setDrawerOpen((current) => !current)}
+              aria-label="Open navigation drawer"
+            >
+              <MenuIcon />
+            </IconButton>
           ) : (
-            <DrawerContent
-              projectId={projectRouteContext.projectId}
-              projectSlug={projectRouteContext.projectSlug}
-              onNavigate={() => setDrawerOpen(false)}
-            />
+            <Box sx={{ width: 48, flexShrink: 0 }} aria-hidden />
           )}
-        </Drawer>
-      </Box>
+
+          <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
+            {showNavigation && projectRouteContext != null ? (
+              <Typography
+                component={NextLink}
+                href={projectDashboardPath(
+                  projectRouteContext.projectId,
+                  projectRouteContext.projectSlug,
+                )}
+                variant="h6"
+                sx={{ color: "inherit", textDecoration: "none" }}
+              >
+                {title}
+              </Typography>
+            ) : (
+              <Typography variant="h6" sx={{ color: "inherit" }}>
+                {title}
+              </Typography>
+            )}
+          </Box>
+
+          <Box sx={{ width: 48, flexShrink: 0 }} aria-hidden />
+        </Toolbar>
+      </AppBar>
+
+      {showNavigation && (
+        <Box component="nav">
+          <Drawer
+            variant="temporary"
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            ModalProps={{ keepMounted: true }}
+            sx={{
+              "& .MuiDrawer-paper": {
+                width: DRAWER_WIDTH,
+                boxSizing: "border-box",
+              },
+            }}
+          >
+            {projectRouteContext == null ? (
+              <Toolbar>
+                <Typography component="p" variant="subtitle1">
+                  Select a project
+                </Typography>
+              </Toolbar>
+            ) : (
+              <DrawerContent
+                projectId={projectRouteContext.projectId}
+                projectSlug={projectRouteContext.projectSlug}
+                onNavigate={() => setDrawerOpen(false)}
+              />
+            )}
+          </Drawer>
+        </Box>
+      )}
+    </>
+  );
+}
+
+export default function AppShell({
+  children,
+  showNavigation = true,
+}: AppShellProps) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  return (
+    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+      <Suspense
+        fallback={
+          <NavigationFallback
+            showNavigation={showNavigation}
+            drawerOpen={drawerOpen}
+            setDrawerOpen={setDrawerOpen}
+          />
+        }
+      >
+        <NavigationShell
+          showNavigation={showNavigation}
+          drawerOpen={drawerOpen}
+          setDrawerOpen={setDrawerOpen}
+        />
+      </Suspense>
 
       <Box component="main" sx={{ flexGrow: 1, minWidth: 0 }}>
         <Toolbar />

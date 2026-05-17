@@ -35,14 +35,15 @@ Introduce project-level isolation for all domain data with URL-scoped context un
 - Phase 1, Foundation and Refactor: complete.
   - Done: project resolver usage, project-aware route helpers, shared cache-tag helpers, shared project-scope helper, route/navigation wiring, and the DB-layer refactor cleanup.
 - Phase 2, Project Feature Implementation: complete.
-  - Done: schema migration, backfill, merged public-id setup, opaque short public ids (nanoid in runtime, node:crypto in migration), slug removed from DB, scoped read paths, dashboard shell, project switch page, project-aware assessment writes, project-scoped question management, and project-bound import flows.
+  - Done: schema migration, backfill, merged public-id setup, opaque short public ids (nanoid in runtime, node:crypto in migration), slug removed from DB, surrogate student key model, scoped read paths, dashboard shell, project switch page, project-aware assessment writes, project-scoped question management, and project-bound import flows.
 - Phase 3, Debt Reduction and Final Cleanup: in progress.
-  - Done: legacy top-level routes removed, import menu removed, stale redirect removed, slug-only project route tree removed, route helpers narrowed to canonical URL shape, migration refactored to db.schema with no third-party deps.
-  - Remaining: export cache tags, two-project isolation tests, globally-strict uniqueness constraints.
+  - Done: legacy top-level routes removed, import menu removed, stale redirect removed, slug-only project route tree removed, route helpers narrowed to canonical URL shape, migration refactored to db.schema with no third-party deps, two-project isolation regression tests.
+  - Remaining: manual multi-project spot-checks.
 
 ### Completed
 - Added a `project` table and backfilled legacy data into a seeded default project.
 - Added `projectId` to the project-scoped tables and updated the assessment write path to persist it.
+- Reworked the student model so the imported student id is a project-scoped natural key and the relational foreign keys use a surrogate student row id.
 - Added project-aware read helpers for questions, submissions, rubric overview, submission progress, and dashboard progress.
 - Added central route helpers for `/projects/[projectId]/[projectSlug]/...` links.
 - Added the `/projects` switcher page and the project dashboard shell.
@@ -63,11 +64,15 @@ Introduce project-level isolation for all domain data with URL-scoped context un
 - Replaced raw SQL in the project migration with `db.schema` and `db.updateTable` calls throughout; the backfill and structural DDL are now fully Kysely-native.
 - Removed third-party dependency (nanoid) from the migration; the seeded default id uses `node:crypto` instead.
 - Typed the migration's `MigrationDB` to include backfill tables so the update can use `db.updateTable` instead of raw SQL.
+- Scoped the questions export route to pass `project.id` to `loadQuestions`.
+- Scoped `createSubmissionExport`, `loadQuestionPlan`, and `assertSubmissionInvariants` to require a `projectId`; the streaming rows query filters by `submission.projectId`.
+- Removed legacy global export routes under `app/export/` (questions and submissions); project-scoped equivalents exist under `app/projects/[projectId]/[projectSlug]/export/`.
+- Replaced the globally-unique `team.name` constraint with a per-project composite unique constraint `(name, project_id)` via migration `20260517000001_fix_team_name_uniqueness.ts`.
+- Updated the team import helper to use the composite `onConflict` and removed the now-unnecessary cross-project team name guard.
+- Updated the base migration so student rows use a surrogate `row_id` primary key and submission / team-link tables point at that surrogate key.
 
 ### In Progress / Still To Do
-- Add or update regression checks for two-project isolation flows.
-- Revisit uniqueness constraints that are still globally strict for names even though the feature model is project-scoped.
-- Decide whether export routes need project-specific cache tags and additional route helpers.
+
 
 ## Deviation Log
 - The implementation did not follow the original phase ordering exactly.
@@ -133,7 +138,11 @@ Introduce project-level isolation for all domain data with URL-scoped context un
   - Keep project-scoped APIs explicit and consistent.
 3. Remove duplicate predicates and obsolete cache tags.
   - Collapse repeated project filters into shared helpers where it actually reduces complexity.
-4. Verify formatting, types, tests, and manual multi-project flows.
+4. Redesign student identity for project-scoped imports.
+  - Replace the global student primary key with a project-scoped model.
+  - Update submission and student-team references to match the new key strategy.
+  - Keep import/export behavior stable for existing project data.
+5. Verify formatting, types, tests, and manual multi-project flows.
   - Do not treat the feature as done until the cleanup pass is also done.
 
 ## Affected Areas

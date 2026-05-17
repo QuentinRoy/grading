@@ -103,6 +103,18 @@ export async function up(db: Kysely<MigrationDB>): Promise<void> {
       addProjectIdColumn({ db, defaultProjectId, ...table }),
     ),
   );
+
+  await db.schema
+    .alterTable("student")
+    .addUniqueConstraint("Student_projectId_id_key", ["project_id", "id"])
+    .execute();
+
+  await db.schema.alterTable("team").dropConstraint("team_name_key").execute();
+
+  await db.schema
+    .alterTable("team")
+    .addUniqueConstraint("Team_name_projectId_key", ["name", "project_id"])
+    .execute();
 }
 
 export async function down(db: Kysely<MigrationDB>): Promise<void> {
@@ -114,4 +126,19 @@ export async function down(db: Kysely<MigrationDB>): Promise<void> {
   );
 
   await db.schema.dropTable("project").ifExists().execute();
+
+  await db.schema
+    .alterTable("student")
+    .dropConstraint("Student_projectId_id_key")
+    .execute();
+
+  await db.schema
+    .alterTable("team")
+    .dropConstraint("Team_name_projectId_key")
+    .execute();
+
+  await db.schema
+    .alterTable("team")
+    .addUniqueConstraint("team_name_key", ["name"])
+    .execute();
 }

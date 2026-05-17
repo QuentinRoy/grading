@@ -49,9 +49,10 @@ function toSubmissionSubmitter(params: {
   };
 }
 
-async function assertSubmissionInvariants() {
+async function assertSubmissionInvariants(projectId: number) {
   const invalidSubmissions = await db
     .selectFrom("submission")
+    .where("submission.projectId", "=", projectId)
     .select((expressionBuilder) => expressionBuilder.fn.countAll().as("count"))
     .where((expressionBuilder) =>
       expressionBuilder.or([
@@ -76,16 +77,20 @@ async function assertSubmissionInvariants() {
   }
 }
 
-async function loadQuestionPlan(): Promise<ExportQuestionPlan[]> {
+async function loadQuestionPlan(
+  projectId: number,
+): Promise<ExportQuestionPlan[]> {
   const [questions, rubrics, booleanRubrics, numericalRubrics, ordinalMarks] =
     await Promise.all([
       db
         .selectFrom("question")
+        .where("question.projectId", "=", projectId)
         .select(["id", "label", "position"])
         .orderBy("position", "asc")
         .execute(),
       db
         .selectFrom("rubric")
+        .where("rubric.projectId", "=", projectId)
         .select([
           "id",
           "questionId",
@@ -98,10 +103,14 @@ async function loadQuestionPlan(): Promise<ExportQuestionPlan[]> {
         .execute(),
       db
         .selectFrom("booleanRubric")
+        .innerJoin("rubric", "rubric.id", "booleanRubric.rubricId")
+        .where("rubric.projectId", "=", projectId)
         .select(["rubricId", "marks", "falseMarks"])
         .execute(),
       db
         .selectFrom("numericalRubric")
+        .innerJoin("rubric", "rubric.id", "numericalRubric.rubricId")
+        .where("rubric.projectId", "=", projectId)
         .select([
           "rubricId",
           "minScore",
@@ -118,6 +127,8 @@ async function loadQuestionPlan(): Promise<ExportQuestionPlan[]> {
           "ordinalRubricValue.ordinalRubricId",
           "ordinalRubric.id",
         )
+        .innerJoin("rubric", "rubric.id", "ordinalRubric.rubricId")
+        .where("rubric.projectId", "=", projectId)
         .select([
           "ordinalRubric.rubricId as rubricId",
           "ordinalRubricValue.label as label",
@@ -203,20 +214,24 @@ async function loadQuestionPlan(): Promise<ExportQuestionPlan[]> {
   }));
 }
 
-export async function createSubmissionExport(options: ExportOptions): Promise<{
+export async function createSubmissionExport(
+  options: ExportOptions,
+  projectId: number,
+): Promise<{
   headers: string[];
   rows: AsyncGenerator<string[]>;
 }> {
-  await assertSubmissionInvariants();
+  await assertSubmissionInvariants(projectId);
 
-  const questions = await loadQuestionPlan();
+  const questions = await loadQuestionPlan(projectId);
   const headers = buildSubmissionExportHeaders(questions, options);
 
   async function* rows(): AsyncGenerator<string[]> {
     const stream = db
       .selectFrom("submission")
+      .where("submission.projectId", "=", projectId)
       .leftJoin("team", "team.id", "submission.teamId")
-      .leftJoin("student", "student.id", "submission.studentId")
+      .leftJoin("student", "student.rowId", "submission.studentId")
       .leftJoin("assessment", "assessment.submissionId", "submission.id")
       .leftJoin(
         "rubricAssessment",

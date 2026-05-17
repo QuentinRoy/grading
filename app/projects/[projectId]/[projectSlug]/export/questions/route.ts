@@ -20,7 +20,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
 
   try {
-    const questions = await loadQuestions();
+    const questions = await loadQuestions(project.id);
     const yaml = exportQuestionsToYaml(questions);
 
     const now = new Date();

@@ -33,7 +33,7 @@ export async function saveStudents(
     };
   });
 
-  const studentsWithTeam = submissions.flatMap((submission) =>
+  const studentsToUpsert = submissions.flatMap((submission) =>
     submission.students.map((student) => ({
       id: student.id,
       lastName: student.lastName,
@@ -50,21 +50,9 @@ export async function saveStudents(
     );
 
     const teamsByName = new Map<string, number>();
+    const studentRowIdsByImportedId = new Map<string, number>();
 
     if (teamNames.size > 0) {
-      const conflictingTeams = await tx
-        .selectFrom("team")
-        .select(["name", "projectId"])
-        .where("name", "in", Array.from(teamNames))
-        .where("projectId", "!=", projectId)
-        .execute();
-
-      if (conflictingTeams.length > 0) {
-        throw new Error(
-          `Team names already belong to another project: ${conflictingTeams.map((team) => team.name).join(", ")}`,
-        );
-      }
-
       await tx
         .insertInto("team")
         .values(
@@ -73,7 +61,9 @@ export async function saveStudents(
             projectId,
           })),
         )
-        .onConflict((conflict) => conflict.column("name").doNothing())
+        .onConflict((conflict) =>
+          conflict.columns(["name", "projectId"]).doNothing(),
+        )
         .execute();
 
       const teamResults = await tx
@@ -88,28 +78,11 @@ export async function saveStudents(
       }
     }
 
-    if (studentsWithTeam.length > 0) {
-      const conflictingStudents = await tx
-        .selectFrom("student")
-        .select(["id", "projectId"])
-        .where(
-          "id",
-          "in",
-          studentsWithTeam.map((student) => student.id),
-        )
-        .where("projectId", "!=", projectId)
-        .execute();
-
-      if (conflictingStudents.length > 0) {
-        throw new Error(
-          `Student ids already belong to another project: ${conflictingStudents.map((student) => student.id).join(", ")}`,
-        );
-      }
-
+    if (studentsToUpsert.length > 0) {
       await tx
         .insertInto("student")
         .values(
-          studentsWithTeam.map((student) => ({
+          studentsToUpsert.map((student) => ({
             id: student.id,
             lastName: student.lastName,
             firstName: student.firstName,
@@ -117,26 +90,55 @@ export async function saveStudents(
           })),
         )
         .onConflict((conflict) =>
-          conflict.column("id").doUpdateSet((expressionBuilder) => ({
-            lastName: expressionBuilder.ref("excluded.lastName"),
-            firstName: expressionBuilder.ref("excluded.firstName"),
-            projectId: expressionBuilder.ref("excluded.projectId"),
-          })),
+          conflict
+            .columns(["projectId", "id"])
+            .doUpdateSet((expressionBuilder) => ({
+              lastName: expressionBuilder.ref("excluded.lastName"),
+              firstName: expressionBuilder.ref("excluded.firstName"),
+              projectId: expressionBuilder.ref("excluded.projectId"),
+            })),
         )
         .execute();
-    }
 
-    const affectedStudentIds = Array.from(
-      new Set(studentsWithTeam.map((student) => student.id)),
-    );
-
-    if (affectedStudentIds.length > 0) {
-      await tx
-        .deleteFrom("studentToTeam")
-        .where("studentId", "in", affectedStudentIds)
+      const studentRows = await tx
+        .selectFrom("student")
+        .select(["rowId", "id"])
+        .where("projectId", "=", projectId)
+        .where(
+          "id",
+          "in",
+          Array.from(new Set(studentsToUpsert.map((student) => student.id))),
+        )
         .execute();
 
-      const studentTeamLinks = studentsWithTeam.flatMap((student) => {
+      for (const student of studentRows) {
+        studentRowIdsByImportedId.set(student.id, student.rowId);
+      }
+
+      const affectedStudentRowIds = Array.from(
+        new Set(
+          studentsToUpsert.map((student) => {
+            const rowId = studentRowIdsByImportedId.get(student.id);
+
+            if (rowId == null) {
+              throw new Error(
+                `Failed to resolve student row for ${student.id}.`,
+              );
+            }
+
+            return rowId;
+          }),
+        ),
+      );
+
+      if (affectedStudentRowIds.length > 0) {
+        await tx
+          .deleteFrom("studentToTeam")
+          .where("studentId", "in", affectedStudentRowIds)
+          .execute();
+      }
+
+      const studentTeamLinks = studentsToUpsert.flatMap((student) => {
         if (student.teamName == null) {
           return [];
         }
@@ -149,7 +151,13 @@ export async function saveStudents(
           );
         }
 
-        return [{ studentId: student.id, teamId }];
+        const rowId = studentRowIdsByImportedId.get(student.id);
+
+        if (rowId == null) {
+          throw new Error(`Failed to resolve student row for ${student.id}.`);
+        }
+
+        return [{ studentId: rowId, teamId }];
       });
 
       if (studentTeamLinks.length > 0) {
@@ -219,7 +227,8 @@ export async function saveStudents(
         {
           type: "individual" as const,
           projectId,
-          studentId: submission.studentId,
+          studentId:
+            studentRowIdsByImportedId.get(submission.studentId) ?? null,
           teamId: null,
         },
       ];
@@ -244,7 +253,7 @@ export async function saveStudents(
 
     return {
       submissionCount: submissionsByOwner.length,
-      studentCount: studentsWithTeam.length,
+      studentCount: studentsToUpsert.length,
     };
   });
 }

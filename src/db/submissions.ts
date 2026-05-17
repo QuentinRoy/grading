@@ -30,7 +30,7 @@ async function loadSubmissionsFromDb(projectId?: number) {
 
   const [submissions, teamMemberRows] = await Promise.all([
     submissionsQuery
-      .leftJoin("student", "student.id", "submission.studentId")
+      .leftJoin("student", "student.rowId", "submission.studentId")
       .leftJoin("team", "team.id", "submission.teamId")
       .select([
         "submission.id as id",
@@ -43,7 +43,7 @@ async function loadSubmissionsFromDb(projectId?: number) {
       .execute(),
     teamMemberQuery
       .innerJoin("studentToTeam", "studentToTeam.teamId", "submission.teamId")
-      .innerJoin("student", "student.id", "studentToTeam.studentId")
+      .innerJoin("student", "student.rowId", "studentToTeam.studentId")
       .where("submission.type", "=", "team")
       .select([
         "submission.id as submissionId",
