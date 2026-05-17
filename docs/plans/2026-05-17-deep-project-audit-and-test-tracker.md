@@ -60,7 +60,7 @@ Note: Tier still dominates score. A Tier 0 item is always prioritized above Tier
 ## 3. Audit Dashboard
 
 Current snapshot (2026-05-17):
-- Tier 0: 6 open, 0 in progress, 0 verified
+- Tier 0: 5 open, 0 in progress, 0 verified
 - Tier 1: 6 open, 0 in progress, 0 verified
 - Tier 2: 4 open, 0 in progress, 0 verified
 
@@ -103,7 +103,7 @@ Immediate execution recommendation:
 | R-013 | Tier 2 | 24 | UI optimistic save behavior | Assessment session optimistic updates and rollback/pending accounting are not explicitly tested. | src/assessment/useAssessmentSession.ts | Open | Unassigned | Sprint C | Pending | Add hook/component tests for success/failure ordering and pending counter integrity. |
 | R-014 | Tier 2 | 27 | Export routes API behavior | Route response contracts (404/400/200, headers, filenames) need route-level tests. | app/projects/[projectId]/[projectSlug]/export/questions/route.ts, app/projects/[projectId]/[projectSlug]/export/submissions/route.ts | Open | Unassigned | Sprint C | Pending | Add route tests for status and headers under valid/invalid conditions. |
 | R-015 | Tier 2 | 20 | Operational signal quality | Some paths surface generic errors; consistency of user-recoverable guidance should be tested and standardized. | app/projects/page.tsx, src/import/actionUtils.ts | Open | Unassigned | Sprint C | Pending | Add contract checks for actionable, non-internal error text and recovery guidance. |
-| R-016 | Tier 0 | 100 | Delivery pipeline / CI | GitHub CI integration is not yet defined as a required reliability gate; critical regressions could merge without automated checks. | package.json scripts (`test:unit`, `check-types`, `check`), reliability goals in this audit | Open | Unassigned | Sprint A | Pending | Add GitHub Actions workflow and protect main branch with required checks: typecheck, lint/format check, and reliability test suite. |
+| R-016 | Tier 0 | 100 | Delivery pipeline / CI | GitHub CI integration is not yet defined as a required reliability gate; critical regressions could merge without automated checks. | package.json scripts (`test:unit`, `check-types`, `check`), reliability goals in this audit, .github/workflows/ci.yml | Mitigated | Unassigned | Sprint A | `.github/workflows/ci.yml` executes `check-types`, `check`, `test-unit` on pull_request/push to `main`; local verification: `pnpm run check-types`, `pnpm run check`, `pnpm run test:unit` | Configure main branch protection to require `check-types`, `check`, and `test-unit` before merge. |
 
 Notes:
 - Score values are initial estimates and must be re-evaluated each weekly update.
@@ -249,7 +249,7 @@ Tier 2 issue is Done when:
 
 ### Milestones
 - [ ] M0: Baseline completed (coverage inventory + issue register frozen for first execution cycle)
-- [ ] M1: GitHub CI reliability gates implemented (R-016)
+- [x] M1: GitHub CI reliability gates implemented (R-016)
 - [ ] M2: Tier 0 tests implemented
 - [ ] M3: Tier 0 verified in CI
 - [ ] M4: Tier 1 tests implemented
@@ -260,6 +260,7 @@ Tier 2 issue is Done when:
 ### Execution Log
 - 2026-05-17: Initial deep audit completed. Risks R-001..R-015 registered.
 - 2026-05-17: Migrated integration tests to shared `test.extend` fixtures (`src/test/integrationTest.ts`) across assessment import/student/assessment DB suites; targeted reliability tests pass.
+- 2026-05-17: Implemented GitHub Actions CI workflow (`.github/workflows/ci.yml`) with separate required-candidate jobs: `check-types`, `check`, and `test-unit` on pull requests and pushes to `main`.
 
 ## 10. Change Log
 
@@ -267,6 +268,7 @@ Tier 2 issue is Done when:
 - 2026-05-17: Added prioritization score model, ownership/target fields, definition-of-done criteria, and weekly maintenance ritual.
 - 2026-05-17: Added R-016 for GitHub CI integration as a Tier 0 high-priority blocking task and promoted CI gating to first execution step.
 - 2026-05-17: Added reusable integration test fixtures and migrated `src/import/saveAssessments.test.ts`, `src/import/saveStudents.test.ts`, and `src/db/assessments.test.ts` to reduce boilerplate and improve consistency.
+- 2026-05-17: Added GitHub Actions workflow at `.github/workflows/ci.yml` to run `check-types`, `check`, and `test:unit` on pull requests and pushes to `main`; marked R-016 as Mitigated pending branch protection enforcement.
 
 ## 11. Issue Entry Template (for future additions)
 
