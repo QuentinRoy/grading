@@ -21,6 +21,7 @@ export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 export interface Assessment {
   createdAt: Generated<Timestamp>;
   id: Generated<number>;
+  projectId: Generated<number>;
   questionId: string;
   submissionId: number;
   updatedAt: Generated<Timestamp>;
@@ -78,6 +79,15 @@ export interface Question {
   id: string;
   label: string | null;
   position: Generated<number>;
+  projectId: Generated<number>;
+  updatedAt: Generated<Timestamp>;
+}
+
+export interface Project {
+  createdAt: Generated<Timestamp>;
+  id: Generated<number>;
+  name: string;
+  publicId: string;
   updatedAt: Generated<Timestamp>;
 }
 
@@ -87,6 +97,7 @@ export interface Rubric {
   id: string;
   label: string | null;
   position: number;
+  projectId: Generated<number>;
   questionId: string;
   type: RubricType;
   updatedAt: Generated<Timestamp>;
@@ -106,18 +117,21 @@ export interface Student {
   lastName: string;
   firstName: string;
   id: string;
+  rowId: Generated<number>;
+  projectId: Generated<number>;
   updatedAt: Generated<Timestamp>;
 }
 
 export interface StudentToTeam {
-  studentId: string;
+  studentId: number;
   teamId: number;
 }
 
 export interface Submission {
   createdAt: Generated<Timestamp>;
   id: Generated<number>;
-  studentId: string | null;
+  projectId: Generated<number>;
+  studentId: number | null;
   teamId: number | null;
   type: Generated<SubmissionType>;
   updatedAt: Generated<Timestamp>;
@@ -127,6 +141,7 @@ export interface Team {
   createdAt: Generated<Timestamp>;
   id: Generated<number>;
   name: string;
+  projectId: Generated<number>;
   updatedAt: Generated<Timestamp>;
 }
 
@@ -139,6 +154,7 @@ export interface DB {
   ordinalRubric: OrdinalRubric;
   ordinalRubricAssessment: OrdinalRubricAssessment;
   ordinalRubricValue: OrdinalRubricValue;
+  project: Project;
   question: Question;
   rubric: Rubric;
   rubricAssessment: RubricAssessment;

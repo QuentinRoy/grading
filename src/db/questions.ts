@@ -1,8 +1,10 @@
 import "server-only";
 import { sql } from "kysely";
-import { cacheLife, cacheTag, updateTag } from "next/cache";
+import { cacheLife } from "next/cache";
 import { QuestionsValidationError } from "@/questions/errors";
+import { CACHE_TAGS, cacheTags, updateTags } from "./cacheTags";
 import { db } from "./kysely";
+import { withProjectScope } from "./projectScope";
 import type { Grid, Question, Rubric, RubricType } from "./types";
 
 function toNumber(value: string | number): number {
@@ -87,10 +89,174 @@ type QuestionRow = {
   }[];
 };
 
-async function loadQuestionsFromDb(): Promise<QuestionRow[]> {
+async function loadQuestionsFromDb(projectId?: number): Promise<QuestionRow[]> {
   "use cache";
-  cacheTag("questions");
+  cacheTags(CACHE_TAGS.questions);
   cacheLife({ revalidate: 60 * 60 });
+
+  const buildQuestionRows = (
+    questions: Array<{ id: string; label: string | null }>,
+    rubrics: Array<{
+      id: string;
+      questionId: string;
+      description: string | null;
+      label: string | null;
+      type: RubricType;
+    }>,
+    booleanRubrics: Array<{
+      rubricId: string;
+      marks: number;
+      falseMarks: number;
+    }>,
+    numericalRubrics: Array<{
+      rubricId: string;
+      minScore: number;
+      maxScore: number;
+      minMarks: number;
+      maxMarks: number;
+      reversed: boolean;
+    }>,
+    ordinalMarks: Array<{
+      rubricId: string;
+      label: string;
+      marks: number;
+    }>,
+  ): QuestionRow[] => {
+    const booleanRubricById = new Map(
+      booleanRubrics.map((row) => [
+        row.rubricId,
+        { marks: toNumber(row.marks), falseMarks: toNumber(row.falseMarks) },
+      ]),
+    );
+
+    const numericalRubricById = new Map(
+      numericalRubrics.map((row) => [
+        row.rubricId,
+        {
+          minScore: toNumber(row.minScore),
+          maxScore: toNumber(row.maxScore),
+          minMarks: toNumber(row.minMarks),
+          maxMarks: toNumber(row.maxMarks),
+          reversed: row.reversed,
+        },
+      ]),
+    );
+
+    const ordinalMarksByRubricId = new Map<
+      string,
+      { label: string; marks: number }[]
+    >();
+    for (const row of ordinalMarks) {
+      const list = ordinalMarksByRubricId.get(row.rubricId) ?? [];
+      list.push({ label: row.label, marks: toNumber(row.marks) });
+      ordinalMarksByRubricId.set(row.rubricId, list);
+    }
+
+    const rubricsByQuestionId = new Map<
+      string,
+      Array<{
+        id: string;
+        questionId: string;
+        description: string | null;
+        label: string | null;
+        type: RubricType;
+      }>
+    >();
+    for (const rubric of rubrics) {
+      const list = rubricsByQuestionId.get(rubric.questionId) ?? [];
+      list.push(rubric);
+      rubricsByQuestionId.set(rubric.questionId, list);
+    }
+
+    return questions.map((question) => {
+      const questionRubrics = rubricsByQuestionId.get(question.id) ?? [];
+
+      return {
+        id: question.id,
+        label: question.label,
+        rubrics: questionRubrics.map((rubric) => ({
+          id: rubric.id,
+          type: rubric.type,
+          description: rubric.description,
+          label: rubric.label,
+          booleanRubric: booleanRubricById.get(rubric.id) ?? null,
+          ordinalRubric: ordinalMarksByRubricId.has(rubric.id)
+            ? { marks: ordinalMarksByRubricId.get(rubric.id) ?? [] }
+            : null,
+          numericalRubric: numericalRubricById.get(rubric.id) ?? null,
+        })),
+      };
+    });
+  };
+
+  if (projectId != null) {
+    const [questions, rubrics, booleanRubrics, numericalRubrics, ordinalMarks] =
+      await Promise.all([
+        db
+          .selectFrom("question")
+          .where("question.projectId", "=", projectId)
+          .select(["id", "label", "position"])
+          .orderBy("position", "asc")
+          .execute(),
+        db
+          .selectFrom("rubric")
+          .where("rubric.projectId", "=", projectId)
+          .select([
+            "id",
+            "questionId",
+            "position",
+            "description",
+            "label",
+            "type",
+          ])
+          .orderBy("position", "asc")
+          .execute(),
+        db
+          .selectFrom("booleanRubric")
+          .innerJoin("rubric", "rubric.id", "booleanRubric.rubricId")
+          .where("rubric.projectId", "=", projectId)
+          .select(["rubricId", "marks", "falseMarks"])
+          .execute(),
+        db
+          .selectFrom("numericalRubric")
+          .innerJoin("rubric", "rubric.id", "numericalRubric.rubricId")
+          .where("rubric.projectId", "=", projectId)
+          .select([
+            "rubricId",
+            "minScore",
+            "maxScore",
+            "minMarks",
+            "maxMarks",
+            "reversed",
+          ])
+          .execute(),
+        db
+          .selectFrom("ordinalRubric")
+          .innerJoin(
+            "ordinalRubricValue",
+            "ordinalRubricValue.ordinalRubricId",
+            "ordinalRubric.id",
+          )
+          .innerJoin("rubric", "rubric.id", "ordinalRubric.rubricId")
+          .where("rubric.projectId", "=", projectId)
+          .select([
+            "ordinalRubric.rubricId as rubricId",
+            "ordinalRubricValue.label as label",
+            "ordinalRubricValue.marks as marks",
+          ])
+          .orderBy("ordinalRubricValue.marks", "desc")
+          .orderBy("ordinalRubricValue.label", "asc")
+          .execute(),
+      ]);
+
+    return buildQuestionRows(
+      questions,
+      rubrics,
+      booleanRubrics,
+      numericalRubrics,
+      ordinalMarks,
+    );
+  }
 
   const [questions, rubrics, booleanRubrics, numericalRubrics, ordinalMarks] =
     await Promise.all([
@@ -143,78 +309,20 @@ async function loadQuestionsFromDb(): Promise<QuestionRow[]> {
         .execute(),
     ]);
 
-  const booleanRubricById = new Map(
-    booleanRubrics.map((row) => [
-      row.rubricId,
-      { marks: toNumber(row.marks), falseMarks: toNumber(row.falseMarks) },
-    ]),
+  return buildQuestionRows(
+    questions,
+    rubrics,
+    booleanRubrics,
+    numericalRubrics,
+    ordinalMarks,
   );
-
-  const numericalRubricById = new Map(
-    numericalRubrics.map((row) => [
-      row.rubricId,
-      {
-        minScore: toNumber(row.minScore),
-        maxScore: toNumber(row.maxScore),
-        minMarks: toNumber(row.minMarks),
-        maxMarks: toNumber(row.maxMarks),
-        reversed: row.reversed,
-      },
-    ]),
-  );
-
-  const ordinalMarksByRubricId = new Map<
-    string,
-    { label: string; marks: number }[]
-  >();
-  for (const row of ordinalMarks) {
-    const list = ordinalMarksByRubricId.get(row.rubricId) ?? [];
-    list.push({ label: row.label, marks: toNumber(row.marks) });
-    ordinalMarksByRubricId.set(row.rubricId, list);
-  }
-
-  const rubricsByQuestionId = new Map<
-    string,
-    Array<{
-      id: string;
-      questionId: string;
-      description: string | null;
-      label: string | null;
-      type: RubricType;
-    }>
-  >();
-  for (const rubric of rubrics) {
-    const list = rubricsByQuestionId.get(rubric.questionId) ?? [];
-    list.push(rubric);
-    rubricsByQuestionId.set(rubric.questionId, list);
-  }
-
-  return questions.map((question) => {
-    const questionRubrics = rubricsByQuestionId.get(question.id) ?? [];
-
-    return {
-      id: question.id,
-      label: question.label,
-      rubrics: questionRubrics.map((rubric) => ({
-        id: rubric.id,
-        type: rubric.type,
-        description: rubric.description,
-        label: rubric.label,
-        booleanRubric: booleanRubricById.get(rubric.id) ?? null,
-        ordinalRubric: ordinalMarksByRubricId.has(rubric.id)
-          ? { marks: ordinalMarksByRubricId.get(rubric.id) ?? [] }
-          : null,
-        numericalRubric: numericalRubricById.get(rubric.id) ?? null,
-      })),
-    };
-  });
 }
 
-export async function loadQuestions(): Promise<Grid> {
+export async function loadQuestions(projectId?: number): Promise<Grid> {
   "use cache";
-  cacheTag("questions");
+  cacheTags(CACHE_TAGS.questions);
 
-  const rows = await loadQuestionsFromDb();
+  const rows = await loadQuestionsFromDb(projectId);
 
   return Object.fromEntries(
     rows.map((row) => [
@@ -229,8 +337,9 @@ export async function loadQuestions(): Promise<Grid> {
 
 export async function loadQuestion(
   questionId: string,
+  projectId?: number,
 ): Promise<Question | undefined> {
-  const rows = await loadQuestionsFromDb();
+  const rows = await loadQuestionsFromDb(projectId);
   const row = rows.find((item) => item.id === questionId);
 
   if (row == null) {
@@ -361,19 +470,22 @@ function assertUniqueIds(label: string, ids: string[]): void {
   });
 }
 
-export async function loadManagedQuestions(): Promise<
-  ManagedQuestionDetails[]
-> {
+export async function loadManagedQuestions(
+  projectId?: number,
+): Promise<ManagedQuestionDetails[]> {
+  const countsQuery = db
+    .selectFrom("assessment")
+    .select(({ fn }) => [
+      "questionId",
+      fn.count<number>("assessment.id").as("assessmentCount"),
+    ])
+    .groupBy("questionId");
+
   const [rows, counts] = await Promise.all([
-    loadQuestionsFromDb(),
-    db
-      .selectFrom("assessment")
-      .select(({ fn }) => [
-        "questionId",
-        fn.count<number>("assessment.id").as("assessmentCount"),
-      ])
-      .groupBy("questionId")
-      .execute(),
+    loadQuestionsFromDb(projectId),
+    projectId != null
+      ? countsQuery.where("assessment.projectId", "=", projectId).execute()
+      : countsQuery.execute(),
   ]);
 
   const assessmentCountByQuestionId = new Map(
@@ -393,14 +505,22 @@ export async function loadManagedQuestions(): Promise<
   }));
 }
 
-export async function getQuestionDeleteImpact(questionId: string): Promise<{
+export async function getQuestionDeleteImpact(
+  questionId: string,
+  projectId?: number,
+): Promise<{
   assessmentCount: number;
 }> {
-  const row = await db
+  let query = db
     .selectFrom("assessment")
     .select(({ fn }) => [fn.count<number>("id").as("assessmentCount")])
-    .where("questionId", "=", questionId)
-    .executeTakeFirst();
+    .where("questionId", "=", questionId);
+
+  if (projectId != null) {
+    query = query.where("assessment.projectId", "=", projectId);
+  }
+
+  const row = await query.executeTakeFirst();
 
   return {
     assessmentCount: Number(row?.assessmentCount ?? 0),
@@ -409,6 +529,7 @@ export async function getQuestionDeleteImpact(questionId: string): Promise<{
 
 export async function saveManagedQuestion(
   input: ManagedQuestionInput,
+  projectId?: number,
 ): Promise<{ id: string }> {
   const requestedId = input.id.trim();
   const originalId = input.originalId?.trim() || requestedId;
@@ -435,6 +556,16 @@ export async function saveManagedQuestion(
       .where("id", "=", originalId)
       .executeTakeFirst();
 
+    const scopedExistingQuestion =
+      projectId == null || existingQuestion == null
+        ? existingQuestion
+        : await tx
+            .selectFrom("question")
+            .select(["id", "position"])
+            .where("id", "=", originalId)
+            .where("question.projectId", "=", projectId)
+            .executeTakeFirst();
+
     const conflictingQuestion =
       originalId !== requestedId
         ? await tx
@@ -452,10 +583,13 @@ export async function saveManagedQuestion(
       });
     }
 
-    if (existingQuestion == null) {
+    if (scopedExistingQuestion == null) {
       const row = await tx
         .selectFrom("question")
         .select(({ fn }) => [fn.max<number>("position").as("maxPosition")])
+        .$if(projectId != null, (query) =>
+          query.where("question.projectId", "=", projectId as number),
+        )
         .executeTakeFirst();
       const nextPosition = (row?.maxPosition ?? -1) + 1;
 
@@ -465,6 +599,7 @@ export async function saveManagedQuestion(
           id: requestedId,
           label: normalizeOptionalText(input.label),
           position: nextPosition,
+          projectId,
         })
         .execute();
     } else {
@@ -475,14 +610,26 @@ export async function saveManagedQuestion(
           label: normalizeOptionalText(input.label),
         })
         .where("id", "=", originalId)
+        .$if(projectId != null, (query) =>
+          query.where("question.projectId", "=", projectId as number),
+        )
         .execute();
     }
 
-    const existingRubrics = await tx
+    let existingRubricsQuery = tx
       .selectFrom("rubric")
       .select(["id", "type"])
-      .where("questionId", "=", requestedId)
-      .execute();
+      .where("questionId", "=", requestedId);
+
+    if (projectId != null) {
+      existingRubricsQuery = existingRubricsQuery.where(
+        "rubric.projectId",
+        "=",
+        projectId,
+      );
+    }
+
+    const existingRubrics = await existingRubricsQuery.execute();
 
     const existingById = new Map(existingRubrics.map((row) => [row.id, row]));
     const referencedSourceIds = new Set(
@@ -509,6 +656,7 @@ export async function saveManagedQuestion(
             position: rubric.position,
             description: rubric.description,
             label: rubric.label,
+            projectId,
             type: rubric.type,
           })
           .execute();
@@ -526,6 +674,7 @@ export async function saveManagedQuestion(
             position: rubric.position,
             description: rubric.description,
             label: rubric.label,
+            projectId,
             type: rubric.type,
           })
           .execute();
@@ -540,6 +689,7 @@ export async function saveManagedQuestion(
           position: rubric.position,
           description: rubric.description,
           label: rubric.label,
+          projectId,
           type: rubric.type,
         })
         .where("id", "=", existing.id)
@@ -694,12 +844,14 @@ export async function saveManagedQuestion(
     }
   });
 
-  updateTag("questions");
-  updateTag("assessments");
-  updateTag("assessments:all");
-  updateTag(`assessments:question:${requestedId}`);
+  updateTags(
+    CACHE_TAGS.questions,
+    CACHE_TAGS.assessments,
+    CACHE_TAGS.assessmentsAll,
+    `assessments:question:${requestedId}`,
+  );
   if (originalId !== requestedId) {
-    updateTag(`assessments:question:${originalId}`);
+    updateTags(`assessments:question:${originalId}`);
   }
 
   return { id: requestedId };
@@ -707,21 +859,31 @@ export async function saveManagedQuestion(
 
 export async function deleteManagedQuestion(
   questionId: string,
+  projectId?: number,
 ): Promise<{ assessmentCount: number }> {
-  const impact = await getQuestionDeleteImpact(questionId);
+  const impact = await getQuestionDeleteImpact(questionId, projectId);
 
-  await db.deleteFrom("question").where("id", "=", questionId).execute();
+  let query = db.deleteFrom("question").where("id", "=", questionId);
 
-  updateTag("questions");
-  updateTag("assessments");
-  updateTag("assessments:all");
-  updateTag(`assessments:question:${questionId}`);
+  if (projectId != null) {
+    query = query.where("question.projectId", "=", projectId);
+  }
+
+  await query.execute();
+
+  updateTags(
+    CACHE_TAGS.questions,
+    CACHE_TAGS.assessments,
+    CACHE_TAGS.assessmentsAll,
+    `assessments:question:${questionId}`,
+  );
 
   return impact;
 }
 
 export async function reorderQuestions(
   updates: Array<{ id: string; position: number }>,
+  projectId?: number,
 ): Promise<void> {
   if (updates.length === 0) {
     return;
@@ -739,7 +901,10 @@ export async function reorderQuestions(
       position: sql`case ${sql.join(conditions, sql` `)} end`,
     })
     .where("id", "in", questionIds)
+    .$if(projectId != null, (query) =>
+      query.where("question.projectId", "=", projectId as number),
+    )
     .execute();
 
-  updateTag("questions");
+  updateTags(CACHE_TAGS.questions);
 }

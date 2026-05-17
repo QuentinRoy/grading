@@ -1,6 +1,7 @@
 import "server-only";
-import { cacheLife, cacheTag } from "next/cache";
+import { CACHE_TAGS, cacheTags } from "./cacheTags";
 import { db } from "./kysely";
+import { withProjectScope } from "./projectScope";
 import type { Submission } from "./types";
 
 function normalizeSearchValue(value: string): string {
@@ -11,14 +12,25 @@ function formatStudentName(lastName: string, firstName: string): string {
   return `${lastName} ${firstName}`.trim();
 }
 
-async function loadSubmissionsFromDb() {
+async function loadSubmissionsFromDb(projectId?: number) {
   "use cache";
-  cacheTag("submissions");
+  cacheTags(CACHE_TAGS.submissions);
+
+  let submissionsQuery = db.selectFrom("submission");
+  let teamMemberQuery = db.selectFrom("submission");
+
+  submissionsQuery = withProjectScope(
+    submissionsQuery,
+    projectId,
+    (query, id) => query.where("submission.projectId", "=", id),
+  );
+  teamMemberQuery = withProjectScope(teamMemberQuery, projectId, (query, id) =>
+    query.where("submission.projectId", "=", id),
+  );
 
   const [submissions, teamMemberRows] = await Promise.all([
-    db
-      .selectFrom("submission")
-      .leftJoin("student", "student.id", "submission.studentId")
+    submissionsQuery
+      .leftJoin("student", "student.rowId", "submission.studentId")
       .leftJoin("team", "team.id", "submission.teamId")
       .select([
         "submission.id as id",
@@ -29,10 +41,9 @@ async function loadSubmissionsFromDb() {
       ])
       .orderBy("submission.id", "asc")
       .execute(),
-    db
-      .selectFrom("submission")
+    teamMemberQuery
       .innerJoin("studentToTeam", "studentToTeam.teamId", "submission.teamId")
-      .innerJoin("student", "student.id", "studentToTeam.studentId")
+      .innerJoin("student", "student.rowId", "studentToTeam.studentId")
       .where("submission.type", "=", "team")
       .select([
         "submission.id as submissionId",
@@ -71,9 +82,11 @@ async function loadSubmissionsFromDb() {
   };
 }
 
-export async function loadSubmissions(): Promise<Submission[]> {
+export async function loadSubmissions(
+  projectId?: number,
+): Promise<Submission[]> {
   const { submissions, teamMembersBySubmissionId } =
-    await loadSubmissionsFromDb();
+    await loadSubmissionsFromDb(projectId);
 
   return submissions.map((submission) => {
     if (submission.type === "team") {

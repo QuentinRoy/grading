@@ -10,6 +10,7 @@ import {
 import { saveStudents } from "./saveStudents";
 
 export async function studentsImportAction(
+  projectId: number,
   _previousState: ImportState,
   formData: FormData,
 ): Promise<ImportState> {
@@ -18,7 +19,7 @@ export async function studentsImportAction(
   try {
     const students = parseStudentsCsv(studentsCsv);
     const submissions = groupStudentsIntoSubmissions(students);
-    const result = await saveStudents(submissions);
+    const result = await saveStudents(submissions, projectId);
 
     revalidateTag("submissions", "max");
     revalidateTag("assessments", "max");

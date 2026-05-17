@@ -1,6 +1,8 @@
 import "server-only";
-import { cacheLife, cacheTag } from "next/cache";
+import { cacheLife } from "next/cache";
+import { assessmentQuestionCacheTag, CACHE_TAGS, cacheTags } from "./cacheTags";
 import { db } from "./kysely";
+import { withProjectScope } from "./projectScope";
 
 export type SubmissionProgressMetric = {
   completed: number;
@@ -9,27 +11,47 @@ export type SubmissionProgressMetric = {
 
 export async function loadSubmissionQuestionProgress(
   questionId: string,
+  projectId?: number,
 ): Promise<Record<string, SubmissionProgressMetric>> {
   "use cache";
-  cacheTag("submissions");
-  cacheTag("questions");
+  cacheTags(CACHE_TAGS.submissions, CACHE_TAGS.questions);
   // Use a question-scoped tag so that saving a rubric for question Q only
   // invalidates the progress cache for Q, not for every other question.
   // "assessments:all" is busted only by bulk imports, not by individual saves.
-  cacheTag(`assessments:question:${questionId}`);
-  cacheTag("assessments:all");
-  cacheTag(`questions:${questionId}`);
+  cacheTags(
+    assessmentQuestionCacheTag(questionId),
+    CACHE_TAGS.assessmentsAll,
+    `questions:${questionId}`,
+  );
   cacheLife({ revalidate: 60 });
 
+  let submissionsQuery = db.selectFrom("submission");
+  let rubricCountQuery = db.selectFrom("rubric");
+  let assessmentCountsQuery = db.selectFrom("assessment");
+
+  submissionsQuery = withProjectScope(
+    submissionsQuery,
+    projectId,
+    (query, id) => query.where("submission.projectId", "=", id),
+  );
+  rubricCountQuery = withProjectScope(
+    rubricCountQuery,
+    projectId,
+    (query, id) => query.where("rubric.projectId", "=", id),
+  );
+  assessmentCountsQuery = withProjectScope(
+    assessmentCountsQuery,
+    projectId,
+    (query, id) => query.where("assessment.projectId", "=", id),
+  );
+
   const [submissions, rubricCountRow, assessmentCounts] = await Promise.all([
-    db.selectFrom("submission").select("id").execute(),
-    db
-      .selectFrom("rubric")
+    submissionsQuery.select("id").execute(),
+    rubricCountQuery
       .where("questionId", "=", questionId)
       .select((eb) => eb.fn.countAll<number>().as("count"))
       .executeTakeFirstOrThrow(),
-    db
-      .selectFrom("assessment")
+    assessmentCountsQuery
       .leftJoin(
         "rubricAssessment",
         "rubricAssessment.assessmentId",
@@ -71,19 +93,38 @@ export async function loadSubmissionQuestionProgress(
   );
 }
 
-export async function loadSubmissionOverviewProgress(): Promise<
-  Record<string, SubmissionProgressMetric>
-> {
+export async function loadSubmissionOverviewProgress(
+  projectId?: number,
+): Promise<Record<string, SubmissionProgressMetric>> {
   "use cache";
-  cacheTag("submissions");
-  cacheTag("questions");
-  cacheTag("assessments");
+  cacheTags(
+    CACHE_TAGS.submissions,
+    CACHE_TAGS.questions,
+    CACHE_TAGS.assessments,
+  );
   cacheLife({ revalidate: 60 });
 
+  let submissionsQuery = db.selectFrom("submission");
+  let questionsQuery = db.selectFrom("question");
+  let assessmentsQuery = db.selectFrom("assessment");
+
+  submissionsQuery = withProjectScope(
+    submissionsQuery,
+    projectId,
+    (query, id) => query.where("submission.projectId", "=", id),
+  );
+  questionsQuery = withProjectScope(questionsQuery, projectId, (query, id) =>
+    query.where("question.projectId", "=", id),
+  );
+  assessmentsQuery = withProjectScope(
+    assessmentsQuery,
+    projectId,
+    (query, id) => query.where("assessment.projectId", "=", id),
+  );
+
   const [submissions, questions, assessments] = await Promise.all([
-    db.selectFrom("submission").select("id").execute(),
-    db
-      .selectFrom("question")
+    submissionsQuery.select("id").execute(),
+    questionsQuery
       .leftJoin("rubric", "rubric.questionId", "question.id")
       .select((eb) => [
         "question.id as id",
@@ -91,8 +132,7 @@ export async function loadSubmissionOverviewProgress(): Promise<
       ])
       .groupBy("question.id")
       .execute(),
-    db
-      .selectFrom("assessment")
+    assessmentsQuery
       .leftJoin(
         "rubricAssessment",
         "rubricAssessment.assessmentId",

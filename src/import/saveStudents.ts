@@ -4,6 +4,7 @@ import type { NormalizedImportedSubmission } from "./types";
 
 export async function saveStudents(
   submissions: NormalizedImportedSubmission[],
+  projectId: number,
 ): Promise<{
   submissionCount: number;
   studentCount: number;
@@ -32,7 +33,7 @@ export async function saveStudents(
     };
   });
 
-  const studentsWithTeam = submissions.flatMap((submission) =>
+  const studentsToUpsert = submissions.flatMap((submission) =>
     submission.students.map((student) => ({
       id: student.id,
       lastName: student.lastName,
@@ -49,18 +50,27 @@ export async function saveStudents(
     );
 
     const teamsByName = new Map<string, number>();
+    const studentRowIdsByImportedId = new Map<string, number>();
 
     if (teamNames.size > 0) {
       await tx
         .insertInto("team")
-        .values(Array.from(teamNames).map((teamName) => ({ name: teamName })))
-        .onConflict((conflict) => conflict.column("name").doNothing())
+        .values(
+          Array.from(teamNames).map((teamName) => ({
+            name: teamName,
+            projectId,
+          })),
+        )
+        .onConflict((conflict) =>
+          conflict.columns(["name", "projectId"]).doNothing(),
+        )
         .execute();
 
       const teamResults = await tx
         .selectFrom("team")
         .select(["id", "name"])
         .where("name", "in", Array.from(teamNames))
+        .where("projectId", "=", projectId)
         .execute();
 
       for (const team of teamResults) {
@@ -68,36 +78,67 @@ export async function saveStudents(
       }
     }
 
-    if (studentsWithTeam.length > 0) {
+    if (studentsToUpsert.length > 0) {
       await tx
         .insertInto("student")
         .values(
-          studentsWithTeam.map((student) => ({
+          studentsToUpsert.map((student) => ({
             id: student.id,
             lastName: student.lastName,
             firstName: student.firstName,
+            projectId,
           })),
         )
         .onConflict((conflict) =>
-          conflict.column("id").doUpdateSet((expressionBuilder) => ({
-            lastName: expressionBuilder.ref("excluded.lastName"),
-            firstName: expressionBuilder.ref("excluded.firstName"),
-          })),
+          conflict
+            .columns(["projectId", "id"])
+            .doUpdateSet((expressionBuilder) => ({
+              lastName: expressionBuilder.ref("excluded.lastName"),
+              firstName: expressionBuilder.ref("excluded.firstName"),
+              projectId: expressionBuilder.ref("excluded.projectId"),
+            })),
         )
         .execute();
-    }
 
-    const affectedStudentIds = Array.from(
-      new Set(studentsWithTeam.map((student) => student.id)),
-    );
-
-    if (affectedStudentIds.length > 0) {
-      await tx
-        .deleteFrom("studentToTeam")
-        .where("studentId", "in", affectedStudentIds)
+      const studentRows = await tx
+        .selectFrom("student")
+        .select(["rowId", "id"])
+        .where("projectId", "=", projectId)
+        .where(
+          "id",
+          "in",
+          Array.from(new Set(studentsToUpsert.map((student) => student.id))),
+        )
         .execute();
 
-      const studentTeamLinks = studentsWithTeam.flatMap((student) => {
+      for (const student of studentRows) {
+        studentRowIdsByImportedId.set(student.id, student.rowId);
+      }
+
+      const affectedStudentRowIds = Array.from(
+        new Set(
+          studentsToUpsert.map((student) => {
+            const rowId = studentRowIdsByImportedId.get(student.id);
+
+            if (rowId == null) {
+              throw new Error(
+                `Failed to resolve student row for ${student.id}.`,
+              );
+            }
+
+            return rowId;
+          }),
+        ),
+      );
+
+      if (affectedStudentRowIds.length > 0) {
+        await tx
+          .deleteFrom("studentToTeam")
+          .where("studentId", "in", affectedStudentRowIds)
+          .execute();
+      }
+
+      const studentTeamLinks = studentsToUpsert.flatMap((student) => {
         if (student.teamName == null) {
           return [];
         }
@@ -110,7 +151,13 @@ export async function saveStudents(
           );
         }
 
-        return [{ studentId: student.id, teamId }];
+        const rowId = studentRowIdsByImportedId.get(student.id);
+
+        if (rowId == null) {
+          throw new Error(`Failed to resolve student row for ${student.id}.`);
+        }
+
+        return [{ studentId: rowId, teamId }];
       });
 
       if (studentTeamLinks.length > 0) {
@@ -143,6 +190,7 @@ export async function saveStudents(
       return [
         {
           type: "team" as const,
+          projectId,
           teamId,
           studentId: null,
         },
@@ -156,6 +204,8 @@ export async function saveStudents(
         .onConflict((conflict) =>
           conflict.column("teamId").doUpdateSet({
             type: "team",
+            projectId: (expressionBuilder) =>
+              expressionBuilder.ref("excluded.projectId"),
             teamId: (expressionBuilder) =>
               expressionBuilder.ref("excluded.teamId"),
             studentId: null,
@@ -176,7 +226,9 @@ export async function saveStudents(
       return [
         {
           type: "individual" as const,
-          studentId: submission.studentId,
+          projectId,
+          studentId:
+            studentRowIdsByImportedId.get(submission.studentId) ?? null,
           teamId: null,
         },
       ];
@@ -189,6 +241,8 @@ export async function saveStudents(
         .onConflict((conflict) =>
           conflict.column("studentId").doUpdateSet({
             type: "individual",
+            projectId: (expressionBuilder) =>
+              expressionBuilder.ref("excluded.projectId"),
             studentId: (expressionBuilder) =>
               expressionBuilder.ref("excluded.studentId"),
             teamId: null,
@@ -199,7 +253,7 @@ export async function saveStudents(
 
     return {
       submissionCount: submissionsByOwner.length,
-      studentCount: studentsWithTeam.length,
+      studentCount: studentsToUpsert.length,
     };
   });
 }

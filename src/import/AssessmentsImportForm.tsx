@@ -3,20 +3,25 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { type ReactElement } from "react";
-import { assessmentsImportAction } from "./assessmentsImportAction";
 import BaseImportForm from "./BaseImportForm";
 import { ASSESSMENTS_CSV_PLACEHOLDER } from "./constants";
+import type { ImportState } from "./importState";
 
 type AssessmentsImportFormProps = {
   defaultAssessmentsCsv?: string;
+  action: (
+    previousState: ImportState,
+    formData: FormData,
+  ) => Promise<ImportState>;
 };
 
 export default function AssessmentsImportForm({
+  action,
   defaultAssessmentsCsv,
 }: AssessmentsImportFormProps): ReactElement {
   return (
     <BaseImportForm
-      action={assessmentsImportAction}
+      action={action}
       defaultValue={defaultAssessmentsCsv}
       title="Import Assessments"
       description="Load assessment data compatible with the CSV export format."

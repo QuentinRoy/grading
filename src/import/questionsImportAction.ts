@@ -7,6 +7,7 @@ import { parseQuestionsYaml } from "./parseQuestions";
 import { saveQuestions } from "./saveQuestions";
 
 export async function questionsImportAction(
+  projectId: number,
   _previousState: ImportState,
   formData: FormData,
 ): Promise<ImportState> {
@@ -14,7 +15,7 @@ export async function questionsImportAction(
 
   try {
     const questions = parseQuestionsYaml(questionsYaml);
-    const result = await saveQuestions(questions);
+    const result = await saveQuestions(questions, projectId);
 
     revalidateTag("questions", "max");
     revalidateTag("assessments", "max");

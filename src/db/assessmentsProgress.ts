@@ -1,20 +1,55 @@
 import "server-only";
-import { cacheLife, cacheTag } from "next/cache";
+import { cacheLife } from "next/cache";
+import { CACHE_TAGS, cacheTags } from "./cacheTags";
 import { db } from "./kysely";
+import { withProjectScope } from "./projectScope";
 import type { GlobalAssessmentProgress } from "./types";
 
-async function loadGlobalAssessmentProgressFromDb(): Promise<GlobalAssessmentProgress> {
+async function loadGlobalAssessmentProgressFromDb(
+  projectId?: number,
+): Promise<GlobalAssessmentProgress> {
   "use cache";
-  cacheTag("questions");
-  cacheTag("submissions");
-  cacheTag("assessments");
+  cacheTags(
+    CACHE_TAGS.questions,
+    CACHE_TAGS.submissions,
+    CACHE_TAGS.assessments,
+  );
   cacheLife({ revalidate: 60 });
+
+  let submissionsQuery = db.selectFrom("submission");
+  let questionsQuery = db.selectFrom("question");
+  let assessmentsQuery = db.selectFrom("assessment");
+
+  submissionsQuery = withProjectScope(
+    submissionsQuery,
+    projectId,
+    (query, id) => query.where("submission.projectId", "=", id),
+  );
+  questionsQuery = withProjectScope(questionsQuery, projectId, (query, id) =>
+    query.where("question.projectId", "=", id),
+  );
+  assessmentsQuery = withProjectScope(
+    assessmentsQuery,
+    projectId,
+    (query, id) => query.where("assessment.projectId", "=", id),
+  );
+
+  const rubricAssessmentsQuery =
+    projectId != null
+      ? db
+          .selectFrom("rubricAssessment")
+          .innerJoin(
+            "assessment",
+            "assessment.id",
+            "rubricAssessment.assessmentId",
+          )
+          .where("assessment.projectId", "=", projectId)
+      : db.selectFrom("rubricAssessment");
 
   const [submissions, questions, assessments, rubricAssessmentsCount] =
     await Promise.all([
-      db.selectFrom("submission").select("id").execute(),
-      db
-        .selectFrom("question")
+      submissionsQuery.select("id").execute(),
+      questionsQuery
         .leftJoin("rubric", "rubric.questionId", "question.id")
         .select((expressionBuilder) => [
           "question.id as id",
@@ -22,8 +57,7 @@ async function loadGlobalAssessmentProgressFromDb(): Promise<GlobalAssessmentPro
         ])
         .groupBy("question.id")
         .execute(),
-      db
-        .selectFrom("assessment")
+      assessmentsQuery
         .leftJoin(
           "rubricAssessment",
           "rubricAssessment.assessmentId",
@@ -38,8 +72,7 @@ async function loadGlobalAssessmentProgressFromDb(): Promise<GlobalAssessmentPro
         ])
         .groupBy(["assessment.submissionId", "assessment.questionId"])
         .execute(),
-      db
-        .selectFrom("rubricAssessment")
+      rubricAssessmentsQuery
         .select((expressionBuilder) =>
           expressionBuilder.fn.countAll<number>().as("count"),
         )
@@ -135,6 +168,8 @@ async function loadGlobalAssessmentProgressFromDb(): Promise<GlobalAssessmentPro
   };
 }
 
-export async function loadGlobalAssessmentProgress(): Promise<GlobalAssessmentProgress> {
-  return loadGlobalAssessmentProgressFromDb();
+export async function loadGlobalAssessmentProgress(
+  projectId?: number,
+): Promise<GlobalAssessmentProgress> {
+  return loadGlobalAssessmentProgressFromDb(projectId);
 }

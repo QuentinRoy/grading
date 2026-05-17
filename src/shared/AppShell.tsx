@@ -17,7 +17,20 @@ import Stack from "@mui/material/Stack";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import NextLink from "next/link";
-import { type ReactNode, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
+import { type ReactNode, Suspense, useMemo, useState } from "react";
+import {
+  changeProjectPath,
+  projectAssessmentsPath,
+  projectDashboardPath,
+  projectExportQuestionsPath,
+  projectExportSubmissionsPath,
+  projectImportAssessmentsPath,
+  projectImportQuestionsPath,
+  projectImportStudentsPath,
+  projectOverviewPath,
+  projectQuestionsPath,
+} from "@/projects/routes";
 import { useLocalStorage } from "@/utils/useLocalStorage";
 
 const DRAWER_WIDTH = 280;
@@ -26,21 +39,6 @@ type NavigationItem = {
   label: string;
   href: string;
 };
-
-const ASSESSMENT_ITEMS: NavigationItem[] = [
-  { label: "Assessments", href: "/assessments" },
-  { label: "Rubric overview", href: "/assessments/overview" },
-];
-
-const MANAGEMENT_ITEMS: NavigationItem[] = [
-  { label: "Manage Questions", href: "/questions" },
-];
-
-const IMPORT_ITEMS: NavigationItem[] = [
-  { label: "Import Questions", href: "/import/questions" },
-  { label: "Import Students", href: "/import/students" },
-  { label: "Import Assessments", href: "/import/assessments" },
-];
 
 const EXPORT_STORAGE_KEY = "export-csv-options-v1";
 
@@ -71,7 +69,43 @@ function deserializeExportOptions(raw: string): ExportPersistedOptions {
 
 type AppShellProps = {
   children: ReactNode;
+  showNavigation?: boolean;
 };
+
+type ProjectRouteContext = {
+  projectId: string;
+  projectSlug: string;
+};
+
+type NavigationShellProps = {
+  showNavigation: boolean;
+  drawerOpen: boolean;
+  setDrawerOpen: (value: boolean | ((current: boolean) => boolean)) => void;
+};
+
+function getProjectRouteContext(pathname: string): ProjectRouteContext | null {
+  const segments = pathname.split("/").filter((segment) => segment.length > 0);
+  if (
+    segments[0] !== "projects" ||
+    segments[1] == null ||
+    segments[2] == null
+  ) {
+    return null;
+  }
+
+  return {
+    projectId: segments[1],
+    projectSlug: segments[2],
+  };
+}
+
+function displayProjectName(projectSlug: string): string {
+  return projectSlug
+    .split("-")
+    .filter((segment) => segment.length > 0)
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(" ");
+}
 
 function NavigationZone({
   title,
@@ -104,13 +138,54 @@ function NavigationZone({
   );
 }
 
-function DrawerContent({ onNavigate }: { onNavigate?: () => void }): ReactNode {
+function DrawerContent({
+  projectId,
+  projectSlug,
+  onNavigate,
+}: {
+  projectId: string;
+  projectSlug: string;
+  onNavigate?: () => void;
+}): ReactNode {
   const [exportOptions, setExportOptions] =
     useLocalStorage<ExportPersistedOptions>(
       EXPORT_STORAGE_KEY,
       DEFAULT_EXPORT_OPTIONS,
       { deserialize: deserializeExportOptions },
     );
+
+  const assessmentItems: NavigationItem[] = [
+    {
+      label: "Assessments",
+      href: projectAssessmentsPath(projectId, projectSlug),
+    },
+    {
+      label: "Rubric overview",
+      href: projectOverviewPath(projectId, projectSlug),
+    },
+  ];
+
+  const managementItems: NavigationItem[] = [
+    {
+      label: "Manage Questions",
+      href: projectQuestionsPath(projectId, projectSlug),
+    },
+  ];
+
+  const importItems: NavigationItem[] = [
+    {
+      label: "Import Questions",
+      href: projectImportQuestionsPath(projectId, projectSlug),
+    },
+    {
+      label: "Import Students",
+      href: projectImportStudentsPath(projectId, projectSlug),
+    },
+    {
+      label: "Import Assessments",
+      href: projectImportAssessmentsPath(projectId, projectSlug),
+    },
+  ];
 
   const exportHref = useMemo(() => {
     const searchParams = new URLSearchParams();
@@ -124,11 +199,10 @@ function DrawerContent({ onNavigate }: { onNavigate?: () => void }): ReactNode {
     }
 
     const query = searchParams.toString();
+    const basePath = projectExportSubmissionsPath(projectId, projectSlug);
 
-    return query.length > 0
-      ? `/export/submissions?${query}`
-      : "/export/submissions";
-  }, [exportOptions]);
+    return query.length > 0 ? `${basePath}?${query}` : basePath;
+  }, [exportOptions, projectId, projectSlug]);
 
   return (
     <>
@@ -140,19 +214,37 @@ function DrawerContent({ onNavigate }: { onNavigate?: () => void }): ReactNode {
       <Divider />
 
       <Stack divider={<Divider flexItem />}>
+        <Box sx={{ px: 2, py: 1.5 }}>
+          <Typography component="p" variant="overline" color="text.secondary">
+            Project
+          </Typography>
+          <List disablePadding>
+            <ListItemButton
+              component={NextLink}
+              href={changeProjectPath()}
+              onClick={onNavigate}
+              sx={{ borderRadius: 1 }}
+            >
+              <ListItemText
+                primary={displayProjectName(projectSlug)}
+                secondary="Change project"
+              />
+            </ListItemButton>
+          </List>
+        </Box>
         <NavigationZone
           title="Assess"
-          items={ASSESSMENT_ITEMS}
+          items={assessmentItems}
           onNavigate={onNavigate}
         />
         <NavigationZone
           title="Manage"
-          items={MANAGEMENT_ITEMS}
+          items={managementItems}
           onNavigate={onNavigate}
         />
         <NavigationZone
           title="Import"
-          items={IMPORT_ITEMS}
+          items={importItems}
           onNavigate={onNavigate}
         />
         <Box sx={{ px: 2, py: 1.5 }}>
@@ -208,7 +300,7 @@ function DrawerContent({ onNavigate }: { onNavigate?: () => void }): ReactNode {
           </Typography>
           <Button
             component={NextLink}
-            href="/export/questions"
+            href={projectExportQuestionsPath(projectId, projectSlug)}
             variant="outlined"
             fullWidth
             onClick={onNavigate}
@@ -221,33 +313,34 @@ function DrawerContent({ onNavigate }: { onNavigate?: () => void }): ReactNode {
   );
 }
 
-export default function AppShell({ children }: AppShellProps) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
+function NavigationFallback({
+  showNavigation,
+  drawerOpen,
+  setDrawerOpen,
+}: NavigationShellProps): ReactNode {
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+    <>
       <AppBar
         position="fixed"
         sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
       >
         <Toolbar>
-          <IconButton
-            color="inherit"
-            edge="start"
-            onClick={() => setDrawerOpen((current) => !current)}
-            aria-label="Open navigation drawer"
-          >
-            <MenuIcon />
-          </IconButton>
+          {showNavigation ? (
+            <IconButton
+              color="inherit"
+              edge="start"
+              onClick={() => setDrawerOpen((current) => !current)}
+              aria-label="Open navigation drawer"
+            >
+              <MenuIcon />
+            </IconButton>
+          ) : (
+            <Box sx={{ width: 48, flexShrink: 0 }} aria-hidden />
+          )}
 
           <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
-            <Typography
-              component={NextLink}
-              href="/"
-              variant="h6"
-              sx={{ color: "inherit", textDecoration: "none" }}
-            >
-              BonPoint
+            <Typography variant="h6" sx={{ color: "inherit" }}>
+              {showNavigation ? "Project" : "BonPoint"}
             </Typography>
           </Box>
 
@@ -255,22 +348,145 @@ export default function AppShell({ children }: AppShellProps) {
         </Toolbar>
       </AppBar>
 
-      <Box component="nav">
-        <Drawer
-          variant="temporary"
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-          ModalProps={{ keepMounted: true }}
-          sx={{
-            "& .MuiDrawer-paper": {
-              width: DRAWER_WIDTH,
-              boxSizing: "border-box",
-            },
-          }}
-        >
-          <DrawerContent onNavigate={() => setDrawerOpen(false)} />
-        </Drawer>
-      </Box>
+      {showNavigation && (
+        <Box component="nav">
+          <Drawer
+            variant="temporary"
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            ModalProps={{ keepMounted: true }}
+            sx={{
+              "& .MuiDrawer-paper": {
+                width: DRAWER_WIDTH,
+                boxSizing: "border-box",
+              },
+            }}
+          >
+            <Toolbar>
+              <Typography component="p" variant="subtitle1">
+                Select a project
+              </Typography>
+            </Toolbar>
+          </Drawer>
+        </Box>
+      )}
+    </>
+  );
+}
+
+function NavigationShell({
+  showNavigation,
+  drawerOpen,
+  setDrawerOpen,
+}: NavigationShellProps): ReactNode {
+  const pathname = usePathname();
+  const projectRouteContext = getProjectRouteContext(pathname);
+  const title =
+    showNavigation && projectRouteContext != null
+      ? displayProjectName(projectRouteContext.projectSlug)
+      : "BonPoint";
+
+  return (
+    <>
+      <AppBar
+        position="fixed"
+        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+      >
+        <Toolbar>
+          {showNavigation ? (
+            <IconButton
+              color="inherit"
+              edge="start"
+              onClick={() => setDrawerOpen((current) => !current)}
+              aria-label="Open navigation drawer"
+            >
+              <MenuIcon />
+            </IconButton>
+          ) : (
+            <Box sx={{ width: 48, flexShrink: 0 }} aria-hidden />
+          )}
+
+          <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
+            {showNavigation && projectRouteContext != null ? (
+              <Typography
+                component={NextLink}
+                href={projectDashboardPath(
+                  projectRouteContext.projectId,
+                  projectRouteContext.projectSlug,
+                )}
+                variant="h6"
+                sx={{ color: "inherit", textDecoration: "none" }}
+              >
+                {title}
+              </Typography>
+            ) : (
+              <Typography variant="h6" sx={{ color: "inherit" }}>
+                {title}
+              </Typography>
+            )}
+          </Box>
+
+          <Box sx={{ width: 48, flexShrink: 0 }} aria-hidden />
+        </Toolbar>
+      </AppBar>
+
+      {showNavigation && (
+        <Box component="nav">
+          <Drawer
+            variant="temporary"
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            ModalProps={{ keepMounted: true }}
+            sx={{
+              "& .MuiDrawer-paper": {
+                width: DRAWER_WIDTH,
+                boxSizing: "border-box",
+              },
+            }}
+          >
+            {projectRouteContext == null ? (
+              <Toolbar>
+                <Typography component="p" variant="subtitle1">
+                  Select a project
+                </Typography>
+              </Toolbar>
+            ) : (
+              <DrawerContent
+                projectId={projectRouteContext.projectId}
+                projectSlug={projectRouteContext.projectSlug}
+                onNavigate={() => setDrawerOpen(false)}
+              />
+            )}
+          </Drawer>
+        </Box>
+      )}
+    </>
+  );
+}
+
+export default function AppShell({
+  children,
+  showNavigation = true,
+}: AppShellProps) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  return (
+    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+      <Suspense
+        fallback={
+          <NavigationFallback
+            showNavigation={showNavigation}
+            drawerOpen={drawerOpen}
+            setDrawerOpen={setDrawerOpen}
+          />
+        }
+      >
+        <NavigationShell
+          showNavigation={showNavigation}
+          drawerOpen={drawerOpen}
+          setDrawerOpen={setDrawerOpen}
+        />
+      </Suspense>
 
       <Box component="main" sx={{ flexGrow: 1, minWidth: 0 }}>
         <Toolbar />

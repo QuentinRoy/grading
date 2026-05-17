@@ -5,18 +5,23 @@ import Typography from "@mui/material/Typography";
 import { type ReactElement } from "react";
 import BaseImportForm from "./BaseImportForm";
 import { STUDENTS_CSV_PLACEHOLDER } from "./constants";
-import { studentsImportAction } from "./studentsImportAction";
+import type { ImportState } from "./importState";
 
 type StudentsImportFormProps = {
   defaultStudentsCsv?: string;
+  action: (
+    previousState: ImportState,
+    formData: FormData,
+  ) => Promise<ImportState>;
 };
 
 export default function StudentsImportForm({
+  action,
   defaultStudentsCsv,
 }: StudentsImportFormProps): ReactElement {
   return (
     <BaseImportForm
-      action={studentsImportAction}
+      action={action}
       defaultValue={defaultStudentsCsv}
       title="Import Students"
       description="Load student or team data into the database."

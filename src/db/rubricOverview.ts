@@ -1,7 +1,9 @@
 import "server-only";
-import { cacheLife, cacheTag } from "next/cache";
+import { cacheLife } from "next/cache";
 import { loadQuestions } from "@/db/questions";
+import { CACHE_TAGS, cacheTags } from "./cacheTags";
 import { db } from "./kysely";
+import { withProjectScope } from "./projectScope";
 import {
   buildRubricOverviewData,
   type RubricOverviewAssessmentRecord,
@@ -17,19 +19,27 @@ export type {
   RubricOverviewSummary,
 } from "./rubricOverviewBuilder";
 
-export async function loadRubricOverviewData() {
+export async function loadRubricOverviewData(projectId?: number) {
   "use cache";
-  cacheTag("questions");
-  cacheTag("submissions");
-  cacheTag("assessments");
+  cacheTags(
+    CACHE_TAGS.questions,
+    CACHE_TAGS.submissions,
+    CACHE_TAGS.assessments,
+  );
   cacheLife({ revalidate: 60 });
 
+  let assessmentQuery = db
+    .selectFrom("rubricAssessment")
+    .innerJoin("assessment", "assessment.id", "rubricAssessment.assessmentId");
+
+  assessmentQuery = withProjectScope(assessmentQuery, projectId, (query, id) =>
+    query.where("assessment.projectId", "=", id),
+  );
+
   const [submissions, questionGrid, assessmentRecords] = await Promise.all([
-    loadSubmissions(),
-    loadQuestions(),
-    db
-      .selectFrom("rubricAssessment")
-      .innerJoin("assessment", "assessment.id", "rubricAssessment.assessmentId")
+    loadSubmissions(projectId),
+    loadQuestions(projectId),
+    assessmentQuery
       .leftJoin(
         "booleanRubricAssessment",
         "booleanRubricAssessment.rubricAssessmentId",

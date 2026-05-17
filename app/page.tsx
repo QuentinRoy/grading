@@ -1,32 +1,14 @@
-import { Button, Container, Stack, Typography } from "@mui/material";
-import { Suspense } from "react";
-import GlobalAssessmentSummary from "@/assessment/GlobalAssessmentSummary";
-import { loadGlobalAssessmentProgress } from "@/db/assessmentsProgress";
+import { redirect } from "next/navigation";
+import { loadProjects } from "@/db/projects";
+import { projectDashboardPath } from "@/projects/routes";
 
-export default function HomePage() {
-  return (
-    <Suspense>
-      <HomePageContent />
-    </Suspense>
-  );
-}
+export default async function HomePage() {
+  const projects = await loadProjects();
+  const defaultProject = projects[0];
 
-async function HomePageContent() {
-  const progress = await loadGlobalAssessmentProgress();
+  if (defaultProject == null) {
+    redirect("/projects");
+  }
 
-  return (
-    <Container component="main" maxWidth="md" sx={{ py: 5 }}>
-      <Stack sx={{ gap: 3 }}>
-        <Typography component="h1" variant="h2">
-          Dashboard
-        </Typography>
-        <GlobalAssessmentSummary progress={progress} />
-        <div>
-          <Button href="/assessments" variant="contained">
-            Open assessments
-          </Button>
-        </div>
-      </Stack>
-    </Container>
-  );
+  redirect(projectDashboardPath(defaultProject.publicId, defaultProject.slug));
 }

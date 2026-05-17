@@ -15,6 +15,12 @@
 - Avoid `as` when possible. Don't use `any`.
 - Keep page-level composition in `app/` route files. Avoid `src/` components that are full pages; `src/` components should stay focused and independently reusable/testable.
 
+## Error Handling UX
+
+- User-facing error messages must be meaningful and actionable.
+- Never surface framework/internal control-flow errors (for example `NEXT_REDIRECT`) to users.
+- Every user-visible error should include a clear recovery path (for example "edit the input and retry", "reload and retry", or "contact support if the problem persists").
+
 ## Performance
 
 - Avoid successive asynchronous operations that can be run in parallel. For example, if you need to fetch data from multiple APIs, use `Promise.all` to fetch them concurrently instead of awaiting each one sequentially.

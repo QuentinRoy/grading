@@ -2,7 +2,10 @@ import "server-only";
 import { db } from "../db/kysely";
 import type { ImportedQuestions } from "./types";
 
-export async function saveQuestions(questions: ImportedQuestions): Promise<{
+export async function saveQuestions(
+  questions: ImportedQuestions,
+  projectId: number,
+): Promise<{
   questionCount: number;
   rubricCount: number;
 }> {
@@ -74,14 +77,40 @@ export async function saveQuestions(questions: ImportedQuestions): Promise<{
   );
 
   return db.transaction().execute(async (tx) => {
+    const conflictingQuestions =
+      questionIds.length === 0
+        ? []
+        : await tx
+            .selectFrom("question")
+            .select(["id", "projectId"])
+            .where("id", "in", questionIds)
+            .where("projectId", "!=", projectId)
+            .execute();
+
+    if (conflictingQuestions.length > 0) {
+      throw new Error(
+        `Question ids already belong to another project: ${conflictingQuestions.map((question) => question.id).join(", ")}`,
+      );
+    }
+
     const existingRubrics =
       rubricIds.length === 0
         ? []
         : await tx
             .selectFrom("rubric")
-            .select(["id", "type"])
+            .select(["id", "type", "projectId"])
             .where("id", "in", rubricIds)
             .execute();
+
+    const conflictingRubrics = existingRubrics.filter(
+      (rubric) => rubric.projectId !== projectId,
+    );
+
+    if (conflictingRubrics.length > 0) {
+      throw new Error(
+        `Rubric ids already belong to another project: ${conflictingRubrics.map((rubric) => rubric.id).join(", ")}`,
+      );
+    }
 
     const rubricsToRecreate = existingRubrics.flatMap((rubric) => {
       const nextType = rubricTypeById.get(rubric.id);
@@ -103,11 +132,12 @@ export async function saveQuestions(questions: ImportedQuestions): Promise<{
     if (questionsById.length > 0) {
       await tx
         .insertInto("question")
-        .values(questionsById)
+        .values(questionsById.map((question) => ({ ...question, projectId })))
         .onConflict((conflict) =>
           conflict.column("id").doUpdateSet((expressionBuilder) => ({
             label: expressionBuilder.ref("excluded.label"),
             position: expressionBuilder.ref("excluded.position"),
+            projectId: expressionBuilder.ref("excluded.projectId"),
           })),
         )
         .execute();
@@ -123,6 +153,7 @@ export async function saveQuestions(questions: ImportedQuestions): Promise<{
             position: rubric.position,
             description: rubric.description,
             label: rubric.label,
+            projectId,
             type: rubric.type,
           })),
         )
@@ -132,6 +163,7 @@ export async function saveQuestions(questions: ImportedQuestions): Promise<{
             position: expressionBuilder.ref("excluded.position"),
             description: expressionBuilder.ref("excluded.description"),
             label: expressionBuilder.ref("excluded.label"),
+            projectId: expressionBuilder.ref("excluded.projectId"),
             type: expressionBuilder.ref("excluded.type"),
           })),
         )

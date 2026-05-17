@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 
 import "../styles/globals.css";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
-import AppShell from "@/shared/AppShell";
 import { SaveErrorsDisplay } from "@/shared/SaveErrorsDisplay";
 import { SaveErrorsProvider } from "@/shared/SaveErrorsProvider";
 
@@ -21,7 +20,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body>
         <AppRouterCacheProvider>
           <SaveErrorsProvider>
-            <AppShell>{children}</AppShell>
+            {children}
             <SaveErrorsDisplay />
           </SaveErrorsProvider>
         </AppRouterCacheProvider>

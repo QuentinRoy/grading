@@ -7,6 +7,7 @@ import { parseAssessmentsCsv } from "./parseAssessments";
 import { saveAssessments } from "./saveAssessments";
 
 export async function assessmentsImportAction(
+  projectId: number,
   _previousState: ImportState,
   formData: FormData,
 ): Promise<ImportState> {
@@ -14,7 +15,7 @@ export async function assessmentsImportAction(
 
   try {
     const assessments = await parseAssessmentsCsv(assessmentsCsv);
-    const result = await saveAssessments(assessments);
+    const result = await saveAssessments(assessments, projectId);
 
     revalidateTag("assessments", "max");
     revalidateTag("assessments:all", "max");
