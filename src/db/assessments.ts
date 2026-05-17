@@ -123,12 +123,12 @@ export async function saveAssessment({
     db
       .selectFrom("submission")
       .where("id", "=", Number(submissionId))
-      .select("id")
+      .select(["id", "projectId"])
       .executeTakeFirst(),
     db
       .selectFrom("question")
       .where("id", "=", questionId)
-      .select("id")
+      .select(["id", "projectId"])
       .executeTakeFirst(),
     db
       .selectFrom("rubric")
@@ -155,6 +155,10 @@ export async function saveAssessment({
     return { success: false, error: "Submission or question not found." };
   }
 
+  if (submission.projectId !== question.projectId) {
+    return { success: false, error: "Submission or question not found." };
+  }
+
   if (rubric == null || rubric.questionId !== question.id) {
     return { success: false, error: "Rubric not found." };
   }
@@ -166,7 +170,11 @@ export async function saveAssessment({
   return db.transaction().execute(async (tx) => {
     await tx
       .insertInto("assessment")
-      .values({ submissionId: submission.id, questionId: question.id })
+      .values({
+        projectId: question.projectId,
+        submissionId: submission.id,
+        questionId: question.id,
+      })
       .onConflict((conflict) =>
         conflict.columns(["submissionId", "questionId"]).doNothing(),
       )

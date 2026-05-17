@@ -1,9 +1,13 @@
 import { randomUUID } from "node:crypto";
+import { promises as fs } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   PostgreSqlContainer,
   type StartedPostgreSqlContainer,
 } from "@testcontainers/postgresql";
 import { CamelCasePlugin, Kysely, PostgresDialect } from "kysely";
+import { FileMigrationProvider, Migrator } from "kysely/migration";
 import { Pool } from "pg";
 import {
   afterAll,
@@ -14,7 +18,6 @@ import {
   it,
   vi,
 } from "vitest";
-import { up as migrateUp } from "./migrations/20260513000000_init";
 import type { DB } from "./types";
 
 vi.mock("server-only", () => ({}));
@@ -26,9 +29,13 @@ vi.mock("next/cache", () => ({
 
 let container: StartedPostgreSqlContainer;
 let db: Kysely<DB>;
+let defaultProjectId: number;
 
 let loadAssessment: typeof import("./assessments").loadAssessment;
 let saveAssessment: typeof import("./assessments").saveAssessment;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 type AssessmentFixture = {
   questionId: string;
@@ -47,6 +54,17 @@ function buildTestId(prefix: string): string {
   return `${prefix}-${randomUUID()}`;
 }
 
+function createMigrator(dbInstance: Kysely<DB>): Migrator {
+  return new Migrator({
+    db: dbInstance,
+    provider: new FileMigrationProvider({
+      fs,
+      path,
+      migrationFolder: path.join(__dirname, "migrations"),
+    }),
+  });
+}
+
 beforeAll(async () => {
   container = await new PostgreSqlContainer("postgres:17-alpine").start();
 
@@ -57,7 +75,19 @@ beforeAll(async () => {
     plugins: [new CamelCasePlugin()],
   });
 
-  await migrateUp(db as unknown as Kysely<unknown>);
+  const migrator = createMigrator(db);
+  const { error } = await migrator.migrateToLatest();
+
+  if (error != null) {
+    throw error;
+  }
+
+  defaultProjectId = await db
+    .selectFrom("project")
+    .where("slug", "=", "default")
+    .select("id")
+    .executeTakeFirstOrThrow()
+    .then((row) => row.id);
 
   vi.doMock("./kysely", () => ({ db }));
   ({ loadAssessment, saveAssessment } = await import("./assessments"));
@@ -78,6 +108,7 @@ async function createAssessmentFixture(): Promise<AssessmentFixture> {
   await db
     .insertInto("student")
     .values({
+      projectId: defaultProjectId,
       id: studentId,
       lastName: "Integration",
       firstName: "Test",
@@ -87,6 +118,7 @@ async function createAssessmentFixture(): Promise<AssessmentFixture> {
   const submission = await db
     .insertInto("submission")
     .values({
+      projectId: defaultProjectId,
       type: "individual",
       studentId,
     })
@@ -96,6 +128,7 @@ async function createAssessmentFixture(): Promise<AssessmentFixture> {
   await db
     .insertInto("question")
     .values({
+      projectId: defaultProjectId,
       id: questionId,
       label: "Integration question",
       position: 0,
@@ -107,6 +140,7 @@ async function createAssessmentFixture(): Promise<AssessmentFixture> {
     .values([
       {
         id: booleanRubricId,
+        projectId: defaultProjectId,
         questionId,
         type: "boolean",
         position: 0,
@@ -114,6 +148,7 @@ async function createAssessmentFixture(): Promise<AssessmentFixture> {
       },
       {
         id: ordinalRubricId,
+        projectId: defaultProjectId,
         questionId,
         type: "ordinal",
         position: 1,
@@ -121,6 +156,7 @@ async function createAssessmentFixture(): Promise<AssessmentFixture> {
       },
       {
         id: numericalRubricId,
+        projectId: defaultProjectId,
         questionId,
         type: "numerical",
         position: 2,

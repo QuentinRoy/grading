@@ -17,7 +17,21 @@ import Stack from "@mui/material/Stack";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import NextLink from "next/link";
+import { usePathname } from "next/navigation";
 import { type ReactNode, useMemo, useState } from "react";
+import { DEFAULT_PROJECT_SLUG } from "@/db/projects";
+import {
+  changeProjectPath,
+  projectAssessmentsPath,
+  projectDashboardPath,
+  projectExportQuestionsPath,
+  projectExportSubmissionsPath,
+  projectImportAssessmentsPath,
+  projectImportQuestionsPath,
+  projectImportStudentsPath,
+  projectOverviewPath,
+  projectQuestionsPath,
+} from "@/projects/routes";
 import { useLocalStorage } from "@/utils/useLocalStorage";
 
 const DRAWER_WIDTH = 280;
@@ -26,21 +40,6 @@ type NavigationItem = {
   label: string;
   href: string;
 };
-
-const ASSESSMENT_ITEMS: NavigationItem[] = [
-  { label: "Assessments", href: "/assessments" },
-  { label: "Rubric overview", href: "/assessments/overview" },
-];
-
-const MANAGEMENT_ITEMS: NavigationItem[] = [
-  { label: "Manage Questions", href: "/questions" },
-];
-
-const IMPORT_ITEMS: NavigationItem[] = [
-  { label: "Import Questions", href: "/import/questions" },
-  { label: "Import Students", href: "/import/students" },
-  { label: "Import Assessments", href: "/import/assessments" },
-];
 
 const EXPORT_STORAGE_KEY = "export-csv-options-v1";
 
@@ -73,6 +72,23 @@ type AppShellProps = {
   children: ReactNode;
 };
 
+function getProjectSlug(pathname: string): string {
+  const match = pathname.match(/^\/projects\/([^/]+)/);
+  if (match?.[1] == null || match[1].length === 0) {
+    return DEFAULT_PROJECT_SLUG;
+  }
+
+  return match[1];
+}
+
+function displayProjectName(projectSlug: string): string {
+  return projectSlug
+    .split("-")
+    .filter((segment) => segment.length > 0)
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(" ");
+}
+
 function NavigationZone({
   title,
   items,
@@ -104,13 +120,40 @@ function NavigationZone({
   );
 }
 
-function DrawerContent({ onNavigate }: { onNavigate?: () => void }): ReactNode {
+function DrawerContent({
+  projectSlug,
+  onNavigate,
+}: {
+  projectSlug: string;
+  onNavigate?: () => void;
+}): ReactNode {
   const [exportOptions, setExportOptions] =
     useLocalStorage<ExportPersistedOptions>(
       EXPORT_STORAGE_KEY,
       DEFAULT_EXPORT_OPTIONS,
       { deserialize: deserializeExportOptions },
     );
+
+  const assessmentItems: NavigationItem[] = [
+    { label: "Assessments", href: projectAssessmentsPath(projectSlug) },
+    { label: "Rubric overview", href: projectOverviewPath(projectSlug) },
+  ];
+
+  const managementItems: NavigationItem[] = [
+    { label: "Manage Questions", href: projectQuestionsPath(projectSlug) },
+  ];
+
+  const importItems: NavigationItem[] = [
+    {
+      label: "Import Questions",
+      href: projectImportQuestionsPath(projectSlug),
+    },
+    { label: "Import Students", href: projectImportStudentsPath(projectSlug) },
+    {
+      label: "Import Assessments",
+      href: projectImportAssessmentsPath(projectSlug),
+    },
+  ];
 
   const exportHref = useMemo(() => {
     const searchParams = new URLSearchParams();
@@ -124,11 +167,10 @@ function DrawerContent({ onNavigate }: { onNavigate?: () => void }): ReactNode {
     }
 
     const query = searchParams.toString();
+    const basePath = projectExportSubmissionsPath(projectSlug);
 
-    return query.length > 0
-      ? `/export/submissions?${query}`
-      : "/export/submissions";
-  }, [exportOptions]);
+    return query.length > 0 ? `${basePath}?${query}` : basePath;
+  }, [exportOptions, projectSlug]);
 
   return (
     <>
@@ -140,19 +182,37 @@ function DrawerContent({ onNavigate }: { onNavigate?: () => void }): ReactNode {
       <Divider />
 
       <Stack divider={<Divider flexItem />}>
+        <Box sx={{ px: 2, py: 1.5 }}>
+          <Typography component="p" variant="overline" color="text.secondary">
+            Project
+          </Typography>
+          <List disablePadding>
+            <ListItemButton
+              component={NextLink}
+              href={changeProjectPath()}
+              onClick={onNavigate}
+              sx={{ borderRadius: 1 }}
+            >
+              <ListItemText
+                primary={displayProjectName(projectSlug)}
+                secondary="Change project"
+              />
+            </ListItemButton>
+          </List>
+        </Box>
         <NavigationZone
           title="Assess"
-          items={ASSESSMENT_ITEMS}
+          items={assessmentItems}
           onNavigate={onNavigate}
         />
         <NavigationZone
           title="Manage"
-          items={MANAGEMENT_ITEMS}
+          items={managementItems}
           onNavigate={onNavigate}
         />
         <NavigationZone
           title="Import"
-          items={IMPORT_ITEMS}
+          items={importItems}
           onNavigate={onNavigate}
         />
         <Box sx={{ px: 2, py: 1.5 }}>
@@ -208,7 +268,7 @@ function DrawerContent({ onNavigate }: { onNavigate?: () => void }): ReactNode {
           </Typography>
           <Button
             component={NextLink}
-            href="/export/questions"
+            href={projectExportQuestionsPath(projectSlug)}
             variant="outlined"
             fullWidth
             onClick={onNavigate}
@@ -222,6 +282,8 @@ function DrawerContent({ onNavigate }: { onNavigate?: () => void }): ReactNode {
 }
 
 export default function AppShell({ children }: AppShellProps) {
+  const pathname = usePathname();
+  const projectSlug = getProjectSlug(pathname);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
@@ -243,7 +305,7 @@ export default function AppShell({ children }: AppShellProps) {
           <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
             <Typography
               component={NextLink}
-              href="/"
+              href={projectDashboardPath(projectSlug)}
               variant="h6"
               sx={{ color: "inherit", textDecoration: "none" }}
             >
@@ -268,7 +330,10 @@ export default function AppShell({ children }: AppShellProps) {
             },
           }}
         >
-          <DrawerContent onNavigate={() => setDrawerOpen(false)} />
+          <DrawerContent
+            projectSlug={projectSlug}
+            onNavigate={() => setDrawerOpen(false)}
+          />
         </Drawer>
       </Box>
 
