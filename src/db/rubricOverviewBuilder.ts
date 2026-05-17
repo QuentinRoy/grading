@@ -73,7 +73,8 @@ export type RubricOverviewSummary = {
   assessedRubrics: number;
   totalRubrics: number;
   completionPercent: number;
-  classAveragePercent: number | null;
+  classAverageMarks: number | null;
+  classAverageMaxMarks: number | null;
 };
 
 export type RubricOverviewData = {
@@ -340,8 +341,10 @@ export function buildRubricOverviewData({
       totalRubrics,
       completionPercent:
         totalRubrics > 0 ? (assessedRubrics / totalRubrics) * 100 : 0,
-      classAveragePercent:
-        totalMaxMarks > 0 ? (totalMarks / totalMaxMarks) * 100 : null,
+      classAverageMarks:
+        students.length > 0 ? totalMarks / students.length : null,
+      classAverageMaxMarks:
+        students.length > 0 ? totalMaxMarks / students.length : null,
     },
     rubrics,
     students,

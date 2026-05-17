@@ -126,6 +126,11 @@ describe("buildRubricOverviewData", () => {
       averageMarks: 4,
       averagePercent: 80,
     });
+
+    expect(data.summary).toMatchObject({
+      classAverageMarks: 3,
+      classAverageMaxMarks: 4.5,
+    });
   });
 
   it("maps popup details with type-specific properties", () => {

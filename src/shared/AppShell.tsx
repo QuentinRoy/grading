@@ -29,6 +29,7 @@ type NavigationItem = {
 
 const ASSESSMENT_ITEMS: NavigationItem[] = [
   { label: "Assessments", href: "/assessments" },
+  { label: "Rubric overview", href: "/assessments/overview" },
 ];
 
 const MANAGEMENT_ITEMS: NavigationItem[] = [

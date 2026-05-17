@@ -58,9 +58,6 @@ export default function RubricDetailsTooltip({
           <Typography variant="subtitle2">
             {details.label ?? rubricId}
           </Typography>
-          <Typography variant="caption" color="inherit">
-            Type: {details.type}
-          </Typography>
           {details.description != null && details.description.length > 0 && (
             <Typography
               variant="caption"
@@ -70,6 +67,9 @@ export default function RubricDetailsTooltip({
               {details.description}
             </Typography>
           )}
+          <Typography variant="caption" color="inherit">
+            Type: {details.type}
+          </Typography>
           <Box>{propertyRows(details)}</Box>
         </Stack>
       }

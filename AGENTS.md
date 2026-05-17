@@ -13,6 +13,7 @@
 - Do not use React as a namespace. Import functions and types directly from "react". For example, use `import { useState, type ReactElement } from "react"`.
 - Always check typescript types for any code you write: `pnpm run check-types`.
 - Avoid `as` when possible. Don't use `any`.
+- Keep page-level composition in `app/` route files. Avoid `src/` components that are full pages; `src/` components should stay focused and independently reusable/testable.
 
 ## Performance
 
