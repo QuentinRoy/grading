@@ -1,8 +1,8 @@
-import { describe, it, expect } from "vitest";
 import { execSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { createHash } from "node:crypto";
+import { describe, expect, it } from "vitest";
 
 describe("Kysely migrations", () => {
   it("should not modify existing migrations compared to main", () => {
@@ -16,7 +16,7 @@ describe("Kysely migrations", () => {
           encoding: "utf-8",
           stdio: ["pipe", "pipe", "pipe"],
           cwd: process.cwd(),
-        }
+        },
       );
       mainMigrations = output
         .trim()
@@ -37,12 +37,17 @@ describe("Kysely migrations", () => {
         {
           encoding: "utf-8",
           cwd: process.cwd(),
-        }
+        },
       );
       currentMigrations = output
         .trim()
         .split("\n")
-        .filter((line) => line.length > 0 && line.endsWith(".ts") && !line.endsWith("README.md"));
+        .filter(
+          (line) =>
+            line.length > 0 &&
+            line.endsWith(".ts") &&
+            !line.endsWith("README.md"),
+        );
     } catch {
       // No git repo, skip
       return;
@@ -55,7 +60,7 @@ describe("Kysely migrations", () => {
       if (!currentMigrations.includes(mainMigration)) {
         // Migration was deleted or renamed
         errors.push(
-          `Migration file ${mainMigration} was deleted or renamed. Existing migrations are immutable and must not be deleted or renamed.`
+          `Migration file ${mainMigration} was deleted or renamed. Existing migrations are immutable and must not be deleted or renamed.`,
         );
       } else {
         // Check if migration content was modified
@@ -66,7 +71,7 @@ describe("Kysely migrations", () => {
           });
           const currentContent = readFileSync(
             join(process.cwd(), mainMigration),
-            "utf-8"
+            "utf-8",
           );
 
           const mainHash = createHash("sha256")
@@ -78,7 +83,7 @@ describe("Kysely migrations", () => {
 
           if (mainHash !== currentHash) {
             errors.push(
-              `Migration file ${mainMigration} was modified. Existing migrations are immutable. Create a new migration instead of modifying existing ones.`
+              `Migration file ${mainMigration} was modified. Existing migrations are immutable. Create a new migration instead of modifying existing ones.`,
             );
           }
         } catch {
