@@ -116,8 +116,8 @@ Notes:
 ## 5. Existing Coverage Inventory (Baseline)
 
 Currently present tests (not exhaustive for critical paths):
-- src/db/assessments.test.ts
-- src/import/saveStudents.test.ts
+- src/db/assessments.integration.test.ts
+- src/import/saveStudents.integration.test.ts
 - src/import/importParsers.test.ts
 - src/export/submissionExportCsv.test.ts
 - src/export/questionsExport.test.ts
@@ -281,7 +281,7 @@ Tier 2 issue is Done when:
 - 2026-05-18: Created GitHub issues for all 16 risks (R-001..R-015, R-016) matching audit register. Issue numbers linked in Risk Register table. Added GitHub Issue Linkage guidance in Section 1.
 - 2026-05-18: Implemented first R-001 hardening pass: `saveAssessments` now preloads submission mappings in batch and retains single-transaction writes; added integration assertions for unknown header rejection and write-phase rollback atomicity.
 - 2026-05-18: Verified R-016 by confirming `main` branch protection enforces strict required checks (`build`, `test-integration`, `test-storybook`, `test-unit`, `check`, `check-types`); updated dashboard counts and marked M0 complete.
-- 2026-05-18: R-005 Verified — added two-project collision integration tests: `src/db/submissions.test.ts` (individual + team submission isolation), `src/db/submissionProgress.test.ts` (`loadSubmissionQuestionProgress` + `loadSubmissionOverviewProgress` isolation), and `src/import/saveAssessments.test.ts` (assessment import doesn't leak into sibling project with same student external id); all 9 new tests pass locally.
+- 2026-05-18: R-005 Verified — added two-project collision integration tests: `src/db/submissions.integration.test.ts` (individual + team submission isolation), `src/db/submissionProgress.integration.test.ts` (`loadSubmissionQuestionProgress` + `loadSubmissionOverviewProgress` isolation), and `src/import/saveAssessments.integration.test.ts` (assessment import doesn't leak into sibling project with same student external id); all 9 new tests pass locally.
 
 ## 11. Issue Entry Template (for future additions)
 
