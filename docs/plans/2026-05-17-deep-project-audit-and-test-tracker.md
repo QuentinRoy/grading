@@ -60,7 +60,7 @@ Note: Tier still dominates score. A Tier 0 item is always prioritized above Tier
 ## 3. Audit Dashboard
 
 Current snapshot (2026-05-17):
-- Tier 0: 6 open, 0 in progress, 0 verified
+- Tier 0: 5 open, 0 in progress, 0 verified
 - Tier 1: 6 open, 0 in progress, 0 verified
 - Tier 2: 4 open, 0 in progress, 0 verified
 
@@ -103,7 +103,7 @@ Immediate execution recommendation:
 | R-013 | Tier 2 | 24 | UI optimistic save behavior | Assessment session optimistic updates and rollback/pending accounting are not explicitly tested. | src/assessment/useAssessmentSession.ts | Open | Unassigned | Sprint C | Pending | Add hook/component tests for success/failure ordering and pending counter integrity. |
 | R-014 | Tier 2 | 27 | Export routes API behavior | Route response contracts (404/400/200, headers, filenames) need route-level tests. | app/projects/[projectId]/[projectSlug]/export/questions/route.ts, app/projects/[projectId]/[projectSlug]/export/submissions/route.ts | Open | Unassigned | Sprint C | Pending | Add route tests for status and headers under valid/invalid conditions. |
 | R-015 | Tier 2 | 20 | Operational signal quality | Some paths surface generic errors; consistency of user-recoverable guidance should be tested and standardized. | app/projects/page.tsx, src/import/actionUtils.ts | Open | Unassigned | Sprint C | Pending | Add contract checks for actionable, non-internal error text and recovery guidance. |
-| R-016 | Tier 0 | 100 | Delivery pipeline / CI | GitHub CI integration is not yet defined as a required reliability gate; critical regressions could merge without automated checks. | package.json scripts (`test:unit`, `check-types`, `check`), reliability goals in this audit | Open | Unassigned | Sprint A | Pending | Add GitHub Actions workflow and protect main branch with required checks: typecheck, lint/format check, and reliability test suite. |
+| R-016 | Tier 0 | 100 | Delivery pipeline / CI | GitHub CI integration is not yet defined as a required reliability gate; critical regressions could merge without automated checks. | package.json scripts (`test:unit`, `test:integration`, `check-types`, `check`), reliability goals in this audit, .github/workflows/ci.yml, src/test/dbIntegration.ts | Mitigated | Unassigned | Sprint A | `.github/workflows/ci.yml` executes `check-types`, `check`, `test-unit`, and `test-integration` on pull_request/push to `main`; integration CI path uses a GitHub Actions Postgres service with `TEST_DB_BACKEND=external`; local verification: `pnpm run check-types`, `pnpm run check`, `pnpm run test:unit`, `pnpm run test:integration`, and `TEST_DB_BACKEND=external TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:55432/postgres pnpm run test:integration` | Configure main branch protection to require `check-types`, `check`, `test-unit`, and `test-integration` before merge. |
 
 Notes:
 - Score values are initial estimates and must be re-evaluated each weekly update.
@@ -139,9 +139,10 @@ Notably under-covered critical modules:
 1. GitHub CI required reliability gates
 - Target: .github/workflows/*
 - Scenarios:
-  - pull_request runs required checks (check-types, check, test:unit)
+  - pull_request runs required checks (check-types, check, test:unit, test:integration)
   - failing checks block merge via branch protection
   - path/trigger rules include reliability-critical code paths
+  - integration suite supports both local Testcontainers and CI Postgres service backend via shared test helpers
 
 2. Atomic assessment import rollback
 - Target: src/import/saveAssessments.ts
@@ -249,7 +250,7 @@ Tier 2 issue is Done when:
 
 ### Milestones
 - [ ] M0: Baseline completed (coverage inventory + issue register frozen for first execution cycle)
-- [ ] M1: GitHub CI reliability gates implemented (R-016)
+- [x] M1: GitHub CI reliability gates implemented (R-016)
 - [ ] M2: Tier 0 tests implemented
 - [ ] M3: Tier 0 verified in CI
 - [ ] M4: Tier 1 tests implemented
@@ -260,6 +261,8 @@ Tier 2 issue is Done when:
 ### Execution Log
 - 2026-05-17: Initial deep audit completed. Risks R-001..R-015 registered.
 - 2026-05-17: Migrated integration tests to shared `test.extend` fixtures (`src/test/integrationTest.ts`) across assessment import/student/assessment DB suites; targeted reliability tests pass.
+- 2026-05-17: Implemented GitHub Actions CI workflow (`.github/workflows/ci.yml`) with separate required-candidate jobs: `check-types`, `check`, and `test-unit` on pull requests and pushes to `main`.
+- 2026-05-18: Added `test-integration` GitHub Actions job with a Postgres service and backend-switching integration helpers (`TEST_DB_BACKEND=external`) while keeping local default integration backend on Testcontainers.
 
 ## 10. Change Log
 
@@ -267,6 +270,8 @@ Tier 2 issue is Done when:
 - 2026-05-17: Added prioritization score model, ownership/target fields, definition-of-done criteria, and weekly maintenance ritual.
 - 2026-05-17: Added R-016 for GitHub CI integration as a Tier 0 high-priority blocking task and promoted CI gating to first execution step.
 - 2026-05-17: Added reusable integration test fixtures and migrated `src/import/saveAssessments.test.ts`, `src/import/saveStudents.test.ts`, and `src/db/assessments.test.ts` to reduce boilerplate and improve consistency.
+- 2026-05-17: Added GitHub Actions workflow at `.github/workflows/ci.yml` to run `check-types`, `check`, and `test:unit` on pull requests and pushes to `main`; marked R-016 as Mitigated pending branch protection enforcement.
+- 2026-05-18: Split Vitest into `unit` and `integration` projects, added `test:integration`, introduced a backend-aware DB integration helper (`testcontainers` local default, `external` for CI), and wired `.github/workflows/ci.yml` `test-integration` to GitHub Actions Postgres service.
 
 ## 11. Issue Entry Template (for future additions)
 
