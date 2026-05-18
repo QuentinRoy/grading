@@ -2,6 +2,7 @@
   "name": "marking-grid",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "db:down": "dotenvx run --convention=flow -- docker compose down",
     "db:logs": "dotenvx run --convention=flow -- docker compose logs -f postgres",
