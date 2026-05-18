@@ -2,6 +2,12 @@ import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
 
+const integrationTestFiles = [
+  "src/db/assessments.test.ts",
+  "src/import/saveAssessments.test.ts",
+  "src/import/saveStudents.test.ts",
+];
+
 export default defineConfig({
   test: {
     projects: [
@@ -10,6 +16,15 @@ export default defineConfig({
           name: "unit",
           environment: "node",
           include: ["src/**/*.{test,spec}.{ts,tsx,js,jsx}"],
+          exclude: integrationTestFiles,
+        },
+      },
+      {
+        test: {
+          name: "integration",
+          environment: "node",
+          include: integrationTestFiles,
+          fileParallelism: false,
         },
       },
       {

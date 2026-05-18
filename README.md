@@ -84,7 +84,19 @@ pnpm storybook:build
 pnpm check --fix
 pnpm check-types
 pnpm test
+pnpm test:unit
+pnpm test:integration
 pnpm test:watch
+```
+
+Integration test database backend:
+- Default: `test:integration` uses Testcontainers (same behavior as before).
+- Optional external backend (used in CI):
+
+```bash
+TEST_DB_BACKEND=external \
+TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres \
+pnpm test:integration
 ```
 
 ### Database
