@@ -6,6 +6,7 @@ const integrationTestFiles = [
   "src/db/assessments.test.ts",
   "src/import/saveAssessments.test.ts",
   "src/import/saveStudents.test.ts",
+  "src/db/migrations.test.ts",
 ];
 
 export default defineConfig({
