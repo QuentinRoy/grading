@@ -1,6 +1,5 @@
 name: General issue
 description: Propose a feature, task, investigation, or other non-bug issue.
-title: ""
 body:
   - type: textarea
     id: context
