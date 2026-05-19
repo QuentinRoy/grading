@@ -1,0 +1,68 @@
+name: Investigation
+description: Explore options, clarify constraints, and recommend a direction before implementation.
+title: ""
+labels: [investigation]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template when the right implementation is not yet clear. The expected output is usually a documented recommendation and follow-up implementation issues.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question / uncertainty
+      description: What needs to be understood or decided?
+      placeholder: Describe the open question.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Why does this investigation matter? Link related issues, PRs, docs, or plans when useful.
+      placeholder: Describe relevant background.
+    validations:
+      required: true
+
+  - type: textarea
+    id: options
+    attributes:
+      label: Options to compare
+      description: List known options or approaches to evaluate.
+      value: |
+        -
+
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints
+      description: Important project constraints, risks, UX constraints, deployment constraints, or compatibility requirements.
+      placeholder: Optional.
+
+  - type: textarea
+    id: expected-output
+    attributes:
+      label: Expected output
+      description: What should this investigation produce?
+      value: |
+        - [ ] Alternatives are compared.
+        - [ ] A recommended direction is documented.
+        - [ ] Follow-up implementation issues are created if appropriate.
+    validations:
+      required: true
+
+  - type: textarea
+    id: non-goals
+    attributes:
+      label: Non-goals
+      description: What should this investigation not attempt to implement or decide?
+      placeholder: Optional.
+
+  - type: textarea
+    id: labels
+    attributes:
+      label: Labels to consider
+      description: Add existing area/risk labels when useful. Do not introduce new labels lightly when existing labels already fit.
+      placeholder: documentation, ui, database, import, export, reliability, etc.
