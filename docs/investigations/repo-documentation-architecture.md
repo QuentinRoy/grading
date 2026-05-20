@@ -549,7 +549,23 @@ Completed
 Abandoned
 ```
 
-Plans can be deleted or moved to `plans/completed/` when no longer useful. They do not need to remain pristine.
+Current recommendation (Option A): keep plan history and avoid deletion by default.
+
+Under Option A:
+
+- active plans stay in `plans/active/`;
+- completed plans move to `plans/completed/`;
+- abandoned plans are marked explicitly, but retained until there is a clearer archival policy.
+
+Alternative hypothesis (Option B): allow selective deletion of non-relevant plans after triage.
+
+Option B is still under investigation. It may reduce clutter, but it risks losing implementation context that can still help future agent-assisted work.
+
+Ambiguity to resolve in follow-up investigation:
+
+- how abandoned plans should be represented (`Status: Abandoned` only, or status plus naming/tagging convention);
+- whether abandoned plans should live alongside completed plans or under a separate archival location;
+- what minimum metadata is required before any plan can be considered non-relevant.
 
 ## Agent-specific documentation
 
@@ -782,14 +798,12 @@ README.md
 AGENTS.md
 
 docs/
-  index.md
   investigations/
-    offline-grading-mode.md
-    repo-documentation-architecture.md
   adr/
   design/
   reference/
   guides/
+  index.md
 
 plans/
   active/
@@ -907,7 +921,8 @@ Mitigation:
 
 - Should this repository use `docs/architecture/` at all, or replace it with the more specific `adr/`, `design/`, and `investigations/` categories?
 - Should active plans be required for every code change, or only for non-trivial changes?
-- Should `plans/completed/` be kept long-term, or should completed plans usually be deleted after merge?
+- For plans lifecycle, should the repository keep Option A (retain plans, no deletion by default), or adopt Option B (allow selective deletion after triage)?
+- Where should abandoned plans live in practice: within `plans/completed/`, within a separate archival location, or with another status/location model?
 - Should `AGENTS.md` be the only agent instruction file, or should there also be tool-specific files for Copilot, Claude Code, or Cursor?
 - Should documentation status be free text or a small controlled vocabulary?
 - Should PR templates ask whether docs, ADRs, or plans were updated?
