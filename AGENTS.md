@@ -29,6 +29,7 @@
 ## Architecture
 
 - For elements that require DOM IDs, such as `aria-controls` / target `id` pairs or form inputs / labels, prefer React `useId()` over hard-coded global IDs to avoid collisions. Derived IDs are acceptable when multiple related IDs are needed, for example `${id}-name` and `${id}-email`. However, do **not** use `useId()` for React list keys, database IDs, persisted identifiers, or IDs that must remain stable across sessions.
+- Always use Context7 when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
 
 ## Performance
 
