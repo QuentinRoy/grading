@@ -8,6 +8,7 @@ Related: #115, #99, #59, #51, #68, #110
 
 - [Question](#question)
 - [Executive summary](#executive-summary)
+- [Relationship to other investigations](#relationship-to-other-investigations)
 - [Principles used in this audit](#principles-used-in-this-audit)
 - [Finding 1: project route context and slug handling](#finding-1-project-route-context-and-slug-handling)
 - [Finding 2: project-scoped pages repeat route resolution](#finding-2-project-scoped-pages-repeat-route-resolution)
@@ -56,6 +57,23 @@ The highest-value improvements are not only folder moves. The codebase would ben
 The recurring problem is mixed responsibility. Several modules combine route resolution, DB queries, domain mapping, validation, cache invalidation, UI state, and user-facing error messages. Some duplication is acceptable for now, especially while the domain vocabulary is still evolving, but repeated rubric/question assembly and progress semantics look stable enough to justify shared helpers or read-model modules.
 
 The preferred direction is still lightweight and colocated: keep related workflow code together, split large files by responsibility, and avoid deep architecture layers unless a folder becomes difficult to navigate.
+
+## Relationship to other investigations
+
+This document focuses on concrete source-code structure and technical debt. It intentionally does not own terminology, product positioning, offline architecture, or final caching strategy.
+
+See [the investigation overlap audit](./investigation-overlap-audit.md) for a fuller ownership map across ongoing investigations.
+
+Important related documents:
+
+- [Domain terminology audit](./domain-terminology-audit.md) owns naming decisions such as `Project` versus `Assignment`, `Assessment` versus `Grading`, and `Rubric` versus `Criterion`.
+- [Assessment target model](./assessment-target-model.md) owns student/group/submission/assessment-target semantics.
+- [Mark, grade and weighting model](./mark-grade-weighting-model.md) owns grading output semantics such as mark, grade, score, and weighting.
+- [Grading workflows and product positioning](./grading-workflows-and-product-positioning.md) owns workflow and product-scope questions such as spreadsheet replacement, LMS integration, and explicit import/export operations.
+- [Offline support](./offline-support.md) owns local storage, command outbox, sync, and conflict strategy questions.
+- #59 should own final loading, caching, revalidation, and route-boundary strategy.
+
+Folder names and target source shapes in this document are therefore provisional. They should be revisited if terminology or product-model investigations converge differently.
 
 ## Principles used in this audit
 
