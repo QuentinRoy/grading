@@ -115,7 +115,7 @@ pnpm db:types:generate
 
 ## Collaboration Conventions
 
-Use the canonical workflow guidance in [docs/contributing/issue-and-pr-conventions.md](docs/contributing/issue-and-pr-conventions.md) for issue, PR, and label conventions. That document owns the detailed templates, label guidance, and planning notes.
+Use the canonical workflow guidance in [docs/guides/issue-and-pr-conventions.md](docs/guides/issue-and-pr-conventions.md) for issue, PR, and label conventions. That document owns the detailed templates, label guidance, and planning notes.
 
 ## Import Formats
 
