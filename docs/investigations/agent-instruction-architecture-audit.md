@@ -26,7 +26,7 @@ Main recommendation:
 
 ```txt
 AGENTS.md
-  -> short operational rules and navigation
+  -> short operational rules, mandatory reminders, and navigation
 
 README.md
   -> onboarding and contributor workflow overview
@@ -35,10 +35,10 @@ README.md
   -> tool glue only
 
 docs/*
-  -> durable knowledge
+  -> durable knowledge, rationale, and expanded guidance
 ```
 
-Avoid duplicating workflow rules, issue taxonomy, planning conventions, validation policy, architecture rules, and local skill-loading rules across multiple files.
+Avoid duplicating workflow rules, issue taxonomy, planning conventions, validation policy, architecture rules, and local skill-loading rules across multiple files. Short, frequently relevant engineering conventions may stay in `AGENTS.md` when agents must not miss them during normal coding; expanded rationale and examples should live in human-readable guide or reference docs.
 
 ## Context
 
@@ -89,7 +89,7 @@ Implemented in PR #119:
 
 Remaining follow-up items:
 
-- Decide which architecture reminders should remain in `AGENTS.md` and which should move to focused docs.
+- Keep short, frequently relevant engineering conventions in `AGENTS.md`; expand longer rationale and examples into human-readable guide or reference docs when needed.
 - Remove unrelated README command duplication if desired.
 - Keep this investigation as historical context unless remaining recommendations are promoted into focused follow-up issues, ADRs, reference docs, or direct implementation changes.
 
@@ -99,7 +99,7 @@ This section records the audit findings that PR #119 used to align the instructi
 
 | Source | Current role | Audit result |
 | --- | --- | --- |
-| `AGENTS.md` | Repository-level operational agent guidance | Correct place for always-relevant agent rules. After PR #119, remaining review is mainly whether some architecture and implementation reminders should be linked out or reduced. |
+| `AGENTS.md` | Repository-level operational agent guidance | Correct place for always-relevant agent rules and short mandatory engineering reminders. After PR #119, longer rationale and examples can move to guide or reference docs if these reminders grow. |
 | `.github/copilot-instructions.md` | Copilot/custom-agent instruction file | Previously too broad. PR #119 reduced it to Copilot-specific glue that points to `AGENTS.md`. |
 | `README.md` | Human onboarding and project overview | Previously duplicated detailed issue, PR, and label workflow guidance. PR #119 shortened this section and now links to `docs/guides/issue-and-pr-conventions.md`. |
 | `docs/guides/issue-and-pr-conventions.md` | Focused collaboration guide | Best canonical home for detailed issue, PR, template, and label conventions. |
@@ -199,27 +199,24 @@ Assessment:
 - Keep wording conditional and domain-driven: load relevant skills only when the task touches the skill domain.
 - `.github/copilot-instructions.md` should only point to `AGENTS.md` and avoid restating skill-loading policy.
 
-### Duplicated architecture guidance
+### Shared engineering conventions
 
-Architecture and implementation facts appear in instruction files:
+Some architecture and implementation guidance is useful for both agents and humans. Short, frequently relevant rules can remain in `AGENTS.md` when they prevent common mistakes during normal coding, for example styling conventions, validation expectations, migration safety, and concise frontend implementation rules.
 
-- `AGENTS.md` includes React `useId()` guidance, app/src composition guidance, Context7 usage, performance guidance, dotenvx/package-script guidance, and migration guidance.
-- `.github/copilot-instructions.md` includes import/export paths, rubric/data-shape contracts, route handlers, export builders, import saves, rubric assessment mapping, migrations, and audit-doc synchronization.
-- `README.md` includes tech stack, app workflow, import formats, database notes, and Storybook/testing notes.
-- `docs/reference/*`, `docs/design/*`, and `docs/adr/*` are intended to hold durable system knowledge.
+When these conventions need rationale, examples, or edge-case discussion, the expanded content should move to `docs/guides/*`, `docs/reference/*`, `docs/design/*`, or ADRs, with `AGENTS.md` keeping only a short mandatory reminder and link.
 
 Assessment:
 
-- Some short operational reminders in `AGENTS.md` are useful when always relevant, especially styling, validation, and safety rules.
-- Durable architecture knowledge should move to or be linked from `docs/reference/*`, `docs/design/*`, or ADRs.
-- `.github/copilot-instructions.md` should not specialize itself as a broad grading refactor manual if it is meant to be Copilot glue only.
+- It is acceptable for `AGENTS.md` to contain shared engineering conventions when they are short and mandatory for agent work.
+- Avoid turning `AGENTS.md` into the full explanation of those conventions.
+- Expand human-readable rationale and examples in focused docs only when the convention grows beyond a short reminder.
 
 ### Conflicts and stale guidance
 
 - Plan file location guidance was previously inconsistent across `.github/copilot-instructions.md`, `docs/index.md`, and the issue and PR conventions guide. PR #119 aligns the active-plan convention around `plans/active/` and completed plans around `plans/completed/`.
 - Source precedence was accepted in issue #97 and added to `AGENTS.md` in PR #119.
 - The issue and PR conventions now live under `docs/guides/`, and `docs/index.md` lists them with the other procedural guides.
-- Remaining architecture guidance in `AGENTS.md` should be reviewed to decide what is always-relevant operational guidance and what should move to `docs/reference/`, `docs/design/`, or an ADR.
+- Short shared engineering conventions may remain in `AGENTS.md`; only longer rationale and examples need a separate guide, reference, design doc, or ADR.
 
 ## Findings
 
@@ -386,10 +383,10 @@ Implemented in PR #119:
 
 Remaining follow-up:
 
-- decide which architecture reminders are always relevant enough to remain in `AGENTS.md`;
+- keep short, frequently relevant engineering conventions in `AGENTS.md`; expand longer rationale and examples into focused guide or reference docs when needed;
 - reduce README operational content further only where it duplicates a more focused canonical document.
 
 ## Open questions
 
-- Which short architecture reminders are always relevant enough to remain in `AGENTS.md`?
+- When shared engineering conventions grow beyond short mandatory reminders, which guide or reference docs should own the expanded rationale and examples?
 - Should remaining recommendations from this investigation become follow-up issues, or is the current lightweight cleanup sufficient?
