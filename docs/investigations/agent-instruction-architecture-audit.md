@@ -1,7 +1,7 @@
 # Investigation: agent instruction architecture audit
 
 Status: Current investigation
-Date: 2026-05-20
+Date: 2026-05-26
 Related: PR #71, PR #82, issue #97, PR #119, AGENTS.md, .github/copilot-instructions.md, README workflow conventions
 
 ## Question

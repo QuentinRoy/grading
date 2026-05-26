@@ -9,13 +9,33 @@
 - Do not create unsupported relationships between issues, pull requests, milestones, or roadmap items.
 - Do not assign milestones, reorganize project boards, or assign priorities unless explicitly requested. It is fine to suggest these actions when relevant.
 
+## Skills
+
+- Load relevant local skills from `.agents/skills/*` when the task touches that domain. Do not load every skill by default.
+
+## Instruction precedence
+
+When guidance conflicts, use this order:
+
+1. User request or issue-specific instructions.
+2. `AGENTS.md`.
+3. Relevant local skills from `.agents/skills/*`.
+4. Accepted ADRs.
+5. `docs/design/` and `docs/reference/`.
+6. `docs/contributing/` and `README.md`.
+7. `docs/investigations/`.
+8. `plans/active/`.
+9. Existing implementation.
+
+Investigations and active plans can guide work, but they do not override higher-priority decisions.
+
 ## Documentation conventions
 
 - Use `docs/investigations/` for audits, comparisons, and open-ended technical exploration.
 - Use `docs/adr/` for durable architectural decisions.
 - Use `docs/design/` for chosen implementation designs.
 - Use `docs/reference/` for durable facts about the current system.
-- Use `plans/active/` for temporary execution plans.
+- Use `plans/active/` for temporary execution plans and `plans/completed/` for archived plans. See `docs/index.md` for the canonical doc map.
 - Keep agent instructions short and navigational. Prefer linking to focused docs over copying long guidance here.
 
 ## Styling
