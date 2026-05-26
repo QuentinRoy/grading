@@ -17,6 +17,7 @@ Open-ended audits and option analysis. Investigations may contain hypotheses and
 
 - [Source structure and technical debt audit](investigations/source-structure-and-tech-debt-audit.md)
 - [Investigation overlap audit](investigations/investigation-overlap-audit.md)
+- [Read-write separation and schema-change resilience](investigations/read-write-separation-and-schema-change-resilience.md)
 - [Offline support and local assessment storage](investigations/offline-support.md)
 - [Repository documentation architecture](investigations/repo-documentation-architecture.md)
 - [Agent instruction architecture audit](investigations/agent-instruction-architecture-audit.md)
@@ -58,9 +59,10 @@ Temporary work artifacts for agent-assisted implementation.
 
 - Active plans live in `plans/active/`.
 - Completed plans move to `plans/completed/`.
+- If a proposed plan is not actively being executed, prefer `docs/investigations/` until a concrete implementation plan is needed.
 
 ## Notes
 
 - Keep investigations in `docs/investigations/` until a decision is durable enough for an ADR.
 - Prefer the smallest document type that captures the needed context.
-- Use the [investigation overlap audit](investigations/investigation-overlap-audit.md) when a topic appears to span multiple current investigations.
+- Use the [investigation overlap audit](investigations/investigation-overlap-audit.md) when a topic appears to span multiple current investigations or planning artifacts.
