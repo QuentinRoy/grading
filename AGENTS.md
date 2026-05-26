@@ -31,6 +31,7 @@ Investigations and active plans can guide work, but they do not override higher-
 
 ## Documentation conventions
 
+- Use `docs/index.md` as the canonical map for repository documentation.
 - Use `docs/investigations/` for audits, comparisons, and open-ended technical exploration.
 - Use `docs/adr/` for durable architectural decisions.
 - Use `docs/design/` for chosen implementation designs.
