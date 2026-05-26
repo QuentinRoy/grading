@@ -15,7 +15,7 @@ The repository currently contains overlapping instruction and guidance sources:
 - `AGENTS.md`
 - `.github/copilot-instructions.md`
 - `README.md`
-- `docs/contributing/issue-and-pr-conventions.md`
+- `docs/guides/issue-and-pr-conventions.md`
 - `docs/index.md`
 - domain-specific documentation under `docs/*`
 - skill metadata in `skills-lock.json`
@@ -83,14 +83,13 @@ Implemented in PR #119:
 - `.github/copilot-instructions.md` was reduced to Copilot-specific glue that points to `AGENTS.md`.
 - Local skill-loading guidance was moved into `AGENTS.md`.
 - Explicit instruction precedence was added to `AGENTS.md`.
-- README workflow guidance was shortened and now links to `docs/contributing/issue-and-pr-conventions.md`.
+- README workflow guidance was shortened and now links to `docs/guides/issue-and-pr-conventions.md`.
 - Plan-path guidance was aligned around `plans/active/` and `plans/completed/`.
-- `docs/contributing/issue-and-pr-conventions.md` was updated to use `plans/active/` for active plan documents.
+- The issue and PR conventions guide was updated to use `plans/active/` for active plan documents.
 
 Remaining follow-up items:
 
 - Decide which architecture reminders should remain in `AGENTS.md` and which should move to focused docs.
-- Add `docs/contributing/` to `docs/index.md` or otherwise clarify where contributor conventions fit in the documentation map.
 - Remove unrelated README command duplication if desired.
 - Keep this investigation as historical context unless remaining recommendations are promoted into focused follow-up issues, ADRs, reference docs, or direct implementation changes.
 
@@ -102,8 +101,8 @@ This section records the audit findings that PR #119 used to align the instructi
 | --- | --- | --- |
 | `AGENTS.md` | Repository-level operational agent guidance | Correct place for always-relevant agent rules. After PR #119, remaining review is mainly whether some architecture and implementation reminders should be linked out or reduced. |
 | `.github/copilot-instructions.md` | Copilot/custom-agent instruction file | Previously too broad. PR #119 reduced it to Copilot-specific glue that points to `AGENTS.md`. |
-| `README.md` | Human onboarding and project overview | Previously duplicated detailed issue, PR, and label workflow guidance. PR #119 shortened this section and now links to `docs/contributing/issue-and-pr-conventions.md`. |
-| `docs/contributing/issue-and-pr-conventions.md` | Focused collaboration conventions | Best canonical home for detailed issue, PR, template, and label conventions. |
+| `README.md` | Human onboarding and project overview | Previously duplicated detailed issue, PR, and label workflow guidance. PR #119 shortened this section and now links to `docs/guides/issue-and-pr-conventions.md`. |
+| `docs/guides/issue-and-pr-conventions.md` | Focused collaboration guide | Best canonical home for detailed issue, PR, template, and label conventions. |
 | `docs/index.md` | Documentation navigation and document-type ownership | Useful canonical navigation file. It should be linked from `AGENTS.md` instead of duplicated. |
 | `skills-lock.json` | Skill dependency metadata | Not an instruction file. It should not carry policy, but its presence reinforces that skill-loading policy belongs in `AGENTS.md`, not Copilot-specific instructions. |
 
@@ -113,14 +112,14 @@ This section records the audit findings that PR #119 used to align the instructi
 
 Duplicated across:
 
-- `AGENTS.md`, which points agents to `docs/contributing/issue-and-pr-conventions.md` and gives operational rules for issue and PR work.
+- `AGENTS.md`, which points agents to `docs/guides/issue-and-pr-conventions.md` and gives operational rules for issue and PR work.
 - `README.md`, which includes detailed issue template, PR body, validation checklist, risk review, and label taxonomy guidance.
-- `docs/contributing/issue-and-pr-conventions.md`, which already defines template use, draft PR behavior, labels, and typical combinations.
+- `docs/guides/issue-and-pr-conventions.md`, which already defines template use, draft PR behavior, labels, and typical combinations.
 - `.github/copilot-instructions.md`, which repeats label handling constraints and output expectations for PR/task summaries.
 
 Assessment:
 
-- `docs/contributing/issue-and-pr-conventions.md` should own detailed workflow conventions.
+- `docs/guides/issue-and-pr-conventions.md` should own detailed workflow conventions.
 - `AGENTS.md` should only tell agents when to consult that document and how to avoid unsafe metadata changes.
 - `README.md` should summarize and link, not duplicate the full taxonomy or PR checklist.
 - `.github/copilot-instructions.md` should not define repository-wide issue/PR policy.
@@ -132,7 +131,7 @@ Duplicated or conflicting across:
 - `.github/copilot-instructions.md`, which requires a plan markdown file before code edits and specifies `docs/plans/[date]-[name].md`.
 - `README.md`, which says code-change tasks should create and validate a plan markdown file before editing unless explicitly bypassed.
 - `docs/index.md`, which says active plans live in `plans/active/` and completed plans move to `plans/completed/`.
-- `docs/contributing/issue-and-pr-conventions.md`, which says plan documents should live under `plans/*.md`.
+- `docs/guides/issue-and-pr-conventions.md`, which says plan documents should live under `plans/*.md`.
 
 Assessment:
 
@@ -217,9 +216,9 @@ Assessment:
 
 ### Conflicts and stale guidance
 
-- Plan file location guidance was previously inconsistent across `.github/copilot-instructions.md`, `docs/index.md`, and `docs/contributing/issue-and-pr-conventions.md`. PR #119 aligns the active-plan convention around `plans/active/` and completed plans around `plans/completed/`.
+- Plan file location guidance was previously inconsistent across `.github/copilot-instructions.md`, `docs/index.md`, and the issue and PR conventions guide. PR #119 aligns the active-plan convention around `plans/active/` and completed plans around `plans/completed/`.
 - Source precedence was accepted in issue #97 and added to `AGENTS.md` in PR #119.
-- `AGENTS.md` links to `docs/contributing/issue-and-pr-conventions.md`, but `docs/index.md` does not yet list `docs/contributing/`; the documentation map should be updated or the contributor docs should be explicitly classified under an existing section.
+- The issue and PR conventions now live under `docs/guides/`, and `docs/index.md` lists them with the other procedural guides.
 - Remaining architecture guidance in `AGENTS.md` should be reviewed to decide what is always-relevant operational guidance and what should move to `docs/reference/`, `docs/design/`, or an ADR.
 
 ## Findings
@@ -231,7 +230,7 @@ Current examples:
 - planning gates exist in `.github/copilot-instructions.md`;
 - workflow guidance exists in `README.md`;
 - repository rules exist in `AGENTS.md`;
-- plan locations are also described in `docs/index.md` and `docs/contributing/issue-and-pr-conventions.md`.
+- plan locations are also described in `docs/index.md` and the issue and PR conventions guide.
 
 Risk:
 
@@ -371,7 +370,7 @@ When creating issues:
 - avoid creating labels unless reusable
 ```
 
-Detailed taxonomy and examples should remain in `docs/contributing/issue-and-pr-conventions.md` or templates.
+Detailed taxonomy and examples should remain in the issue and PR conventions guide or templates.
 
 ## PR #119 implementation status
 
@@ -383,16 +382,14 @@ Implemented in PR #119:
 - add accepted source precedence to `AGENTS.md`;
 - align plan-path guidance around `plans/active/` and `plans/completed/`;
 - remove repeated validation, migration, label, and error-handling policy from `.github/copilot-instructions.md`;
-- shorten README issue/PR/label sections and link to `docs/contributing/issue-and-pr-conventions.md`.
+- shorten README issue/PR/label sections and link to `docs/guides/issue-and-pr-conventions.md`.
 
 Remaining follow-up:
 
 - decide which architecture reminders are always relevant enough to remain in `AGENTS.md`;
-- add `docs/contributing/` to `docs/index.md` or clarify where contributor conventions belong;
 - reduce README operational content further only where it duplicates a more focused canonical document.
 
 ## Open questions
 
 - Which short architecture reminders are always relevant enough to remain in `AGENTS.md`?
-- Should `docs/contributing/` be listed as its own section in `docs/index.md`, or folded into guides?
 - Should remaining recommendations from this investigation become follow-up issues, or is the current lightweight cleanup sufficient?
