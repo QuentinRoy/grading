@@ -2,7 +2,7 @@
 
 ## Repository workflow conventions
 
-- Treat `docs/contributing/issue-and-pr-conventions.md` as the canonical source for GitHub issue, pull request, label, and repository workflow conventions.
+- Treat `docs/guides/issue-and-pr-conventions.md` as the canonical source for GitHub issue, pull request, label, and repository workflow conventions.
 - Before creating or modifying GitHub issues, labels, issue templates, or pull requests, consult the documented conventions instead of duplicating taxonomy or checklist rules here.
 - Use existing issue and pull request templates in most cases.
 - If a template section is not applicable or the information is unknown, state that explicitly. Do not invent information solely to satisfy the template.
@@ -22,7 +22,7 @@ When guidance conflicts, use this order:
 3. Relevant local skills from `.agents/skills/*`.
 4. Accepted ADRs.
 5. `docs/design/` and `docs/reference/`.
-6. `docs/contributing/` and `README.md`.
+6. `docs/guides/` and `README.md`.
 7. `docs/investigations/`.
 8. `plans/active/`.
 9. Existing implementation.
