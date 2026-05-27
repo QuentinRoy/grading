@@ -160,3 +160,23 @@ pnpm run migrate:down
 ```
 
 Check `package.json` for the exact available scripts.
+
+## Generated DB types policy
+
+The generated Kysely database types file is source-of-truth codegen output:
+
+- Never hand-edit `src/db/generated/db.ts`.
+- After schema changes, regenerate types with:
+
+```sh
+pnpm run db:types:generate
+```
+
+## Identifier boundary policy
+
+Some tables expose both an internal surrogate key and a public identifier.
+When that pattern exists:
+
+- the internal key is for joins, foreign keys, and other DB-internal work only
+- the public identifier is what app and route code should use
+- DB read/write helpers may resolve the internal key locally, but should not expose it in public-facing outputs unless the caller explicitly needs an internal DB key, which is rare and should be justified

@@ -72,12 +72,18 @@ Investigations and active plans can guide work, but they do not override higher-
     - introducing `any`
     - weakening types only to silence errors
 
+
 - Prefer improving types, restructuring code, extracting helpers, or adjusting interfaces before suppressing tooling feedback.
+
+- Avoid using `as` for type assertions. Prefer type guards, generics, `satisfies`, or narrowing to satisfy the compiler. Any use of `as` must be accompanied by a comment explaining why the alternatives
+would introduce undue complexity.
 
 - Do not use React as a namespace. Import functions and types directly from `"react"`.
 
+- Use JavaScript private fields and methods (for example `#myPrivateField`, `#myMethod()`) instead of TypeScript `private` modifiers. TypeScript `private` is compile-time only and does not enforce privacy at runtime.
+
 - Keep page-level composition in `app/` route files.
-- Avoid `src/` components that are full pages; `src/` components should stay focused and independently reusable/testable.
+- Avoid `src/` components that are full pages; `src/` components should stay focused and independently reusable and testable.
 
 ## Error handling UX
 

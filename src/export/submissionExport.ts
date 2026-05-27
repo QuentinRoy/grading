@@ -77,6 +77,16 @@ async function assertSubmissionInvariants(projectId: number) {
   }
 }
 
+async function resolveProjectRowId(projectId: string): Promise<number> {
+  const project = await db
+    .selectFrom("project")
+    .select("rowId")
+    .where("id", "=", projectId)
+    .executeTakeFirstOrThrow();
+
+  return project.rowId;
+}
+
 async function loadQuestionPlan(
   projectId: number,
 ): Promise<ExportQuestionPlan[]> {
@@ -221,20 +231,22 @@ async function loadQuestionPlan(
 
 export async function createSubmissionExport(
   options: ExportOptions,
-  projectId: number,
+  projectId: string,
 ): Promise<{
   headers: string[];
   rows: AsyncGenerator<string[]>;
 }> {
-  await assertSubmissionInvariants(projectId);
+  const projectRowId = await resolveProjectRowId(projectId);
 
-  const questions = await loadQuestionPlan(projectId);
+  await assertSubmissionInvariants(projectRowId);
+
+  const questions = await loadQuestionPlan(projectRowId);
   const headers = buildSubmissionExportHeaders(questions, options);
 
   async function* rows(): AsyncGenerator<string[]> {
     const stream = db
       .selectFrom("submission")
-      .where("submission.projectId", "=", projectId)
+      .where("submission.projectId", "=", projectRowId)
       .leftJoin("team", "team.id", "submission.teamId")
       .leftJoin("student", "student.rowId", "submission.studentId")
       .leftJoin("assessment", "assessment.submissionId", "submission.id")

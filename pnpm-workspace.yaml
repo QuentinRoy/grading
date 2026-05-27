@@ -1,5 +1,6 @@
 allowBuilds:
   '@prisma/engines': true
+  better-sqlite3: true
   core-js-pure: true
   cpu-features: true
   esbuild: true

@@ -1,8 +1,8 @@
 import { type Kysely } from "kysely";
-import { vi } from "vitest";
-import { buildTestId } from "../test/dbIntegration";
-import { createIntegrationTest } from "../test/integrationTest";
-import type { DB } from "./types";
+import { expect, test, vi } from "vitest";
+import { buildTestId, createTestDb } from "../test/dbIntegration";
+import { createProject } from "../test/projects";
+import type { DB } from "./generated/db";
 
 vi.mock("server-only", () => ({}));
 
@@ -23,8 +23,6 @@ vi.mock("next/cache", () => ({
   cacheLife: vi.fn(),
   updateTag: vi.fn(),
 }));
-
-const { test, expect } = createIntegrationTest(import.meta.url);
 
 async function loadQuestionsModuleWithDb(db: Kysely<DB>) {
   vi.resetModules();
@@ -230,15 +228,13 @@ async function createOrdinalQuestionFixture(
   return { questionId, rubricId };
 }
 
-test("saveManagedQuestion renames question id while preserving linked assessments", async ({
-  db,
-  createProject,
-}) => {
+test("saveManagedQuestion renames question id while preserving linked assessments", async () => {
+  await using db = await createTestDb();
   const { saveManagedQuestion, getQuestionDeleteImpact } =
     await loadQuestionsModuleWithDb(db);
 
-  const projectId = await createProject("Managed Rename Project");
-  const fixture = await createAssessedBooleanQuestionFixture(db, projectId);
+  await using project = await createProject(db, "Managed Rename Project");
+  const fixture = await createAssessedBooleanQuestionFixture(db, project.rowId);
   const renamedQuestionId = buildTestId("question-renamed");
 
   const result = await saveManagedQuestion(
@@ -257,7 +253,7 @@ test("saveManagedQuestion renames question id while preserving linked assessment
         },
       ],
     },
-    projectId,
+    project.id,
   );
 
   expect(result).toEqual({ id: renamedQuestionId });
@@ -265,7 +261,7 @@ test("saveManagedQuestion renames question id while preserving linked assessment
   const questionRow = await db
     .selectFrom("question")
     .select(["id", "rowId"])
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", project.rowId)
     .where("id", "=", renamedQuestionId)
     .executeTakeFirstOrThrow();
 
@@ -279,18 +275,16 @@ test("saveManagedQuestion renames question id while preserving linked assessment
 
   expect(assessment.questionId).toBe(fixture.questionRowId);
 
-  const impact = await getQuestionDeleteImpact(renamedQuestionId, projectId);
+  const impact = await getQuestionDeleteImpact(renamedQuestionId, project.id);
   expect(impact).toEqual({ assessmentCount: 1 });
 });
 
-test("saveManagedQuestion replaces rubric subtype data when rubric type changes", async ({
-  db,
-  createProject,
-}) => {
+test("saveManagedQuestion replaces rubric subtype data when rubric type changes", async () => {
+  await using db = await createTestDb();
   const { saveManagedQuestion } = await loadQuestionsModuleWithDb(db);
 
-  const projectId = await createProject("Managed Type Change Project");
-  const fixture = await createAssessedBooleanQuestionFixture(db, projectId);
+  await using project = await createProject(db, "Managed Type Change Project");
+  const fixture = await createAssessedBooleanQuestionFixture(db, project.rowId);
 
   const replacedRubricId = buildTestId("rubric-numerical");
 
@@ -313,13 +307,13 @@ test("saveManagedQuestion replaces rubric subtype data when rubric type changes"
         },
       ],
     },
-    projectId,
+    project.id,
   );
 
   const oldRubric = await db
     .selectFrom("rubric")
     .select("rowId")
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", project.rowId)
     .where("id", "=", fixture.rubricId)
     .execute();
 
@@ -328,7 +322,7 @@ test("saveManagedQuestion replaces rubric subtype data when rubric type changes"
   const newRubric = await db
     .selectFrom("rubric")
     .select(["rowId", "type"])
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", project.rowId)
     .where("id", "=", replacedRubricId)
     .executeTakeFirstOrThrow();
 
@@ -357,14 +351,12 @@ test("saveManagedQuestion replaces rubric subtype data when rubric type changes"
   expect(linkedRubricAssessments).toHaveLength(0);
 });
 
-test("saveManagedQuestion removes stale rubrics that are no longer referenced", async ({
-  db,
-  createProject,
-}) => {
+test("saveManagedQuestion removes stale rubrics that are no longer referenced", async () => {
+  await using db = await createTestDb();
   const { saveManagedQuestion } = await loadQuestionsModuleWithDb(db);
 
-  const projectId = await createProject("Managed Stale Rubric Project");
-  const fixture = await createAssessedBooleanQuestionFixture(db, projectId);
+  await using project = await createProject(db, "Managed Stale Rubric Project");
+  const fixture = await createAssessedBooleanQuestionFixture(db, project.rowId);
 
   const staleRubricId = buildTestId("rubric-stale");
 
@@ -391,7 +383,7 @@ test("saveManagedQuestion removes stale rubrics that are no longer referenced", 
         },
       ],
     },
-    projectId,
+    project.id,
   );
 
   await saveManagedQuestion(
@@ -410,20 +402,20 @@ test("saveManagedQuestion removes stale rubrics that are no longer referenced", 
         },
       ],
     },
-    projectId,
+    project.id,
   );
 
   const staleRubricRows = await db
     .selectFrom("rubric")
     .select("id")
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", project.rowId)
     .where("id", "=", staleRubricId)
     .execute();
 
   const remainingRubrics = await db
     .selectFrom("rubric")
     .select("id")
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", project.rowId)
     .where("questionId", "=", fixture.questionRowId)
     .execute();
 
@@ -433,14 +425,15 @@ test("saveManagedQuestion removes stale rubrics that are no longer referenced", 
   ]);
 });
 
-test("saveManagedQuestion replaces ordinal rubric values using the provided label set", async ({
-  db,
-  createProject,
-}) => {
+test("saveManagedQuestion replaces ordinal rubric values using the provided label set", async () => {
+  await using db = await createTestDb();
   const { saveManagedQuestion } = await loadQuestionsModuleWithDb(db);
 
-  const projectId = await createProject("Managed Ordinal Values Project");
-  const fixture = await createOrdinalQuestionFixture(db, projectId);
+  await using project = await createProject(
+    db,
+    "Managed Ordinal Values Project",
+  );
+  const fixture = await createOrdinalQuestionFixture(db, project.rowId);
 
   await saveManagedQuestion(
     {
@@ -460,13 +453,13 @@ test("saveManagedQuestion replaces ordinal rubric values using the provided labe
         },
       ],
     },
-    projectId,
+    project.id,
   );
 
   const rubricRow = await db
     .selectFrom("rubric")
     .select("rowId")
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", project.rowId)
     .where("id", "=", fixture.rubricId)
     .executeTakeFirstOrThrow();
 
@@ -494,22 +487,20 @@ test("saveManagedQuestion replaces ordinal rubric values using the provided labe
   ]);
 });
 
-test("deleteManagedQuestion reports impact and cascades linked assessments", async ({
-  db,
-  createProject,
-}) => {
+test("deleteManagedQuestion reports impact and cascades linked assessments", async () => {
+  await using db = await createTestDb();
   const { deleteManagedQuestion } = await loadQuestionsModuleWithDb(db);
 
-  const projectId = await createProject("Managed Delete Project");
-  const fixture = await createAssessedBooleanQuestionFixture(db, projectId);
+  await using project = await createProject(db, "Managed Delete Project");
+  const fixture = await createAssessedBooleanQuestionFixture(db, project.rowId);
 
-  const result = await deleteManagedQuestion(fixture.questionId, projectId);
+  const result = await deleteManagedQuestion(fixture.questionId, project.id);
   expect(result).toEqual({ assessmentCount: 1 });
 
   const questionRows = await db
     .selectFrom("question")
     .select("rowId")
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", project.rowId)
     .where("id", "=", fixture.questionId)
     .execute();
 

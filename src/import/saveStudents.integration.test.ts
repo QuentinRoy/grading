@@ -1,10 +1,9 @@
-import { vi } from "vitest";
-import { createIntegrationTest } from "../test/integrationTest";
+import { expect, test, vi } from "vitest";
+import { createTestDb } from "../test/dbIntegration";
+import { createProject } from "../test/projects";
 import type { NormalizedImportedSubmission } from "./types";
 
 vi.mock("server-only", () => ({}));
-
-const { test, expect } = createIntegrationTest(import.meta.url);
 
 function makeSubmissions(
   sharedStudentId: string,
@@ -37,26 +36,24 @@ function makeSubmissions(
   ];
 }
 
-test("saveStudents keeps imported student ids and team names isolated per project", async ({
-  db,
-  createProject,
-}) => {
+test("saveStudents keeps imported student ids and team names isolated per project", async () => {
+  await using db = await createTestDb();
   vi.doMock("../db/kysely", () => ({ db }));
   const { saveStudents } = await import("./saveStudents");
 
-  const projectAId = await createProject("Project A");
-  const projectBId = await createProject("Project B");
+  await using projectA = await createProject(db, "Project A");
+  await using projectB = await createProject(db, "Project B");
 
   const sharedStudentId = "shared-student";
   const sharedTeamName = "Shared Team";
 
   const resultA = await saveStudents(
     makeSubmissions(sharedStudentId, sharedTeamName),
-    projectAId,
+    projectA.id,
   );
   const resultB = await saveStudents(
     makeSubmissions(sharedStudentId, sharedTeamName),
-    projectBId,
+    projectB.id,
   );
 
   expect(resultA).toEqual({ submissionCount: 2, studentCount: 2 });

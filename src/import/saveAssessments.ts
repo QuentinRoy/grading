@@ -198,10 +198,17 @@ function parseAssessmentValue(params: {
 
 export async function saveAssessments(
   assessmentRows: ImportedAssessmentRow[],
-  projectId: number,
+  projectId: string,
 ): Promise<{
   assessmentCount: number;
 }> {
+  const project = await db
+    .selectFrom("project")
+    .select("rowId")
+    .where("id", "=", projectId)
+    .executeTakeFirstOrThrow();
+  const projectRowId = project.rowId;
+
   const [rubrics, questions] = await Promise.all([
     db
       .selectFrom("rubric")
@@ -214,7 +221,7 @@ export async function saveAssessments(
         "ordinalRubric.id",
       )
       .leftJoin("numericalRubric", "numericalRubric.rubricId", "rubric.rowId")
-      .where("rubric.projectId", "=", projectId)
+      .where("rubric.projectId", "=", projectRowId)
       .select([
         "rubric.id",
         "rubric.type",
@@ -227,7 +234,7 @@ export async function saveAssessments(
       .execute(),
     db
       .selectFrom("question")
-      .where("question.projectId", "=", projectId)
+      .where("question.projectId", "=", projectRowId)
       .select("id")
       .execute(),
   ]);
@@ -284,7 +291,7 @@ export async function saveAssessments(
   const preparedAssessments: PreparedAssessment[] = [];
   const submissionsByLookup = await resolveSubmissionIdsBatch({
     rows: assessmentRows,
-    projectId,
+    projectId: projectRowId,
   });
 
   for (let rowIndex = 0; rowIndex < assessmentRows.length; rowIndex++) {

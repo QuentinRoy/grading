@@ -69,7 +69,7 @@ async function ProjectAssessmentsOverviewPageContent({
   }
 
   if (project.slug !== projectSlug) {
-    redirect(projectDashboardPath(project.publicId, project.slug));
+    redirect(projectDashboardPath(project.id, project.slug));
   }
 
   const data = await loadRubricOverviewData(project.id);

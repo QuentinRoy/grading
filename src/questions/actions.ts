@@ -14,7 +14,7 @@ import {
 import { type QuestionsActionState } from "./state";
 
 export async function saveQuestionAction(
-  projectId: number,
+  projectId: string,
   _previousState: QuestionsActionState,
   formData: FormData,
 ): Promise<QuestionsActionState> {
@@ -39,7 +39,7 @@ export async function saveQuestionAction(
 }
 
 export async function deleteQuestionAction(
-  projectId: number,
+  projectId: string,
   _previousState: QuestionsActionState,
   formData: FormData,
 ): Promise<QuestionsActionState> {
@@ -78,7 +78,7 @@ export async function deleteQuestionAction(
 }
 
 export async function reorderQuestionsAction(
-  projectId: number,
+  projectId: string,
   updates: Array<{ id: string; position: number }>,
 ): Promise<void> {
   await reorderQuestions(updates, projectId);

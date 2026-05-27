@@ -7,7 +7,7 @@ import { parseAssessmentsCsv } from "./parseAssessments";
 import { saveAssessments } from "./saveAssessments";
 
 export async function assessmentsImportAction(
-  projectId: number,
+  projectId: string,
   _previousState: ImportState,
   formData: FormData,
 ): Promise<ImportState> {

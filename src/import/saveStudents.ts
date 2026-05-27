@@ -4,7 +4,7 @@ import type { NormalizedImportedSubmission } from "./types";
 
 export async function saveStudents(
   submissions: NormalizedImportedSubmission[],
-  projectId: number,
+  projectId: string,
 ): Promise<{
   submissionCount: number;
   studentCount: number;
@@ -43,6 +43,13 @@ export async function saveStudents(
   );
 
   return db.transaction().execute(async (tx) => {
+    const projectRow = await tx
+      .selectFrom("project")
+      .select("rowId")
+      .where("id", "=", projectId)
+      .executeTakeFirstOrThrow();
+    const projectRowId = projectRow.rowId;
+
     const teamNames = new Set(
       submissionsByOwner
         .filter((s) => s.type === "team" && s.teamName)
@@ -58,7 +65,7 @@ export async function saveStudents(
         .values(
           Array.from(teamNames).map((teamName) => ({
             name: teamName,
-            projectId,
+            projectId: projectRowId,
           })),
         )
         .onConflict((conflict) =>
@@ -70,7 +77,7 @@ export async function saveStudents(
         .selectFrom("team")
         .select(["id", "name"])
         .where("name", "in", Array.from(teamNames))
-        .where("projectId", "=", projectId)
+        .where("projectId", "=", projectRowId)
         .execute();
 
       for (const team of teamResults) {
@@ -86,7 +93,7 @@ export async function saveStudents(
             id: student.id,
             lastName: student.lastName,
             firstName: student.firstName,
-            projectId,
+            projectId: projectRowId,
           })),
         )
         .onConflict((conflict) =>
@@ -103,7 +110,7 @@ export async function saveStudents(
       const studentRows = await tx
         .selectFrom("student")
         .select(["rowId", "id"])
-        .where("projectId", "=", projectId)
+        .where("projectId", "=", projectRowId)
         .where(
           "id",
           "in",
@@ -183,14 +190,16 @@ export async function saveStudents(
 
       if (teamId == null) {
         throw new Error(
-          `Team submission is missing a mapped team for "${submission.teamName ?? "unknown"}".`,
+          `Team submission is missing a mapped team for "${
+            submission.teamName ?? "unknown"
+          }".`,
         );
       }
 
       return [
         {
           type: "team" as const,
-          projectId,
+          projectId: projectRowId,
           teamId,
           studentId: null,
         },
@@ -226,7 +235,7 @@ export async function saveStudents(
       return [
         {
           type: "individual" as const,
-          projectId,
+          projectId: projectRowId,
           studentId:
             studentRowIdsByImportedId.get(submission.studentId) ?? null,
           teamId: null,

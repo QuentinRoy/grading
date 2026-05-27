@@ -48,7 +48,7 @@ async function ProjectQuestionSubmissionPageContent({
   if (project.slug !== projectSlug) {
     redirect(
       projectAssessmentSubmissionQuestionPath(
-        project.publicId,
+        project.id,
         project.slug,
         submissionId,
         questionId,
@@ -96,7 +96,7 @@ async function QuestionHeaderSection({
         <Breadcrumbs aria-label="breadcrumb">
           <MuiNextLink
             color="inherit"
-            href={projectAssessmentsPath(project.publicId, project.slug)}
+            href={projectAssessmentsPath(project.id, project.slug)}
           >
             Assessments
           </MuiNextLink>
@@ -164,7 +164,7 @@ async function SubmissionRubricSection({
   return (
     <SubmissionAssessmentClient
       key={`${questionId}-${submissionId}`}
-      projectId={project.publicId}
+      projectId={project.id}
       projectSlug={project.slug}
       questionId={questionId}
       questionLabel={question.label}

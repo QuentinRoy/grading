@@ -58,7 +58,7 @@ async function ProjectAssessmentPageContent({
   }
 
   if (project.slug !== projectSlug) {
-    redirect(projectOverviewPath(project.publicId, project.slug));
+    redirect(projectOverviewPath(project.id, project.slug));
   }
 
   const [grid, submissions, progressBySubmissionId] = await Promise.all([
@@ -73,7 +73,7 @@ async function ProjectAssessmentPageContent({
         id,
         label: label == null ? id : label,
         href: projectAssessmentSubmissionQuestionPath(
-          project.publicId,
+          project.id,
           project.slug,
           firstSubmissionId,
           id,
@@ -88,7 +88,7 @@ async function ProjectAssessmentPageContent({
       </Typography>
       <Box sx={{ mb: 3 }}>
         <Button
-          href={projectOverviewPath(project.publicId, project.slug)}
+          href={projectOverviewPath(project.id, project.slug)}
           variant="outlined"
         >
           Open rubric overview
@@ -107,7 +107,7 @@ async function ProjectAssessmentPageContent({
             <ListItemButton
               key={submission.id}
               href={projectAssessmentSubmissionPath(
-                project.publicId,
+                project.id,
                 project.slug,
                 submission.id,
               )}

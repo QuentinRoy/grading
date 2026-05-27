@@ -2,11 +2,10 @@ import "server-only";
 import { cacheLife } from "next/cache";
 import { CACHE_TAGS, cacheTags } from "./cacheTags";
 import { db } from "./kysely";
-import { withProjectScope } from "./projectScope";
 import type { GlobalAssessmentProgress } from "./types";
 
 async function loadGlobalAssessmentProgressFromDb(
-  projectId?: number,
+  projectId?: string,
 ): Promise<GlobalAssessmentProgress> {
   "use cache";
   cacheTags(
@@ -20,31 +19,45 @@ async function loadGlobalAssessmentProgressFromDb(
   let questionsQuery = db.selectFrom("question");
   let assessmentsQuery = db.selectFrom("assessment");
 
-  submissionsQuery = withProjectScope(
-    submissionsQuery,
-    projectId,
-    (query, id) => query.where("submission.projectId", "=", id),
-  );
-  questionsQuery = withProjectScope(questionsQuery, projectId, (query, id) =>
-    query.where("question.projectId", "=", id),
-  );
-  assessmentsQuery = withProjectScope(
-    assessmentsQuery,
-    projectId,
-    (query, id) => query.where("assessment.projectId", "=", id),
-  );
+  if (projectId != null) {
+    const projectRowIdQuery = db
+      .selectFrom("project")
+      .select("rowId")
+      .where("id", "=", projectId);
 
-  const rubricAssessmentsQuery =
-    projectId != null
-      ? db
-          .selectFrom("rubricAssessment")
-          .innerJoin(
-            "assessment",
-            "assessment.id",
-            "rubricAssessment.assessmentId",
-          )
-          .where("assessment.projectId", "=", projectId)
-      : db.selectFrom("rubricAssessment");
+    submissionsQuery = submissionsQuery.where(
+      "submission.projectId",
+      "in",
+      projectRowIdQuery,
+    );
+    questionsQuery = questionsQuery.where(
+      "question.projectId",
+      "in",
+      projectRowIdQuery,
+    );
+    assessmentsQuery = assessmentsQuery.where(
+      "assessment.projectId",
+      "in",
+      projectRowIdQuery,
+    );
+  }
+
+  let rubricAssessmentsQuery = db
+    .selectFrom("rubricAssessment")
+    .innerJoin("assessment", "assessment.id", "rubricAssessment.assessmentId");
+
+  if (projectId != null) {
+    const projectRowIdQuery = db
+      .selectFrom("project")
+      .select("rowId")
+      .where("id", "=", projectId);
+
+    rubricAssessmentsQuery = rubricAssessmentsQuery.where(
+      "assessment.projectId",
+      "in",
+      projectRowIdQuery,
+    );
+  }
 
   const [submissions, questions, assessments, rubricAssessmentsCount] =
     await Promise.all([
@@ -170,7 +183,7 @@ async function loadGlobalAssessmentProgressFromDb(
 }
 
 export async function loadGlobalAssessmentProgress(
-  projectId?: number,
+  projectId?: string,
 ): Promise<GlobalAssessmentProgress> {
   return loadGlobalAssessmentProgressFromDb(projectId);
 }

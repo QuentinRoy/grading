@@ -1,17 +1,15 @@
 import { type Kysely } from "kysely";
-import { vi } from "vitest";
+import { expect, test, vi } from "vitest";
 import type {
   SaveAssessmentParams,
   SaveAssessmentResult,
 } from "../db/assessments";
-import type { DB } from "../db/types";
-import { buildTestId } from "../test/dbIntegration";
-import { createIntegrationTest } from "../test/integrationTest";
+import type { DB } from "../db/generated/db";
+import { buildTestId, createTestDb } from "../test/dbIntegration";
+import { createProject } from "../test/projects";
 import type { ImportedAssessmentRow } from "./types";
 
 vi.mock("server-only", () => ({}));
-
-const { test, expect } = createIntegrationTest(import.meta.url);
 
 async function createAssessmentFixture(
   db: Kysely<DB>,
@@ -118,10 +116,9 @@ async function loadSaveAssessments(params: {
 
   if (params.saveAssessmentWithDbMock) {
     vi.doMock("../db/assessments", async () => {
-      const actual =
-        await vi.importActual<typeof import("../db/assessments")>(
-          "../db/assessments",
-        );
+      const actual = await vi.importActual<typeof import("../db/assessments")>(
+        "../db/assessments",
+      );
 
       return {
         ...actual,
@@ -130,7 +127,7 @@ async function loadSaveAssessments(params: {
           input: SaveAssessmentParams,
         ) =>
           params.saveAssessmentWithDbMock?.(queryDb, input) ??
-          Promise.resolve({ success: true }),
+            Promise.resolve({ success: true }),
       };
     });
   } else {
@@ -145,14 +142,13 @@ async function loadSaveAssessments(params: {
   return saveAssessments;
 }
 
-test("saveAssessments does not persist valid rows when a later row fails validation", async ({
-  db,
-  createProject,
-}) => {
+test("saveAssessments does not persist valid rows when a later row fails validation", async () => {
+  await using db = await createTestDb();
   const saveAssessments = await loadSaveAssessments({ db });
 
-  const projectId = await createProject("Atomic Import Project");
-  const fixture = await createAssessmentFixture(db, projectId);
+  await using project = await createProject(db, "Atomic Import Project");
+  const projectPublicId = project.id;
+  const fixture = await createAssessmentFixture(db, project.rowId);
 
   const rows: ImportedAssessmentRow[] = [
     {
@@ -167,27 +163,26 @@ test("saveAssessments does not persist valid rows when a later row fails validat
     },
   ];
 
-  await expect(saveAssessments(rows, projectId)).rejects.toThrow(
+  await expect(saveAssessments(rows, projectPublicId)).rejects.toThrow(
     "Assessment import errors:",
   );
 
   const persistedAssessments = await db
     .selectFrom("assessment")
     .select("id")
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", project.rowId)
     .execute();
 
   expect(persistedAssessments).toHaveLength(0);
 });
 
-test("saveAssessments rejects unknown columns before writing any assessment", async ({
-  db,
-  createProject,
-}) => {
+test("saveAssessments rejects unknown columns before writing any assessment", async () => {
+  await using db = await createTestDb();
   const saveAssessments = await loadSaveAssessments({ db });
 
-  const projectId = await createProject("Unknown Column Project");
-  const fixture = await createAssessmentFixture(db, projectId);
+  await using project = await createProject(db, "Unknown Column Project");
+  const projectPublicId = project.id;
+  const fixture = await createAssessmentFixture(db, project.rowId);
 
   const rows: ImportedAssessmentRow[] = [
     {
@@ -198,27 +193,26 @@ test("saveAssessments rejects unknown columns before writing any assessment", as
     },
   ];
 
-  await expect(saveAssessments(rows, projectId)).rejects.toThrow(
+  await expect(saveAssessments(rows, projectPublicId)).rejects.toThrow(
     'Unrecognized column: "unknown_column"',
   );
 
   const persistedAssessments = await db
     .selectFrom("assessment")
     .select("id")
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", project.rowId)
     .execute();
 
   expect(persistedAssessments).toHaveLength(0);
 });
 
-test("saveAssessments skips rows with no matching submission mapping", async ({
-  db,
-  createProject,
-}) => {
+test("saveAssessments skips rows with no matching submission mapping", async () => {
+  await using db = await createTestDb();
   const saveAssessments = await loadSaveAssessments({ db });
 
-  const projectId = await createProject("Missing Submitter Project");
-  const fixture = await createAssessmentFixture(db, projectId);
+  await using project = await createProject(db, "Missing Submitter Project");
+  const projectPublicId = project.id;
+  const fixture = await createAssessmentFixture(db, project.rowId);
 
   const rows: ImportedAssessmentRow[] = [
     {
@@ -228,34 +222,35 @@ test("saveAssessments skips rows with no matching submission mapping", async ({
     },
   ];
 
-  await expect(saveAssessments(rows, projectId)).resolves.toEqual({
+  await expect(saveAssessments(rows, projectPublicId)).resolves.toEqual({
     assessmentCount: 0,
   });
 
   const persistedAssessments = await db
     .selectFrom("assessment")
     .select("id")
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", project.rowId)
     .execute();
 
   expect(persistedAssessments).toHaveLength(0);
 });
 
-test("saveAssessments rolls back all writes if a later transactional write fails", async ({
-  db,
-  createProject,
-}) => {
-  const projectId = await createProject("Transactional Rollback Project");
-  const fixture = await createAssessmentFixture(db, projectId);
+test("saveAssessments rolls back all writes if a later transactional write fails", async () => {
+  await using db = await createTestDb();
+  await using project = await createProject(
+    db,
+    "Transactional Rollback Project",
+  );
+  const projectPublicId = project.id;
+  const fixture = await createAssessmentFixture(db, project.rowId);
 
   let callCount = 0;
   const saveAssessments = await loadSaveAssessments({
     db,
     saveAssessmentWithDbMock: async (queryDb, input) => {
-      const actual =
-        await vi.importActual<typeof import("../db/assessments")>(
-          "../db/assessments",
-        );
+      const actual = await vi.importActual<typeof import("../db/assessments")>(
+        "../db/assessments",
+      );
 
       callCount += 1;
       if (callCount === 2) {
@@ -282,27 +277,26 @@ test("saveAssessments rolls back all writes if a later transactional write fails
     },
   ];
 
-  await expect(saveAssessments(rows, projectId)).rejects.toThrow(
+  await expect(saveAssessments(rows, projectPublicId)).rejects.toThrow(
     "Forced failure for rollback verification.",
   );
 
   const persistedAssessments = await db
     .selectFrom("assessment")
     .select("id")
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", project.rowId)
     .execute();
 
   expect(persistedAssessments).toHaveLength(0);
 });
 
-test("saveAssessments links assessments only to the target project even when the same student id exists in another project", async ({
-  db,
-  createProject,
-}) => {
+test("saveAssessments links assessments only to the target project even when the same student id exists in another project", async () => {
+  await using db = await createTestDb();
   const saveAssessments = await loadSaveAssessments({ db });
 
-  const projectAId = await createProject("Cross-Project Isolation A");
-  const projectBId = await createProject("Cross-Project Isolation B");
+  await using projectA = await createProject(db, "Cross-Project Isolation A");
+  await using projectB = await createProject(db, "Cross-Project Isolation B");
+  const projectBPublicId = projectB.id;
 
   // The same student external id exists in both projects.
   // Each project has its own question/rubric ids (to avoid saveAssessmentWithDb
@@ -372,9 +366,9 @@ test("saveAssessments links assessments only to the target project even when the
   }
 
   // Build fixtures; only capture project B's ids for the import rows
-  await buildFixtureInProject(projectAId);
+  await buildFixtureInProject(projectA.rowId);
   const { questionId: questionBId, rubricId: rubricBId } =
-    await buildFixtureInProject(projectBId);
+    await buildFixtureInProject(projectB.rowId);
 
   // Import assessments targeting project B only using project B's rubric column
   const rows: ImportedAssessmentRow[] = [
@@ -385,13 +379,13 @@ test("saveAssessments links assessments only to the target project even when the
     },
   ];
 
-  await saveAssessments(rows, projectBId);
+  await saveAssessments(rows, projectBPublicId);
 
   // Project A must have zero assessments
   const projectAAssessments = await db
     .selectFrom("assessment")
     .select("id")
-    .where("projectId", "=", projectAId)
+    .where("projectId", "=", projectA.rowId)
     .execute();
 
   expect(projectAAssessments).toHaveLength(0);
@@ -400,7 +394,7 @@ test("saveAssessments links assessments only to the target project even when the
   const projectBAssessments = await db
     .selectFrom("assessment")
     .select("id")
-    .where("projectId", "=", projectBId)
+    .where("projectId", "=", projectB.rowId)
     .execute();
 
   expect(projectBAssessments).toHaveLength(1);
