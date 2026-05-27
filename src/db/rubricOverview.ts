@@ -3,7 +3,6 @@ import { cacheLife } from "next/cache";
 import { loadQuestions } from "@/db/questions";
 import { CACHE_TAGS, cacheTags } from "./cacheTags";
 import { db } from "./kysely";
-import { withProjectScope } from "./projectScope";
 import {
   buildRubricOverviewData,
   type RubricOverviewAssessmentRecord,
@@ -19,7 +18,7 @@ export type {
   RubricOverviewSummary,
 } from "./rubricOverviewBuilder";
 
-export async function loadRubricOverviewData(projectId?: number) {
+export async function loadRubricOverviewData(projectId?: string) {
   "use cache";
   cacheTags(
     CACHE_TAGS.questions,
@@ -33,9 +32,13 @@ export async function loadRubricOverviewData(projectId?: number) {
     .innerJoin("assessment", "assessment.id", "rubricAssessment.assessmentId")
     .innerJoin("rubric", "rubric.rowId", "rubricAssessment.rubricId");
 
-  assessmentQuery = withProjectScope(assessmentQuery, projectId, (query, id) =>
-    query.where("assessment.projectId", "=", id),
-  );
+  if (projectId != null) {
+    assessmentQuery = assessmentQuery.where(
+      "assessment.projectId",
+      "in",
+      db.selectFrom("project").select("rowId").where("id", "=", projectId),
+    );
+  }
 
   const [submissions, questionGrid, assessmentRecords] = await Promise.all([
     loadSubmissions(projectId),

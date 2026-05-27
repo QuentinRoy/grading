@@ -41,11 +41,7 @@ async function ProjectSubmissionPageContent({ params }: SubmissionPageProps) {
 
   if (project.slug !== projectSlug) {
     redirect(
-      projectAssessmentSubmissionPath(
-        project.publicId,
-        project.slug,
-        submissionId,
-      ),
+      projectAssessmentSubmissionPath(project.id, project.slug, submissionId),
     );
   }
 
@@ -90,7 +86,7 @@ async function ProjectSubmissionPageContent({ params }: SubmissionPageProps) {
         <Breadcrumbs aria-label="breadcrumb">
           <MuiNextLink
             color="inherit"
-            href={projectAssessmentsPath(project.publicId, project.slug)}
+            href={projectAssessmentsPath(project.id, project.slug)}
           >
             Assessments
           </MuiNextLink>
@@ -104,7 +100,7 @@ async function ProjectSubmissionPageContent({ params }: SubmissionPageProps) {
       </Box>
 
       <SubmissionOverviewAssessmentClient
-        projectId={project.publicId}
+        projectId={project.id}
         projectSlug={project.slug}
         currentSubmissionId={submissionId}
         submissions={submissions}

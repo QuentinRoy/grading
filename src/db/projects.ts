@@ -2,22 +2,16 @@ import "server-only";
 import { customAlphabet } from "nanoid";
 import { cacheLife, revalidateTag } from "next/cache";
 import { CACHE_TAGS, cacheTags, projectCacheTag } from "./cacheTags";
+import type { Project } from "./generated/db";
 import { db } from "./kysely";
 
 const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 10);
 const createProjectPublicId = () => `p-${nanoid()}`;
 
-export type ProjectSummary = {
-  id: number;
-  publicId: string;
-  slug: string;
-  name: string;
-};
+type ProjectRow = Pick<Project, "id" | "name">;
 
-type ProjectRow = {
-  id: number;
-  publicId: string;
-  name: string;
+export type ProjectSummary = ProjectRow & {
+  slug: string;
 };
 
 function normalizeSlug(value: string): string {
@@ -44,7 +38,6 @@ export function toProjectSlug(nameOrSlug: string): string {
 function toProjectSummary(row: ProjectRow): ProjectSummary {
   return {
     id: row.id,
-    publicId: row.publicId,
     slug: toProjectSlug(row.name),
     name: row.name,
   };
@@ -57,7 +50,7 @@ export async function loadProjects(): Promise<ProjectSummary[]> {
 
   const rows = await db
     .selectFrom("project")
-    .select(["id", "publicId", "name"])
+    .select(["id", "name"])
     .orderBy("name", "asc")
     .execute();
 
@@ -73,8 +66,8 @@ export async function loadProjectByPublicId(
 
   const row = await db
     .selectFrom("project")
-    .select(["id", "publicId", "name"])
-    .where("publicId", "=", publicId)
+    .select(["id", "name"])
+    .where("id", "=", publicId)
     .executeTakeFirst();
 
   if (row == null) {
@@ -101,10 +94,10 @@ export async function createProject(input: {
       inserted = await db
         .insertInto("project")
         .values({
-          publicId,
+          id: publicId,
           name,
         })
-        .returning(["id", "publicId", "name"])
+        .returning(["id", "name"])
         .executeTakeFirstOrThrow();
       break;
     } catch (error) {
@@ -124,7 +117,7 @@ export async function createProject(input: {
   }
 
   revalidateTag("projects", "max");
-  revalidateTag(projectCacheTag(inserted.publicId), "max");
+  revalidateTag(projectCacheTag(inserted.id), "max");
 
   return toProjectSummary(inserted);
 }

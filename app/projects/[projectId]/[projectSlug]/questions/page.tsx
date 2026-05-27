@@ -27,7 +27,7 @@ export default async function ProjectQuestionsPage({
   }
 
   if (project.slug !== projectSlug) {
-    redirect(projectQuestionsPath(project.publicId, project.slug));
+    redirect(projectQuestionsPath(project.id, project.slug));
   }
 
   const questions = await loadManagedQuestions(project.id);

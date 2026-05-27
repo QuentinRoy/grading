@@ -1,8 +1,8 @@
 import { type Kysely } from "kysely";
-import { describe, vi } from "vitest";
-import { buildTestId } from "../test/dbIntegration";
-import { createIntegrationTest } from "../test/integrationTest";
-import type { DB } from "./types";
+import { describe, expect, test, vi } from "vitest";
+import { buildTestId, createTestDb } from "../test/dbIntegration";
+import { createProject } from "../test/projects";
+import type { DB } from "./generated/db";
 
 vi.mock("server-only", () => ({}));
 
@@ -11,10 +11,16 @@ vi.mock("next/cache", () => ({
   updateTag: vi.fn(),
 }));
 
-const { test, expect } = createIntegrationTest(import.meta.url);
+async function loadAssessmentsWithDb(db: Kysely<DB>) {
+  vi.resetModules();
+  using _kyselyMock = vi.doMock("./kysely", () => ({ db }));
+
+  return await import("./assessments");
+}
 
 type AssessmentFixture = {
-  projectId: number;
+  projectId: string;
+  projectRowId: number;
   questionId: string;
   studentId: string;
   studentRowId: number;
@@ -37,9 +43,17 @@ type AssessmentFixtureOptions = {
 
 async function createAssessmentFixture(
   db: Kysely<DB>,
-  projectId: number,
+  projectId: string,
   options?: AssessmentFixtureOptions,
 ): Promise<AssessmentFixture> {
+  const project = await db
+    .selectFrom("project")
+    .select("rowId")
+    .where("id", "=", projectId)
+    .executeTakeFirstOrThrow();
+
+  const projectRowId = project.rowId;
+
   const questionId = options?.questionId ?? buildTestId("q");
   const studentId = buildTestId("student");
   const booleanRubricId =
@@ -52,7 +66,7 @@ async function createAssessmentFixture(
   await db
     .insertInto("student")
     .values({
-      projectId,
+      projectId: projectRowId,
       id: studentId,
       lastName: "Integration",
       firstName: "Test",
@@ -62,14 +76,14 @@ async function createAssessmentFixture(
   const studentRow = await db
     .selectFrom("student")
     .select(["rowId", "id"])
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", projectRowId)
     .where("id", "=", studentId)
     .executeTakeFirstOrThrow();
 
   const submission = await db
     .insertInto("submission")
     .values({
-      projectId,
+      projectId: projectRowId,
       type: "individual",
       studentId: studentRow.rowId,
     })
@@ -79,7 +93,7 @@ async function createAssessmentFixture(
   await db
     .insertInto("question")
     .values({
-      projectId,
+      projectId: projectRowId,
       id: questionId,
       label: "Integration question",
       position: 0,
@@ -89,7 +103,7 @@ async function createAssessmentFixture(
   const question = await db
     .selectFrom("question")
     .select(["id", "rowId"])
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", projectRowId)
     .where("id", "=", questionId)
     .executeTakeFirstOrThrow();
 
@@ -98,7 +112,7 @@ async function createAssessmentFixture(
     .values([
       {
         id: booleanRubricId,
-        projectId,
+        projectId: projectRowId,
         questionId: question.rowId,
         type: "boolean",
         position: 0,
@@ -106,7 +120,7 @@ async function createAssessmentFixture(
       },
       {
         id: ordinalRubricId,
-        projectId,
+        projectId: projectRowId,
         questionId: question.rowId,
         type: "ordinal",
         position: 1,
@@ -114,7 +128,7 @@ async function createAssessmentFixture(
       },
       {
         id: numericalRubricId,
-        projectId,
+        projectId: projectRowId,
         questionId: question.rowId,
         type: "numerical",
         position: 2,
@@ -185,6 +199,7 @@ async function createAssessmentFixture(
 
   const fixture = {
     projectId,
+    projectRowId,
     questionId,
     studentId,
     studentRowId: studentRow.rowId,
@@ -210,7 +225,7 @@ async function cleanupFixture(
 
   await db
     .deleteFrom("question")
-    .where("projectId", "=", fixture.projectId)
+    .where("projectId", "=", fixture.projectRowId)
     .where("id", "=", fixture.questionId)
     .execute();
 
@@ -221,14 +236,14 @@ async function cleanupFixture(
 }
 
 describe("assessment DB integration", () => {
-  test("round-trips boolean, ordinal and numerical assessments", async ({
-    db,
-    createProject,
-  }) => {
-    vi.doMock("./kysely", () => ({ db }));
-    const { loadAssessment, saveAssessment } = await import("./assessments");
-    const projectId = await createProject("Assessment Integration Project");
-    const fixture = await createAssessmentFixture(db, projectId);
+  test("round-trips boolean, ordinal and numerical assessments", async () => {
+    await using db = await createTestDb();
+    const { loadAssessment, saveAssessment } = await loadAssessmentsWithDb(db);
+    await using project = await createProject(
+      db,
+      "Assessment Integration Project",
+    );
+    const fixture = await createAssessmentFixture(db, project.id);
 
     try {
       const results = await Promise.all([
@@ -298,14 +313,14 @@ describe("assessment DB integration", () => {
     }
   });
 
-  test("returns a validation error for invalid ordinal label", async ({
-    db,
-    createProject,
-  }) => {
-    vi.doMock("./kysely", () => ({ db }));
-    const { saveAssessment } = await import("./assessments");
-    const projectId = await createProject("Assessment Integration Project");
-    const fixture = await createAssessmentFixture(db, projectId);
+  test("returns a validation error for invalid ordinal label", async () => {
+    await using db = await createTestDb();
+    const { saveAssessment } = await loadAssessmentsWithDb(db);
+    await using project = await createProject(
+      db,
+      "Assessment Integration Project",
+    );
+    const fixture = await createAssessmentFixture(db, project.id);
 
     try {
       const result = await saveAssessment({
@@ -328,14 +343,14 @@ describe("assessment DB integration", () => {
     }
   });
 
-  test("returns a validation error for out-of-range numerical score", async ({
-    db,
-    createProject,
-  }) => {
-    vi.doMock("./kysely", () => ({ db }));
-    const { saveAssessment } = await import("./assessments");
-    const projectId = await createProject("Assessment Integration Project");
-    const fixture = await createAssessmentFixture(db, projectId);
+  test("returns a validation error for out-of-range numerical score", async () => {
+    await using db = await createTestDb();
+    const { saveAssessment } = await loadAssessmentsWithDb(db);
+    await using project = await createProject(
+      db,
+      "Assessment Integration Project",
+    );
+    const fixture = await createAssessmentFixture(db, project.id);
 
     try {
       const result = await saveAssessment({
@@ -357,14 +372,17 @@ describe("assessment DB integration", () => {
     }
   });
 
-  test("saves assessments in the correct project when question and rubric ids collide", async ({
-    db,
-    createProject,
-  }) => {
-    vi.doMock("./kysely", () => ({ db }));
-    const { loadAssessment, saveAssessment } = await import("./assessments");
-    const projectA = await createProject("Assessment Collision Project A");
-    const projectB = await createProject("Assessment Collision Project B");
+  test("saves assessments in the correct project when question and rubric ids collide", async () => {
+    await using db = await createTestDb();
+    const { loadAssessment, saveAssessment } = await loadAssessmentsWithDb(db);
+    await using projectA = await createProject(
+      db,
+      "Assessment Collision Project A",
+    );
+    await using projectB = await createProject(
+      db,
+      "Assessment Collision Project B",
+    );
     const sharedQuestionId = buildTestId("shared-question");
     const sharedRubricIds = {
       boolean: buildTestId("shared-rubric-boolean"),
@@ -376,11 +394,11 @@ describe("assessment DB integration", () => {
     let fixtureB: AssessmentFixture | null = null;
 
     try {
-      fixtureA = await createAssessmentFixture(db, projectA, {
+      fixtureA = await createAssessmentFixture(db, projectA.id, {
         questionId: sharedQuestionId,
         rubricIds: sharedRubricIds,
       });
-      fixtureB = await createAssessmentFixture(db, projectB, {
+      fixtureB = await createAssessmentFixture(db, projectB.id, {
         questionId: sharedQuestionId,
         rubricIds: sharedRubricIds,
       });
@@ -425,21 +443,24 @@ describe("assessment DB integration", () => {
     }
   });
 
-  test("rejects cross-project submission and question combinations", async ({
-    db,
-    createProject,
-  }) => {
-    vi.doMock("./kysely", () => ({ db }));
-    const { saveAssessment } = await import("./assessments");
-    const projectA = await createProject("Assessment Isolation Project A");
-    const projectB = await createProject("Assessment Isolation Project B");
+  test("rejects cross-project submission and question combinations", async () => {
+    await using db = await createTestDb();
+    const { saveAssessment } = await loadAssessmentsWithDb(db);
+    await using projectA = await createProject(
+      db,
+      "Assessment Isolation Project A",
+    );
+    await using projectB = await createProject(
+      db,
+      "Assessment Isolation Project B",
+    );
 
     let fixtureA: AssessmentFixture | null = null;
     let fixtureB: AssessmentFixture | null = null;
 
     try {
-      fixtureA = await createAssessmentFixture(db, projectA);
-      fixtureB = await createAssessmentFixture(db, projectB);
+      fixtureA = await createAssessmentFixture(db, projectA.id);
+      fixtureB = await createAssessmentFixture(db, projectB.id);
 
       const result = await saveAssessment({
         submissionId: fixtureA.submissionId,

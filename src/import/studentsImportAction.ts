@@ -10,7 +10,7 @@ import {
 import { saveStudents } from "./saveStudents";
 
 export async function studentsImportAction(
-  projectId: number,
+  projectId: string,
   _previousState: ImportState,
   formData: FormData,
 ): Promise<ImportState> {

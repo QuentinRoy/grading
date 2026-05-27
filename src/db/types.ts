@@ -1,7 +1,10 @@
 import type { Simplify } from "@/utils/utils";
 import type { RubricType, SubmissionType } from "./generated/db";
 
-export * from "./generated/db";
+// Policy: keep schema-correlated types in this file derived from generated DB
+// types to prevent drift, while exposing only curated app-facing contracts (no
+// broad generated table-shape re-export from here).
+export type { RubricType, SubmissionType };
 
 type ProgressMetric = {
   completed: number;

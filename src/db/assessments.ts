@@ -2,8 +2,9 @@ import "server-only";
 import type { Kysely, Transaction } from "kysely";
 import { assertNever } from "../utils/utils";
 import { cacheTags, updateTags } from "./cacheTags";
+import type { DB } from "./generated/db";
 import { db } from "./kysely";
-import type { AssessmentRubricValue, DB } from "./types";
+import type { AssessmentRubricValue } from "./types";
 
 export type SaveAssessmentResult =
   | { success: true }

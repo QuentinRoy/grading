@@ -23,7 +23,7 @@ export default async function ProjectImportQuestionsPage({
   }
 
   if (project.slug !== projectSlug) {
-    redirect(projectImportQuestionsPath(project.publicId, project.slug));
+    redirect(projectImportQuestionsPath(project.id, project.slug));
   }
 
   return (

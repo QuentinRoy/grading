@@ -7,7 +7,7 @@ import { parseQuestionsYaml } from "./parseQuestions";
 import { saveQuestions } from "./saveQuestions";
 
 export async function questionsImportAction(
-  projectId: number,
+  projectId: string,
   _previousState: ImportState,
   formData: FormData,
 ): Promise<ImportState> {

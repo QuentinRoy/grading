@@ -1,34 +1,28 @@
 import type { Kysely } from "kysely";
-import type { DB } from "../db/types";
+import type { DB } from "../db/generated/db";
 import { buildTestId } from "./dbIntegration";
 
-export async function createProject(
-  db: Kysely<DB>,
-  name: string,
-  createdProjectIds?: number[],
-): Promise<number> {
+export async function createProjectRecord(db: Kysely<DB>, name: string) {
   const project = await db
     .insertInto("project")
     .values({
-      publicId: buildTestId("project"),
+      id: buildTestId("project"),
       name,
     })
-    .returning("id")
+    .returning(["id", "rowId", "name"])
     .executeTakeFirstOrThrow();
 
-  createdProjectIds?.push(project.id);
-
-  return project.id;
+  return project;
 }
 
-export async function cleanupProjects(
-  db: Kysely<DB>,
-  projectIds: number[],
-): Promise<void> {
-  if (projectIds.length === 0) {
-    return;
-  }
+export async function createProject(db: Kysely<DB>, name: string) {
+  const { rowId, ...project } = await createProjectRecord(db, name);
 
-  await db.deleteFrom("project").where("id", "in", projectIds).execute();
-  projectIds.length = 0;
+  return {
+    ...project,
+    rowId,
+    async [Symbol.asyncDispose](): Promise<void> {
+      await db.deleteFrom("project").where("rowId", "=", rowId).execute();
+    },
+  };
 }

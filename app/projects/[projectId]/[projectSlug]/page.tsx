@@ -27,7 +27,7 @@ export default async function ProjectDashboardPage({
   }
 
   if (project.slug !== projectSlug) {
-    redirect(projectDashboardPath(project.publicId, project.slug));
+    redirect(projectDashboardPath(project.id, project.slug));
   }
 
   const progress = await loadGlobalAssessmentProgress(project.id);
@@ -41,7 +41,7 @@ export default async function ProjectDashboardPage({
         <GlobalAssessmentSummary progress={progress} />
         <div>
           <Button
-            href={projectAssessmentsPath(project.publicId, project.slug)}
+            href={projectAssessmentsPath(project.id, project.slug)}
             variant="contained"
           >
             Open assessments

@@ -1,10 +1,9 @@
-import { vi } from "vitest";
-import { createIntegrationTest } from "../test/integrationTest";
+import { expect, test, vi } from "vitest";
+import { createTestDb } from "../test/dbIntegration";
+import { createProject } from "../test/projects";
 import type { ImportedQuestions } from "./types";
 
 vi.mock("server-only", () => ({}));
-
-const { test, expect } = createIntegrationTest(import.meta.url);
 
 function makeQuestions(params: {
   questionLabel: string;
@@ -27,22 +26,21 @@ function makeQuestions(params: {
   ];
 }
 
-test("saveQuestions allows the same question and rubric ids in different projects", async ({
-  db,
-  createProject,
-}) => {
-  vi.doMock("../db/kysely", () => ({ db }));
+test("saveQuestions allows the same question and rubric ids in different projects", async () => {
+  await using db = await createTestDb();
+  vi.resetModules();
+  using _kyselyMock = vi.doMock("../db/kysely", () => ({ db }));
   const { saveQuestions } = await import("./saveQuestions");
 
-  const projectAId = await createProject("Import Project A");
-  const projectBId = await createProject("Import Project B");
+  await using projectA = await createProject(db, "Import Project A");
+  await using projectB = await createProject(db, "Import Project B");
 
   const resultA = await saveQuestions(
     makeQuestions({
       questionLabel: "Question A",
       rubricLabel: "Rubric A",
     }),
-    projectAId,
+    projectA.id,
   );
 
   const resultB = await saveQuestions(
@@ -50,7 +48,7 @@ test("saveQuestions allows the same question and rubric ids in different project
       questionLabel: "Question B",
       rubricLabel: "Rubric B",
     }),
-    projectBId,
+    projectB.id,
   );
 
   expect(resultA).toEqual({ questionCount: 1, rubricCount: 1 });
@@ -79,22 +77,21 @@ test("saveQuestions allows the same question and rubric ids in different project
   expect(rubrics[1]?.label).toBe("Rubric B");
 });
 
-test("saveQuestions updates only the target project rows", async ({
-  db,
-  createProject,
-}) => {
-  vi.doMock("../db/kysely", () => ({ db }));
+test("saveQuestions updates only the target project rows", async () => {
+  await using db = await createTestDb();
+  vi.resetModules();
+  using _kyselyMock = vi.doMock("../db/kysely", () => ({ db }));
   const { saveQuestions } = await import("./saveQuestions");
 
-  const projectAId = await createProject("Isolation Project A");
-  const projectBId = await createProject("Isolation Project B");
+  await using projectA = await createProject(db, "Isolation Project A");
+  await using projectB = await createProject(db, "Isolation Project B");
 
   await saveQuestions(
     makeQuestions({
       questionLabel: "A initial",
       rubricLabel: "A rubric initial",
     }),
-    projectAId,
+    projectA.id,
   );
 
   await saveQuestions(
@@ -102,7 +99,7 @@ test("saveQuestions updates only the target project rows", async ({
       questionLabel: "B initial",
       rubricLabel: "B rubric initial",
     }),
-    projectBId,
+    projectB.id,
   );
 
   await saveQuestions(
@@ -110,34 +107,34 @@ test("saveQuestions updates only the target project rows", async ({
       questionLabel: "A updated",
       rubricLabel: "A rubric updated",
     }),
-    projectAId,
+    projectA.id,
   );
 
   const questionA = await db
     .selectFrom("question")
     .select(["label"])
-    .where("projectId", "=", projectAId)
+    .where("projectId", "=", projectA.rowId)
     .where("id", "=", "q1")
     .executeTakeFirstOrThrow();
 
   const questionB = await db
     .selectFrom("question")
     .select(["label"])
-    .where("projectId", "=", projectBId)
+    .where("projectId", "=", projectB.rowId)
     .where("id", "=", "q1")
     .executeTakeFirstOrThrow();
 
   const rubricA = await db
     .selectFrom("rubric")
     .select(["label"])
-    .where("projectId", "=", projectAId)
+    .where("projectId", "=", projectA.rowId)
     .where("id", "=", "r1")
     .executeTakeFirstOrThrow();
 
   const rubricB = await db
     .selectFrom("rubric")
     .select(["label"])
-    .where("projectId", "=", projectBId)
+    .where("projectId", "=", projectB.rowId)
     .where("id", "=", "r1")
     .executeTakeFirstOrThrow();
 
@@ -147,21 +144,21 @@ test("saveQuestions updates only the target project rows", async ({
   expect(rubricB.label).toBe("B rubric initial");
 });
 
-test("saveQuestions still upserts duplicate ids within the same project", async ({
-  db,
-  createProject,
-}) => {
-  vi.doMock("../db/kysely", () => ({ db }));
+test("saveQuestions still upserts duplicate ids within the same project", async () => {
+  await using db = await createTestDb();
+  vi.resetModules();
+  using _kyselyMock = vi.doMock("../db/kysely", () => ({ db }));
   const { saveQuestions } = await import("./saveQuestions");
 
-  const projectId = await createProject("Single Project Upsert");
+  await using project = await createProject(db, "Single Project Upsert");
+  const projectRowId = project.rowId;
 
   await saveQuestions(
     makeQuestions({
       questionLabel: "Before",
       rubricLabel: "Rubric before",
     }),
-    projectId,
+    project.id,
   );
 
   await saveQuestions(
@@ -169,20 +166,20 @@ test("saveQuestions still upserts duplicate ids within the same project", async 
       questionLabel: "After",
       rubricLabel: "Rubric after",
     }),
-    projectId,
+    project.id,
   );
 
   const questions = await db
     .selectFrom("question")
     .select(["id", "label"])
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", projectRowId)
     .where("id", "=", "q1")
     .execute();
 
   const rubrics = await db
     .selectFrom("rubric")
     .select(["id", "label"])
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", projectRowId)
     .where("id", "=", "r1")
     .execute();
 

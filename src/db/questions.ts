@@ -89,7 +89,23 @@ type QuestionRow = {
   }[];
 };
 
-async function loadQuestionsFromDb(projectId?: number): Promise<QuestionRow[]> {
+async function resolveProjectRowId(
+  projectId: string | undefined,
+): Promise<number | undefined> {
+  if (projectId == null) {
+    return undefined;
+  }
+
+  const project = await db
+    .selectFrom("project")
+    .select("rowId")
+    .where("id", "=", projectId)
+    .executeTakeFirstOrThrow();
+
+  return project.rowId;
+}
+
+async function loadQuestionsFromDb(projectId?: string): Promise<QuestionRow[]> {
   "use cache";
   cacheTags(CACHE_TAGS.questions);
   cacheLife({ revalidate: 60 * 60 });
@@ -189,19 +205,21 @@ async function loadQuestionsFromDb(projectId?: number): Promise<QuestionRow[]> {
     });
   };
 
-  if (projectId != null) {
+  const projectRowId = await resolveProjectRowId(projectId);
+
+  if (projectRowId != null) {
     const [questions, rubrics, booleanRubrics, numericalRubrics, ordinalMarks] =
       await Promise.all([
         db
           .selectFrom("question")
-          .where("question.projectId", "=", projectId)
+          .where("question.projectId", "=", projectRowId)
           .select(["id", "label", "position"])
           .orderBy("position", "asc")
           .execute(),
         db
           .selectFrom("rubric")
           .innerJoin("question", "question.rowId", "rubric.questionId")
-          .where("rubric.projectId", "=", projectId)
+          .where("rubric.projectId", "=", projectRowId)
           .select([
             "rubric.id as id",
             "question.id as questionId",
@@ -215,7 +233,7 @@ async function loadQuestionsFromDb(projectId?: number): Promise<QuestionRow[]> {
         db
           .selectFrom("booleanRubric")
           .innerJoin("rubric", "rubric.rowId", "booleanRubric.rubricId")
-          .where("rubric.projectId", "=", projectId)
+          .where("rubric.projectId", "=", projectRowId)
           .select([
             "rubric.id as rubricId",
             "booleanRubric.marks as marks",
@@ -225,7 +243,7 @@ async function loadQuestionsFromDb(projectId?: number): Promise<QuestionRow[]> {
         db
           .selectFrom("numericalRubric")
           .innerJoin("rubric", "rubric.rowId", "numericalRubric.rubricId")
-          .where("rubric.projectId", "=", projectId)
+          .where("rubric.projectId", "=", projectRowId)
           .select([
             "rubric.id as rubricId",
             "numericalRubric.minScore as minScore",
@@ -243,7 +261,7 @@ async function loadQuestionsFromDb(projectId?: number): Promise<QuestionRow[]> {
             "ordinalRubric.id",
           )
           .innerJoin("rubric", "rubric.rowId", "ordinalRubric.rubricId")
-          .where("rubric.projectId", "=", projectId)
+          .where("rubric.projectId", "=", projectRowId)
           .select([
             "rubric.id as rubricId",
             "ordinalRubricValue.label as label",
@@ -331,7 +349,7 @@ async function loadQuestionsFromDb(projectId?: number): Promise<QuestionRow[]> {
   );
 }
 
-export async function loadQuestions(projectId?: number): Promise<Grid> {
+export async function loadQuestions(projectId?: string): Promise<Grid> {
   "use cache";
   cacheTags(CACHE_TAGS.questions);
 
@@ -350,7 +368,7 @@ export async function loadQuestions(projectId?: number): Promise<Grid> {
 
 export async function loadQuestion(
   questionId: string,
-  projectId?: number,
+  projectId?: string,
 ): Promise<Question | undefined> {
   const rows = await loadQuestionsFromDb(projectId);
   const row = rows.find((item) => item.id === questionId);
@@ -481,8 +499,10 @@ function assertUniqueIds(label: string, ids: string[]): void {
 }
 
 export async function loadManagedQuestions(
-  projectId?: number,
+  projectId?: string,
 ): Promise<ManagedQuestionDetails[]> {
+  const projectRowId = await resolveProjectRowId(projectId);
+
   const countsQuery = db
     .selectFrom("assessment")
     .innerJoin("question", "question.rowId", "assessment.questionId")
@@ -494,8 +514,8 @@ export async function loadManagedQuestions(
 
   const [rows, counts] = await Promise.all([
     loadQuestionsFromDb(projectId),
-    projectId != null
-      ? countsQuery.where("assessment.projectId", "=", projectId).execute()
+    projectRowId != null
+      ? countsQuery.where("assessment.projectId", "=", projectRowId).execute()
       : countsQuery.execute(),
   ]);
 
@@ -518,10 +538,15 @@ export async function loadManagedQuestions(
 
 export async function getQuestionDeleteImpact(
   questionId: string,
-  projectId?: number,
+  projectId: string,
 ): Promise<{
   assessmentCount: number;
 }> {
+  const projectRowId = await resolveProjectRowId(projectId);
+  if (projectRowId == null) {
+    throw new Error("Project id is required.");
+  }
+
   let query = db
     .selectFrom("assessment")
     .innerJoin("question", "question.rowId", "assessment.questionId")
@@ -530,9 +555,7 @@ export async function getQuestionDeleteImpact(
     ])
     .where("question.id", "=", questionId);
 
-  if (projectId != null) {
-    query = query.where("assessment.projectId", "=", projectId);
-  }
+  query = query.where("assessment.projectId", "=", projectRowId);
 
   const row = await query.executeTakeFirst();
 
@@ -543,8 +566,13 @@ export async function getQuestionDeleteImpact(
 
 export async function saveManagedQuestion(
   input: ManagedQuestionInput,
-  projectId?: number,
+  projectId: string,
 ): Promise<{ id: string }> {
+  const projectRowId = await resolveProjectRowId(projectId);
+  if (projectRowId == null) {
+    throw new Error("Project id is required.");
+  }
+
   const requestedId = input.id.trim();
   const originalId = input.originalId?.trim() || requestedId;
 
@@ -568,9 +596,7 @@ export async function saveManagedQuestion(
       .selectFrom("question")
       .select(["id", "position", "rowId"])
       .where("id", "=", originalId)
-      .$if(projectId != null, (query) =>
-        query.where("question.projectId", "=", projectId as number),
-      )
+      .where("question.projectId", "=", projectRowId)
       .executeTakeFirst();
 
     const conflictingQuestion =
@@ -579,9 +605,7 @@ export async function saveManagedQuestion(
             .selectFrom("question")
             .select("id")
             .where("id", "=", requestedId)
-            .$if(projectId != null, (query) =>
-              query.where("question.projectId", "=", projectId as number),
-            )
+            .where("question.projectId", "=", projectRowId)
             .executeTakeFirst()
         : null;
 
@@ -597,9 +621,7 @@ export async function saveManagedQuestion(
       const row = await tx
         .selectFrom("question")
         .select(({ fn }) => [fn.max<number>("position").as("maxPosition")])
-        .$if(projectId != null, (query) =>
-          query.where("question.projectId", "=", projectId as number),
-        )
+        .where("question.projectId", "=", projectRowId)
         .executeTakeFirst();
       const nextPosition = (row?.maxPosition ?? -1) + 1;
 
@@ -609,7 +631,7 @@ export async function saveManagedQuestion(
           id: requestedId,
           label: normalizeOptionalText(input.label),
           position: nextPosition,
-          projectId,
+          projectId: projectRowId,
         })
         .execute();
     } else {
@@ -620,9 +642,7 @@ export async function saveManagedQuestion(
           label: normalizeOptionalText(input.label),
         })
         .where("id", "=", originalId)
-        .$if(projectId != null, (query) =>
-          query.where("question.projectId", "=", projectId as number),
-        )
+        .where("question.projectId", "=", projectRowId)
         .execute();
     }
 
@@ -630,9 +650,7 @@ export async function saveManagedQuestion(
       .selectFrom("question")
       .select(["id", "rowId"])
       .where("id", "=", requestedId)
-      .$if(projectId != null, (query) =>
-        query.where("question.projectId", "=", projectId as number),
-      )
+      .where("question.projectId", "=", projectRowId)
       .executeTakeFirstOrThrow();
 
     let existingRubricsQuery = tx
@@ -640,13 +658,11 @@ export async function saveManagedQuestion(
       .select(["id", "type", "rowId"])
       .where("questionId", "=", persistedQuestion.rowId);
 
-    if (projectId != null) {
-      existingRubricsQuery = existingRubricsQuery.where(
-        "rubric.projectId",
-        "=",
-        projectId,
-      );
-    }
+    existingRubricsQuery = existingRubricsQuery.where(
+      "rubric.projectId",
+      "=",
+      projectRowId,
+    );
 
     const existingRubrics = await existingRubricsQuery.execute();
 
@@ -663,9 +679,7 @@ export async function saveManagedQuestion(
       await tx
         .deleteFrom("rubric")
         .where("rowId", "in", staleRubricIds)
-        .$if(projectId != null, (query) =>
-          query.where("rubric.projectId", "=", projectId as number),
-        )
+        .where("rubric.projectId", "=", projectRowId)
         .execute();
     }
 
@@ -681,7 +695,7 @@ export async function saveManagedQuestion(
             position: rubric.position,
             description: rubric.description,
             label: rubric.label,
-            projectId,
+            projectId: projectRowId,
             type: rubric.type,
           })
           .execute();
@@ -693,9 +707,7 @@ export async function saveManagedQuestion(
         await tx
           .deleteFrom("rubric")
           .where("rowId", "=", existing.rowId)
-          .$if(projectId != null, (query) =>
-            query.where("rubric.projectId", "=", projectId as number),
-          )
+          .where("rubric.projectId", "=", projectRowId)
           .execute();
         await tx
           .insertInto("rubric")
@@ -705,7 +717,7 @@ export async function saveManagedQuestion(
             position: rubric.position,
             description: rubric.description,
             label: rubric.label,
-            projectId,
+            projectId: projectRowId,
             type: rubric.type,
           })
           .execute();
@@ -720,13 +732,11 @@ export async function saveManagedQuestion(
           position: rubric.position,
           description: rubric.description,
           label: rubric.label,
-          projectId,
+          projectId: projectRowId,
           type: rubric.type,
         })
         .where("rowId", "=", existing.rowId)
-        .$if(projectId != null, (query) =>
-          query.where("rubric.projectId", "=", projectId as number),
-        )
+        .where("rubric.projectId", "=", projectRowId)
         .execute();
     }
 
@@ -739,9 +749,7 @@ export async function saveManagedQuestion(
         input.rubrics.map((rubric) => rubric.id),
       )
       .where("questionId", "=", persistedQuestion.rowId)
-      .$if(projectId != null, (query) =>
-        query.where("rubric.projectId", "=", projectId as number),
-      )
+      .where("rubric.projectId", "=", projectRowId)
       .execute();
 
     const rubricRowIdById = new Map(
@@ -932,15 +940,17 @@ export async function saveManagedQuestion(
 
 export async function deleteManagedQuestion(
   questionId: string,
-  projectId?: number,
+  projectId: string,
 ): Promise<{ assessmentCount: number }> {
   const impact = await getQuestionDeleteImpact(questionId, projectId);
+  const projectRowId = await resolveProjectRowId(projectId);
+  if (projectRowId == null) {
+    throw new Error("Project id is required.");
+  }
 
   let query = db.deleteFrom("question").where("id", "=", questionId);
 
-  if (projectId != null) {
-    query = query.where("question.projectId", "=", projectId);
-  }
+  query = query.where("question.projectId", "=", projectRowId);
 
   await query.execute();
 
@@ -956,7 +966,7 @@ export async function deleteManagedQuestion(
 
 export async function reorderQuestions(
   updates: Array<{ id: string; position: number }>,
-  projectId?: number,
+  projectId: string,
 ): Promise<void> {
   if (updates.length === 0) {
     return;
@@ -968,15 +978,18 @@ export async function reorderQuestions(
       sql`when ${sql.ref("id")} = ${sql.lit(id)} then ${sql.lit(position)}`,
   );
 
+  const projectRowId = await resolveProjectRowId(projectId);
+  if (projectRowId == null) {
+    throw new Error("Project id is required.");
+  }
+
   await db
     .updateTable("question")
     .set({
       position: sql`case ${sql.join(conditions, sql` `)} end`,
     })
     .where("id", "in", questionIds)
-    .$if(projectId != null, (query) =>
-      query.where("question.projectId", "=", projectId as number),
-    )
+    .where("question.projectId", "=", projectRowId)
     .execute();
 
   updateTags(CACHE_TAGS.questions);

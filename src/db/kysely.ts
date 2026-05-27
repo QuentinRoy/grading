@@ -3,7 +3,7 @@ import "server-only";
 import { CamelCasePlugin, Kysely, PostgresDialect } from "kysely";
 import { Pool, types as pgTypes } from "pg";
 import Cursor from "pg-cursor";
-import type { DB } from "./types";
+import type { DB } from "./generated/db";
 
 const PG_NUMERIC_OID = 1700;
 

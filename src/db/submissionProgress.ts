@@ -2,7 +2,6 @@ import "server-only";
 import { cacheLife } from "next/cache";
 import { assessmentQuestionCacheTag, CACHE_TAGS, cacheTags } from "./cacheTags";
 import { db } from "./kysely";
-import { withProjectScope } from "./projectScope";
 
 export type SubmissionProgressMetric = {
   completed: number;
@@ -11,7 +10,7 @@ export type SubmissionProgressMetric = {
 
 export async function loadSubmissionQuestionProgress(
   questionId: string,
-  projectId?: number,
+  projectId?: string,
 ): Promise<Record<string, SubmissionProgressMetric>> {
   "use cache";
   cacheTags(CACHE_TAGS.submissions, CACHE_TAGS.questions);
@@ -29,21 +28,28 @@ export async function loadSubmissionQuestionProgress(
   let rubricCountQuery = db.selectFrom("rubric");
   let assessmentCountsQuery = db.selectFrom("assessment");
 
-  submissionsQuery = withProjectScope(
-    submissionsQuery,
-    projectId,
-    (query, id) => query.where("submission.projectId", "=", id),
-  );
-  rubricCountQuery = withProjectScope(
-    rubricCountQuery,
-    projectId,
-    (query, id) => query.where("rubric.projectId", "=", id),
-  );
-  assessmentCountsQuery = withProjectScope(
-    assessmentCountsQuery,
-    projectId,
-    (query, id) => query.where("assessment.projectId", "=", id),
-  );
+  if (projectId != null) {
+    const projectRowIdQuery = db
+      .selectFrom("project")
+      .select("rowId")
+      .where("id", "=", projectId);
+
+    submissionsQuery = submissionsQuery.where(
+      "submission.projectId",
+      "in",
+      projectRowIdQuery,
+    );
+    rubricCountQuery = rubricCountQuery.where(
+      "rubric.projectId",
+      "in",
+      projectRowIdQuery,
+    );
+    assessmentCountsQuery = assessmentCountsQuery.where(
+      "assessment.projectId",
+      "in",
+      projectRowIdQuery,
+    );
+  }
 
   const [submissions, rubricCountRow, assessmentCounts] = await Promise.all([
     submissionsQuery.select("id").execute(),
@@ -96,7 +102,7 @@ export async function loadSubmissionQuestionProgress(
 }
 
 export async function loadSubmissionOverviewProgress(
-  projectId?: number,
+  projectId?: string,
 ): Promise<Record<string, SubmissionProgressMetric>> {
   "use cache";
   cacheTags(
@@ -110,19 +116,28 @@ export async function loadSubmissionOverviewProgress(
   let questionsQuery = db.selectFrom("question");
   let assessmentsQuery = db.selectFrom("assessment");
 
-  submissionsQuery = withProjectScope(
-    submissionsQuery,
-    projectId,
-    (query, id) => query.where("submission.projectId", "=", id),
-  );
-  questionsQuery = withProjectScope(questionsQuery, projectId, (query, id) =>
-    query.where("question.projectId", "=", id),
-  );
-  assessmentsQuery = withProjectScope(
-    assessmentsQuery,
-    projectId,
-    (query, id) => query.where("assessment.projectId", "=", id),
-  );
+  if (projectId != null) {
+    const projectRowIdQuery = db
+      .selectFrom("project")
+      .select("rowId")
+      .where("id", "=", projectId);
+
+    submissionsQuery = submissionsQuery.where(
+      "submission.projectId",
+      "in",
+      projectRowIdQuery,
+    );
+    questionsQuery = questionsQuery.where(
+      "question.projectId",
+      "in",
+      projectRowIdQuery,
+    );
+    assessmentsQuery = assessmentsQuery.where(
+      "assessment.projectId",
+      "in",
+      projectRowIdQuery,
+    );
+  }
 
   const [submissions, questions, assessments] = await Promise.all([
     submissionsQuery.select("id").execute(),

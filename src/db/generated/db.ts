@@ -21,7 +21,7 @@ export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 export interface Assessment {
   createdAt: Generated<Timestamp>;
   id: Generated<number>;
-  projectId: Generated<number>;
+  projectId: number;
   questionId: number;
   submissionId: number;
   updatedAt: Generated<Timestamp>;
@@ -74,21 +74,21 @@ export interface OrdinalRubricValue {
   ordinalRubricId: number;
 }
 
+export interface Project {
+  createdAt: Generated<Timestamp>;
+  id: string;
+  name: string;
+  rowId: Generated<number>;
+  updatedAt: Generated<Timestamp>;
+}
+
 export interface Question {
   createdAt: Generated<Timestamp>;
   id: string;
   label: string | null;
   position: Generated<number>;
-  projectId: Generated<number>;
+  projectId: number;
   rowId: Generated<number>;
-  updatedAt: Generated<Timestamp>;
-}
-
-export interface Project {
-  createdAt: Generated<Timestamp>;
-  id: Generated<number>;
-  name: string;
-  publicId: string;
   updatedAt: Generated<Timestamp>;
 }
 
@@ -98,7 +98,7 @@ export interface Rubric {
   id: string;
   label: string | null;
   position: number;
-  projectId: Generated<number>;
+  projectId: number;
   questionId: number;
   rowId: Generated<number>;
   type: RubricType;
@@ -116,11 +116,11 @@ export interface RubricAssessment {
 
 export interface Student {
   createdAt: Generated<Timestamp>;
-  lastName: string;
   firstName: string;
   id: string;
+  lastName: string;
+  projectId: number;
   rowId: Generated<number>;
-  projectId: Generated<number>;
   updatedAt: Generated<Timestamp>;
 }
 
@@ -132,7 +132,7 @@ export interface StudentToTeam {
 export interface Submission {
   createdAt: Generated<Timestamp>;
   id: Generated<number>;
-  projectId: Generated<number>;
+  projectId: number;
   studentId: number | null;
   teamId: number | null;
   type: Generated<SubmissionType>;
@@ -143,7 +143,7 @@ export interface Team {
   createdAt: Generated<Timestamp>;
   id: Generated<number>;
   name: string;
-  projectId: Generated<number>;
+  projectId: number;
   updatedAt: Generated<Timestamp>;
 }
 

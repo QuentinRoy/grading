@@ -4,7 +4,7 @@ import type { ImportedQuestions } from "./types";
 
 export async function saveQuestions(
   questions: ImportedQuestions,
-  projectId: number,
+  projectId: string,
 ): Promise<{
   questionCount: number;
   rubricCount: number;
@@ -77,14 +77,21 @@ export async function saveQuestions(
   );
 
   return db.transaction().execute(async (tx) => {
+    const projectRow = await tx
+      .selectFrom("project")
+      .select("rowId")
+      .where("id", "=", projectId)
+      .executeTakeFirstOrThrow();
+    const projectRowId = projectRow.rowId;
+
     const existingRubrics =
       rubricIds.length === 0
         ? []
         : await tx
             .selectFrom("rubric")
             .select(["id", "type"])
+            .where("rubric.projectId", "=", projectRowId)
             .where("id", "in", rubricIds)
-            .where("projectId", "=", projectId)
             .execute();
 
     const rubricsToRecreate = existingRubrics.flatMap((rubric) => {
@@ -100,7 +107,7 @@ export async function saveQuestions(
     if (rubricsToRecreate.length > 0) {
       await tx
         .deleteFrom("rubric")
-        .where("projectId", "=", projectId)
+        .where("projectId", "=", projectRowId)
         .where("id", "in", rubricsToRecreate)
         .execute();
     }
@@ -108,7 +115,12 @@ export async function saveQuestions(
     if (questionsById.length > 0) {
       await tx
         .insertInto("question")
-        .values(questionsById.map((question) => ({ ...question, projectId })))
+        .values(
+          questionsById.map((question) => ({
+            ...question,
+            projectId: projectRowId,
+          })),
+        )
         .onConflict((conflict) =>
           conflict
             .columns(["projectId", "id"])
@@ -126,7 +138,7 @@ export async function saveQuestions(
         : await tx
             .selectFrom("question")
             .select(["id", "rowId"])
-            .where("projectId", "=", projectId)
+            .where("projectId", "=", projectRowId)
             .where("id", "in", questionIds)
             .execute();
 
@@ -149,7 +161,7 @@ export async function saveQuestions(
         position: rubric.position,
         description: rubric.description,
         label: rubric.label,
-        projectId,
+        projectId: projectRowId,
         type: rubric.type,
       };
     });
@@ -178,7 +190,7 @@ export async function saveQuestions(
         : await tx
             .selectFrom("rubric")
             .select(["id", "rowId"])
-            .where("projectId", "=", projectId)
+            .where("projectId", "=", projectRowId)
             .where("id", "in", rubricIds)
             .execute();
 

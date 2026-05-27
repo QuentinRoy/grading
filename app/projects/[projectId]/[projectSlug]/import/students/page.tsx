@@ -23,7 +23,7 @@ export default async function ProjectImportStudentsPage({
   }
 
   if (project.slug !== projectSlug) {
-    redirect(projectImportStudentsPath(project.publicId, project.slug));
+    redirect(projectImportStudentsPath(project.id, project.slug));
   }
 
   return (

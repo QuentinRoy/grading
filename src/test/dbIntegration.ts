@@ -5,11 +5,15 @@ import { fileURLToPath } from "node:url";
 import { CamelCasePlugin, Kysely, PostgresDialect } from "kysely";
 import { FileMigrationProvider, Migrator } from "kysely/migration";
 import { Pool } from "pg";
-import type { DB } from "../db/types";
+import type { DB } from "../db/generated/db";
 
 export type StartedTestDatabase = {
   db: Kysely<DB>;
   cleanup?: () => Promise<void>;
+};
+
+export type DisposableTestDatabase = Kysely<DB> & {
+  [Symbol.asyncDispose](): Promise<void>;
 };
 
 type ExternalTemplateContext = {
@@ -29,13 +33,10 @@ export function buildTestId(prefix: string): string {
   return `${prefix}-${randomUUID()}`;
 }
 
-export function resolvePathFromMeta(
-  importMetaUrl: string,
-  relativePath: string,
-): string {
-  const dirname = path.dirname(fileURLToPath(importMetaUrl));
-  return path.join(dirname, relativePath);
-}
+const testMigrationsPath = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../db/migrations",
+);
 
 export function createMigrator(
   dbInstance: Kysely<DB>,
@@ -86,7 +87,9 @@ async function createDatabaseFromTemplate(
   templateName: string,
 ): Promise<void> {
   await adminPool.query(
-    `create database ${quoteIdentifier(databaseName)} template ${quoteIdentifier(templateName)}`,
+    `create database ${quoteIdentifier(databaseName)} template ${quoteIdentifier(
+      templateName,
+    )}`,
   );
 }
 
@@ -213,4 +216,14 @@ export async function stopTestDatabase({
   if (cleanup != null) {
     await cleanup();
   }
+}
+
+export async function createTestDb(): Promise<DisposableTestDatabase> {
+  const startedDb = await startTestDatabase(testMigrationsPath);
+
+  return Object.assign(startedDb.db, {
+    async [Symbol.asyncDispose](): Promise<void> {
+      await stopTestDatabase(startedDb);
+    },
+  });
 }

@@ -1,8 +1,8 @@
 import type { Kysely } from "kysely";
-import { vi } from "vitest";
-import { buildTestId } from "../test/dbIntegration";
-import { createIntegrationTest } from "../test/integrationTest";
-import type { DB } from "./types";
+import { expect, test, vi } from "vitest";
+import { buildTestId, createTestDb } from "../test/dbIntegration";
+import { createProject } from "../test/projects";
+import type { DB } from "./generated/db";
 
 vi.mock("server-only", () => ({}));
 
@@ -12,26 +12,40 @@ vi.mock("next/cache", () => ({
   updateTag: vi.fn(),
 }));
 
-const { test, expect } = createIntegrationTest(import.meta.url);
-
 type ProjectFixture = {
   questionId: string;
+  projectId: string;
+  projectRowId: number;
   rubricRowId: number;
   submissionId: number;
 };
 
+async function loadProjectRowId(
+  db: Kysely<DB>,
+  projectId: string,
+): Promise<number> {
+  const project = await db
+    .selectFrom("project")
+    .select("rowId")
+    .where("id", "=", projectId)
+    .executeTakeFirstOrThrow();
+
+  return project.rowId;
+}
+
 async function createProgressFixture(
   db: Kysely<DB>,
-  projectId: number,
+  projectId: string,
   sharedQuestionId: string,
   sharedRubricId: string,
 ): Promise<ProjectFixture> {
+  const projectRowId = await loadProjectRowId(db, projectId);
   const studentId = buildTestId("student");
 
   await db
     .insertInto("student")
     .values({
-      projectId,
+      projectId: projectRowId,
       id: studentId,
       lastName: "Progress",
       firstName: "Test",
@@ -41,25 +55,34 @@ async function createProgressFixture(
   const studentRow = await db
     .selectFrom("student")
     .select("rowId")
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", projectRowId)
     .where("id", "=", studentId)
     .executeTakeFirstOrThrow();
 
   const submission = await db
     .insertInto("submission")
-    .values({ projectId, type: "individual", studentId: studentRow.rowId })
+    .values({
+      projectId: projectRowId,
+      type: "individual",
+      studentId: studentRow.rowId,
+    })
     .returning("id")
     .executeTakeFirstOrThrow();
 
   await db
     .insertInto("question")
-    .values({ projectId, id: sharedQuestionId, label: "Shared Q", position: 0 })
+    .values({
+      projectId: projectRowId,
+      id: sharedQuestionId,
+      label: "Shared Q",
+      position: 0,
+    })
     .execute();
 
   const question = await db
     .selectFrom("question")
     .select(["rowId"])
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", projectRowId)
     .where("id", "=", sharedQuestionId)
     .executeTakeFirstOrThrow();
 
@@ -67,7 +90,7 @@ async function createProgressFixture(
     .insertInto("rubric")
     .values({
       id: sharedRubricId,
-      projectId,
+      projectId: projectRowId,
       questionId: question.rowId,
       type: "boolean",
       position: 0,
@@ -86,6 +109,8 @@ async function createProgressFixture(
 
   return {
     questionId: sharedQuestionId,
+    projectId,
+    projectRowId,
     rubricRowId: rubric.rowId,
     submissionId: submission.id,
   };
@@ -93,14 +118,20 @@ async function createProgressFixture(
 
 async function addAssessment(
   db: Kysely<DB>,
-  projectId: number,
+  projectId: string,
   submissionId: number,
   questionRowId: number,
   rubricRowId: number,
 ): Promise<void> {
+  const projectRowId = await loadProjectRowId(db, projectId);
+
   const assessment = await db
     .insertInto("assessment")
-    .values({ projectId, submissionId, questionId: questionRowId })
+    .values({
+      projectId: projectRowId,
+      submissionId,
+      questionId: questionRowId,
+    })
     .returning("id")
     .executeTakeFirstOrThrow();
 
@@ -129,7 +160,7 @@ async function addAssessment(
 async function loadProgressWithDb(
   db: Kysely<DB>,
   questionId: string,
-  projectId: number,
+  projectId: string,
 ) {
   vi.resetModules();
   vi.doMock("./kysely", () => ({ db }));
@@ -145,7 +176,7 @@ async function loadProgressWithDb(
   return loadSubmissionQuestionProgress(questionId, projectId);
 }
 
-async function loadOverviewProgressWithDb(db: Kysely<DB>, projectId: number) {
+async function loadOverviewProgressWithDb(db: Kysely<DB>, projectId: string) {
   vi.resetModules();
   vi.doMock("./kysely", () => ({ db }));
   vi.doMock("next/cache", () => ({
@@ -160,25 +191,23 @@ async function loadOverviewProgressWithDb(db: Kysely<DB>, projectId: number) {
   return loadSubmissionOverviewProgress(projectId);
 }
 
-test("loadSubmissionQuestionProgress counts only assessments within the requested project when question ids collide across projects", async ({
-  db,
-  createProject,
-}) => {
-  const projectAId = await createProject("Progress Isolation A");
-  const projectBId = await createProject("Progress Isolation B");
+test("loadSubmissionQuestionProgress counts only assessments within the requested project when question ids collide across projects", async () => {
+  await using db = await createTestDb();
+  await using projectA = await createProject(db, "Progress Isolation A");
+  await using projectB = await createProject(db, "Progress Isolation B");
 
   const sharedQuestionId = "shared-q-progress-iso";
   const sharedRubricId = "shared-rubric-progress-iso";
 
   const fixtureA = await createProgressFixture(
     db,
-    projectAId,
+    projectA.id,
     sharedQuestionId,
     sharedRubricId,
   );
   const fixtureB = await createProgressFixture(
     db,
-    projectBId,
+    projectB.id,
     sharedQuestionId,
     sharedRubricId,
   );
@@ -187,20 +216,20 @@ test("loadSubmissionQuestionProgress counts only assessments within the requeste
   const questionBRow = await db
     .selectFrom("question")
     .select("rowId")
-    .where("projectId", "=", projectBId)
+    .where("projectId", "=", fixtureB.projectRowId)
     .where("id", "=", sharedQuestionId)
     .executeTakeFirstOrThrow();
 
   await addAssessment(
     db,
-    projectBId,
+    projectB.id,
     fixtureB.submissionId,
     questionBRow.rowId,
     fixtureB.rubricRowId,
   );
 
-  const progressA = await loadProgressWithDb(db, sharedQuestionId, projectAId);
-  const progressB = await loadProgressWithDb(db, sharedQuestionId, projectBId);
+  const progressA = await loadProgressWithDb(db, sharedQuestionId, projectA.id);
+  const progressB = await loadProgressWithDb(db, sharedQuestionId, projectB.id);
 
   const submissionAId = String(fixtureA.submissionId);
   const submissionBId = String(fixtureB.submissionId);
@@ -218,25 +247,29 @@ test("loadSubmissionQuestionProgress counts only assessments within the requeste
   expect(progressB[submissionAId]).toBeUndefined();
 });
 
-test("loadSubmissionOverviewProgress counts only questions and assessments within the requested project when question ids collide across projects", async ({
-  db,
-  createProject,
-}) => {
-  const projectAId = await createProject("Overview Progress Isolation A");
-  const projectBId = await createProject("Overview Progress Isolation B");
+test("loadSubmissionOverviewProgress counts only questions and assessments within the requested project when question ids collide across projects", async () => {
+  await using db = await createTestDb();
+  await using projectA = await createProject(
+    db,
+    "Overview Progress Isolation A",
+  );
+  await using projectB = await createProject(
+    db,
+    "Overview Progress Isolation B",
+  );
 
   const sharedQuestionId = "shared-q-overview-iso";
   const sharedRubricId = "shared-rubric-overview-iso";
 
   const fixtureA = await createProgressFixture(
     db,
-    projectAId,
+    projectA.id,
     sharedQuestionId,
     sharedRubricId,
   );
   const fixtureB = await createProgressFixture(
     db,
-    projectBId,
+    projectB.id,
     sharedQuestionId,
     sharedRubricId,
   );
@@ -245,20 +278,20 @@ test("loadSubmissionOverviewProgress counts only questions and assessments withi
   const questionBRow = await db
     .selectFrom("question")
     .select("rowId")
-    .where("projectId", "=", projectBId)
+    .where("projectId", "=", fixtureB.projectRowId)
     .where("id", "=", sharedQuestionId)
     .executeTakeFirstOrThrow();
 
   await addAssessment(
     db,
-    projectBId,
+    projectB.id,
     fixtureB.submissionId,
     questionBRow.rowId,
     fixtureB.rubricRowId,
   );
 
-  const overviewA = await loadOverviewProgressWithDb(db, projectAId);
-  const overviewB = await loadOverviewProgressWithDb(db, projectBId);
+  const overviewA = await loadOverviewProgressWithDb(db, projectA.id);
+  const overviewB = await loadOverviewProgressWithDb(db, projectB.id);
 
   const submissionAId = String(fixtureA.submissionId);
   const submissionBId = String(fixtureB.submissionId);

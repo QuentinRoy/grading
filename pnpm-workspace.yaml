@@ -1,5 +1,4 @@
 allowBuilds:
-  '@prisma/engines': true
   core-js-pure: true
   cpu-features: true
   esbuild: true

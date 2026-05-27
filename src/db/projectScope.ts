@@ -1,7 +1,7 @@
 export function withProjectScope<T>(
   value: T,
-  projectId: number | undefined,
-  scope: (value: T, projectId: number) => T,
+  projectId: string | undefined,
+  scope: (value: T, projectId: string) => T,
 ): T {
   if (projectId == null) {
     return value;

@@ -10,5 +10,5 @@ export default async function HomePage() {
     redirect("/projects");
   }
 
-  redirect(projectDashboardPath(defaultProject.publicId, defaultProject.slug));
+  redirect(projectDashboardPath(defaultProject.id, defaultProject.slug));
 }

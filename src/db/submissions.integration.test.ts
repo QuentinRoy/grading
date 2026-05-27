@@ -1,7 +1,8 @@
 import type { Kysely } from "kysely";
-import { vi } from "vitest";
-import { createIntegrationTest } from "../test/integrationTest";
-import type { DB } from "./types";
+import { expect, test, vi } from "vitest";
+import { createTestDb } from "../test/dbIntegration";
+import { createProject } from "../test/projects";
+import type { DB } from "./generated/db";
 
 vi.mock("server-only", () => ({}));
 
@@ -11,17 +12,30 @@ vi.mock("next/cache", () => ({
   updateTag: vi.fn(),
 }));
 
-const { test, expect } = createIntegrationTest(import.meta.url);
+async function loadProjectPublicId(
+  db: Kysely<DB>,
+  projectId: string,
+): Promise<number> {
+  const project = await db
+    .selectFrom("project")
+    .select("rowId")
+    .where("id", "=", projectId)
+    .executeTakeFirstOrThrow();
+
+  return project.rowId;
+}
 
 async function createStudentAndSubmission(
   db: Kysely<DB>,
-  projectId: number,
+  projectId: string,
   studentId: string,
 ): Promise<string> {
+  const projectRowId = await loadProjectPublicId(db, projectId);
+
   await db
     .insertInto("student")
     .values({
-      projectId,
+      projectId: projectRowId,
       id: studentId,
       lastName: "Isolation",
       firstName: "Test",
@@ -31,14 +45,14 @@ async function createStudentAndSubmission(
   const studentRow = await db
     .selectFrom("student")
     .select("rowId")
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", projectRowId)
     .where("id", "=", studentId)
     .executeTakeFirstOrThrow();
 
   const submission = await db
     .insertInto("submission")
     .values({
-      projectId,
+      projectId: projectRowId,
       type: "individual",
       studentId: studentRow.rowId,
     })
@@ -50,23 +64,28 @@ async function createStudentAndSubmission(
 
 async function createTeamAndSubmission(
   db: Kysely<DB>,
-  projectId: number,
+  projectId: string,
   teamName: string,
   memberStudentId: string,
 ): Promise<string> {
-  await db.insertInto("team").values({ projectId, name: teamName }).execute();
+  const projectRowId = await loadProjectPublicId(db, projectId);
+
+  await db
+    .insertInto("team")
+    .values({ projectId: projectRowId, name: teamName })
+    .execute();
 
   const team = await db
     .selectFrom("team")
     .select("id")
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", projectRowId)
     .where("name", "=", teamName)
     .executeTakeFirstOrThrow();
 
   await db
     .insertInto("student")
     .values({
-      projectId,
+      projectId: projectRowId,
       id: memberStudentId,
       lastName: "Team",
       firstName: "Member",
@@ -76,7 +95,7 @@ async function createTeamAndSubmission(
   const studentRow = await db
     .selectFrom("student")
     .select("rowId")
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", projectRowId)
     .where("id", "=", memberStudentId)
     .executeTakeFirstOrThrow();
 
@@ -87,14 +106,14 @@ async function createTeamAndSubmission(
 
   const submission = await db
     .insertInto("submission")
-    .values({ projectId, type: "team", teamId: team.id })
+    .values({ projectId: projectRowId, type: "team", teamId: team.id })
     .returning("id")
     .executeTakeFirstOrThrow();
 
   return String(submission.id);
 }
 
-async function loadSubmissionsWithDb(db: Kysely<DB>, projectId: number) {
+async function loadSubmissionsWithDb(db: Kysely<DB>, projectId: string) {
   vi.resetModules();
   vi.doMock("./kysely", () => ({ db }));
   const { loadSubmissions } = await import("./submissions");
@@ -102,28 +121,26 @@ async function loadSubmissionsWithDb(db: Kysely<DB>, projectId: number) {
   return loadSubmissions(projectId);
 }
 
-test("loadSubmissions returns only individual submissions for the requested project when student ids collide across projects", async ({
-  db,
-  createProject,
-}) => {
-  const projectAId = await createProject("Isolation Project A");
-  const projectBId = await createProject("Isolation Project B");
+test("loadSubmissions returns only individual submissions for the requested project when student ids collide across projects", async () => {
+  await using db = await createTestDb();
+  await using projectA = await createProject(db, "Isolation Project A");
+  await using projectB = await createProject(db, "Isolation Project B");
 
   const sharedStudentId = "shared-student-iso-001";
 
   const submissionAId = await createStudentAndSubmission(
     db,
-    projectAId,
+    projectA.id,
     sharedStudentId,
   );
   const submissionBId = await createStudentAndSubmission(
     db,
-    projectBId,
+    projectB.id,
     sharedStudentId,
   );
 
-  const submissionsA = await loadSubmissionsWithDb(db, projectAId);
-  const submissionsB = await loadSubmissionsWithDb(db, projectBId);
+  const submissionsA = await loadSubmissionsWithDb(db, projectA.id);
+  const submissionsB = await loadSubmissionsWithDb(db, projectB.id);
 
   expect(submissionsA).toHaveLength(1);
   expect(submissionsB).toHaveLength(1);
@@ -138,30 +155,28 @@ test("loadSubmissions returns only individual submissions for the requested proj
   expect(subA.id).not.toBe(subB.id);
 });
 
-test("loadSubmissions returns only team submissions for the requested project when team names collide across projects", async ({
-  db,
-  createProject,
-}) => {
-  const projectAId = await createProject("Team Isolation A");
-  const projectBId = await createProject("Team Isolation B");
+test("loadSubmissions returns only team submissions for the requested project when team names collide across projects", async () => {
+  await using db = await createTestDb();
+  await using projectA = await createProject(db, "Team Isolation A");
+  await using projectB = await createProject(db, "Team Isolation B");
 
   const sharedTeamName = "Shared Team Iso";
 
   const submissionAId = await createTeamAndSubmission(
     db,
-    projectAId,
+    projectA.id,
     sharedTeamName,
     "team-member-proj-a",
   );
   const submissionBId = await createTeamAndSubmission(
     db,
-    projectBId,
+    projectB.id,
     sharedTeamName,
     "team-member-proj-b",
   );
 
-  const submissionsA = await loadSubmissionsWithDb(db, projectAId);
-  const submissionsB = await loadSubmissionsWithDb(db, projectBId);
+  const submissionsA = await loadSubmissionsWithDb(db, projectA.id);
+  const submissionsB = await loadSubmissionsWithDb(db, projectB.id);
 
   expect(submissionsA).toHaveLength(1);
   expect(submissionsB).toHaveLength(1);

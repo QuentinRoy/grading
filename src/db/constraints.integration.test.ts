@@ -1,9 +1,8 @@
 import { type Kysely } from "kysely";
-import { buildTestId } from "../test/dbIntegration";
-import { createIntegrationTest } from "../test/integrationTest";
-import type { DB } from "./types";
-
-const { test, expect } = createIntegrationTest(import.meta.url);
+import { expect, test } from "vitest";
+import { buildTestId, createTestDb } from "../test/dbIntegration";
+import { createProject } from "../test/projects";
+import type { DB } from "./generated/db";
 
 type RubricRowIds = {
   boolean: number;
@@ -24,14 +23,21 @@ type AssessmentConstraintFixture = {
 
 async function createAssessmentConstraintFixture(
   db: Kysely<DB>,
-  projectId: number,
+  projectId: string,
 ): Promise<AssessmentConstraintFixture> {
+  const project = await db
+    .selectFrom("project")
+    .select("rowId")
+    .where("id", "=", projectId)
+    .executeTakeFirstOrThrow();
+  const projectRowId = project.rowId;
+
   const questionId = buildTestId("question");
 
   await db
     .insertInto("question")
     .values({
-      projectId,
+      projectId: projectRowId,
       id: questionId,
       label: "Constraint question",
       position: 0,
@@ -41,7 +47,7 @@ async function createAssessmentConstraintFixture(
   const question = await db
     .selectFrom("question")
     .select("rowId")
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", projectRowId)
     .where("id", "=", questionId)
     .executeTakeFirstOrThrow();
 
@@ -49,7 +55,7 @@ async function createAssessmentConstraintFixture(
     .insertInto("rubric")
     .values([
       {
-        projectId,
+        projectId: projectRowId,
         id: buildTestId("rubric-boolean"),
         questionId: question.rowId,
         type: "boolean",
@@ -57,7 +63,7 @@ async function createAssessmentConstraintFixture(
         label: "Boolean rubric",
       },
       {
-        projectId,
+        projectId: projectRowId,
         id: buildTestId("rubric-ordinal"),
         questionId: question.rowId,
         type: "ordinal",
@@ -65,7 +71,7 @@ async function createAssessmentConstraintFixture(
         label: "Ordinal rubric",
       },
       {
-        projectId,
+        projectId: projectRowId,
         id: buildTestId("rubric-numerical"),
         questionId: question.rowId,
         type: "numerical",
@@ -99,13 +105,13 @@ async function createAssessmentConstraintFixture(
     .insertInto("student")
     .values([
       {
-        projectId,
+        projectId: projectRowId,
         id: studentAId,
         firstName: "Primary",
         lastName: "Student",
       },
       {
-        projectId,
+        projectId: projectRowId,
         id: studentBId,
         firstName: "Secondary",
         lastName: "Student",
@@ -116,7 +122,7 @@ async function createAssessmentConstraintFixture(
   const students = await db
     .selectFrom("student")
     .select(["rowId", "id"])
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", projectRowId)
     .where("id", "in", [studentAId, studentBId])
     .execute();
 
@@ -135,12 +141,12 @@ async function createAssessmentConstraintFixture(
     .insertInto("submission")
     .values([
       {
-        projectId,
+        projectId: projectRowId,
         type: "individual",
         studentId: studentA.rowId,
       },
       {
-        projectId,
+        projectId: projectRowId,
         type: "individual",
         studentId: studentB.rowId,
       },
@@ -158,12 +164,12 @@ async function createAssessmentConstraintFixture(
     .insertInto("assessment")
     .values([
       {
-        projectId,
+        projectId: projectRowId,
         submissionId: primarySubmission.id,
         questionId: question.rowId,
       },
       {
-        projectId,
+        projectId: projectRowId,
         submissionId: secondarySubmission.id,
         questionId: question.rowId,
       },
@@ -274,14 +280,21 @@ async function createAssessmentConstraintFixture(
 
 async function createSubtypeConstraintFixture(
   db: Kysely<DB>,
-  projectId: number,
+  projectId: string,
 ): Promise<RubricRowIds> {
+  const project = await db
+    .selectFrom("project")
+    .select("rowId")
+    .where("id", "=", projectId)
+    .executeTakeFirstOrThrow();
+  const projectRowId = project.rowId;
+
   const questionId = buildTestId("question-subtype");
 
   await db
     .insertInto("question")
     .values({
-      projectId,
+      projectId: projectRowId,
       id: questionId,
       label: "Subtype question",
       position: 0,
@@ -291,7 +304,7 @@ async function createSubtypeConstraintFixture(
   const question = await db
     .selectFrom("question")
     .select("rowId")
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", projectRowId)
     .where("id", "=", questionId)
     .executeTakeFirstOrThrow();
 
@@ -299,7 +312,7 @@ async function createSubtypeConstraintFixture(
     .insertInto("rubric")
     .values([
       {
-        projectId,
+        projectId: projectRowId,
         id: buildTestId("subtype-rubric-boolean"),
         questionId: question.rowId,
         type: "boolean",
@@ -307,7 +320,7 @@ async function createSubtypeConstraintFixture(
         label: "Subtype boolean rubric",
       },
       {
-        projectId,
+        projectId: projectRowId,
         id: buildTestId("subtype-rubric-ordinal"),
         questionId: question.rowId,
         type: "ordinal",
@@ -315,7 +328,7 @@ async function createSubtypeConstraintFixture(
         label: "Subtype ordinal rubric",
       },
       {
-        projectId,
+        projectId: projectRowId,
         id: buildTestId("subtype-rubric-numerical"),
         questionId: question.rowId,
         type: "numerical",
@@ -349,12 +362,10 @@ async function createSubtypeConstraintFixture(
   };
 }
 
-test("ordinal rubric assessments accept valid labels and roll back failed transactional writes", async ({
-  db,
-  createProject,
-}) => {
-  const projectId = await createProject("Constraint Ordinal Project");
-  const fixture = await createAssessmentConstraintFixture(db, projectId);
+test("ordinal rubric assessments accept valid labels and roll back failed transactional writes", async () => {
+  await using db = await createTestDb();
+  await using project = await createProject(db, "Constraint Ordinal Project");
+  const fixture = await createAssessmentConstraintFixture(db, project.id);
 
   await db
     .insertInto("ordinalRubricAssessment")
@@ -402,12 +413,10 @@ test("ordinal rubric assessments accept valid labels and roll back failed transa
   ]);
 });
 
-test("numerical rubric assessments enforce score bounds and roll back failed transactional writes", async ({
-  db,
-  createProject,
-}) => {
-  const projectId = await createProject("Constraint Numerical Project");
-  const fixture = await createAssessmentConstraintFixture(db, projectId);
+test("numerical rubric assessments enforce score bounds and roll back failed transactional writes", async () => {
+  await using db = await createTestDb();
+  await using project = await createProject(db, "Constraint Numerical Project");
+  const fixture = await createAssessmentConstraintFixture(db, project.id);
 
   await db
     .insertInto("numericalRubricAssessment")
@@ -460,18 +469,19 @@ test("numerical rubric assessments enforce score bounds and roll back failed tra
   ]);
 });
 
-test("submission owner/type check rejects invalid rows and rolls back transactional writes", async ({
-  db,
-  createProject,
-}) => {
-  const projectId = await createProject("Constraint Submission Project");
+test("submission owner/type check rejects invalid rows and rolls back transactional writes", async () => {
+  await using db = await createTestDb();
+  await using project = await createProject(
+    db,
+    "Constraint Submission Project",
+  );
 
   const studentId = buildTestId("student");
 
   await db
     .insertInto("student")
     .values({
-      projectId,
+      projectId: project.rowId,
       id: studentId,
       firstName: "Constraint",
       lastName: "Student",
@@ -481,14 +491,14 @@ test("submission owner/type check rejects invalid rows and rolls back transactio
   const student = await db
     .selectFrom("student")
     .select("rowId")
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", project.rowId)
     .where("id", "=", studentId)
     .executeTakeFirstOrThrow();
 
   const team = await db
     .insertInto("team")
     .values({
-      projectId,
+      projectId: project.rowId,
       name: buildTestId("team"),
     })
     .returning("id")
@@ -497,7 +507,7 @@ test("submission owner/type check rejects invalid rows and rolls back transactio
   await db
     .insertInto("submission")
     .values({
-      projectId,
+      projectId: project.rowId,
       type: "individual",
       studentId: student.rowId,
     })
@@ -508,7 +518,7 @@ test("submission owner/type check rejects invalid rows and rolls back transactio
       await trx
         .insertInto("submission")
         .values({
-          projectId,
+          projectId: project.rowId,
           type: "team",
           teamId: team.id,
         })
@@ -517,7 +527,7 @@ test("submission owner/type check rejects invalid rows and rolls back transactio
       await trx
         .insertInto("submission")
         .values({
-          projectId,
+          projectId: project.rowId,
           type: "individual",
           teamId: team.id,
         })
@@ -528,7 +538,7 @@ test("submission owner/type check rejects invalid rows and rolls back transactio
   const persisted = await db
     .selectFrom("submission")
     .select(["id", "type", "studentId", "teamId"])
-    .where("projectId", "=", projectId)
+    .where("projectId", "=", project.rowId)
     .execute();
 
   expect(persisted).toHaveLength(1);
@@ -544,12 +554,10 @@ test("submission owner/type check rejects invalid rows and rolls back transactio
   expect(onlySubmission.teamId).toBeNull();
 });
 
-test("rubric subtype triggers reject mismatched subtype rows and roll back transactional writes", async ({
-  db,
-  createProject,
-}) => {
-  const projectId = await createProject("Constraint Subtype Project");
-  const rubricRowIds = await createSubtypeConstraintFixture(db, projectId);
+test("rubric subtype triggers reject mismatched subtype rows and roll back transactional writes", async () => {
+  await using db = await createTestDb();
+  await using project = await createProject(db, "Constraint Subtype Project");
+  const rubricRowIds = await createSubtypeConstraintFixture(db, project.id);
 
   await db
     .insertInto("booleanRubric")

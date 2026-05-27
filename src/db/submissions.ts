@@ -1,7 +1,6 @@
 import "server-only";
 import { CACHE_TAGS, cacheTags } from "./cacheTags";
 import { db } from "./kysely";
-import { withProjectScope } from "./projectScope";
 import type { Submission } from "./types";
 
 function normalizeSearchValue(value: string): string {
@@ -12,21 +11,30 @@ function formatStudentName(lastName: string, firstName: string): string {
   return `${lastName} ${firstName}`.trim();
 }
 
-async function loadSubmissionsFromDb(projectId?: number) {
+async function loadSubmissionsFromDb(projectId?: string) {
   "use cache";
   cacheTags(CACHE_TAGS.submissions);
 
   let submissionsQuery = db.selectFrom("submission");
   let teamMemberQuery = db.selectFrom("submission");
 
-  submissionsQuery = withProjectScope(
-    submissionsQuery,
-    projectId,
-    (query, id) => query.where("submission.projectId", "=", id),
-  );
-  teamMemberQuery = withProjectScope(teamMemberQuery, projectId, (query, id) =>
-    query.where("submission.projectId", "=", id),
-  );
+  if (projectId != null) {
+    const projectRowIdQuery = db
+      .selectFrom("project")
+      .select("rowId")
+      .where("id", "=", projectId);
+
+    submissionsQuery = submissionsQuery.where(
+      "submission.projectId",
+      "in",
+      projectRowIdQuery,
+    );
+    teamMemberQuery = teamMemberQuery.where(
+      "submission.projectId",
+      "in",
+      projectRowIdQuery,
+    );
+  }
 
   const [submissions, teamMemberRows] = await Promise.all([
     submissionsQuery
@@ -83,7 +91,7 @@ async function loadSubmissionsFromDb(projectId?: number) {
 }
 
 export async function loadSubmissions(
-  projectId?: number,
+  projectId?: string,
 ): Promise<Submission[]> {
   const { submissions, teamMembersBySubmissionId } =
     await loadSubmissionsFromDb(projectId);
