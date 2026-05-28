@@ -9,9 +9,16 @@
 - Do not create unsupported relationships between issues, pull requests, milestones, or roadmap items.
 - Do not assign milestones, reorganize project boards, or assign priorities unless explicitly requested. It is fine to suggest these actions when relevant.
 
+## Repository context
+
+- Read `CONTEXT.md` before changing domain terminology, public/API contracts, database boundaries, import/export formats, or code involving project identifiers.
+- Treat `CONTEXT.md` as the canonical glossary for repository-wide domain language. Prefer its terms exactly, especially `Project ID` for public identifiers and `Project Row ID` for internal database keys.
+
 ## Skills
 
-- Load relevant local skills from `.agents/skills/*` when the task touches that domain. Do not load every skill by default.
+- Load `.agents/skills/caveman/SKILL.md` at session start and use `lite` mode by default for terse, token-efficient communication.
+- Temporarily drop caveman mode when clarity, safety, irreversible actions, or public-facing writing require normal prose.
+- Load other local skills from `.agents/skills/*` only when the task touches that domain. Do not load every skill by default.
 
 ## Instruction precedence
 
@@ -19,13 +26,14 @@ When guidance conflicts, use this order:
 
 1. User request or issue-specific instructions.
 2. `AGENTS.md`.
-3. Relevant local skills from `.agents/skills/*`.
-4. Accepted ADRs.
-5. `docs/design/` and `docs/reference/`.
-6. `docs/guides/` and `README.md`.
-7. `docs/investigations/`.
-8. `plans/active/`.
-9. Existing implementation.
+3. `CONTEXT.md`.
+4. Relevant local skills from `.agents/skills/*`.
+5. Accepted ADRs.
+6. `docs/design/` and `docs/reference/`.
+7. `docs/guides/` and `README.md`.
+8. `docs/investigations/`.
+9. `plans/active/`.
+10. Existing implementation.
 
 Investigations and active plans can guide work, but they do not override higher-priority decisions.
 
