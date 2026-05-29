@@ -23,10 +23,7 @@ export default function OrdinalGradeControl({
       value={value ?? null}
       orientation="vertical"
       exclusive
-      sx={{
-        width: "fit-content",
-        alignItems: "stretch",
-      }}
+      sx={{ width: "fit-content", alignItems: "stretch" }}
       onChange={(_, value: string | null) => {
         if (value != null) {
           onAssess(value);

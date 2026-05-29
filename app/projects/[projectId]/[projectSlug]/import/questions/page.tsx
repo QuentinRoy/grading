@@ -6,10 +6,7 @@ import { questionsImportAction } from "@/import/questionsImportAction";
 import { projectImportQuestionsPath } from "@/projects/routes";
 
 type ProjectImportQuestionsPageProps = {
-  params: Promise<{
-    projectId: string;
-    projectSlug: string;
-  }>;
+  params: Promise<{ projectId: string; projectSlug: string }>;
 };
 
 export default async function ProjectImportQuestionsPage({

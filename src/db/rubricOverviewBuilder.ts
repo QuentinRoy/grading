@@ -13,15 +13,8 @@ import type {
 } from "./types";
 
 type RubricPropertyDetails =
-  | {
-      type: "boolean";
-      trueMarks: number;
-      falseMarks: number;
-    }
-  | {
-      type: "ordinal";
-      marksByLabel: Array<{ label: string; marks: number }>;
-    }
+  | { type: "boolean"; trueMarks: number; falseMarks: number }
+  | { type: "ordinal"; marksByLabel: Array<{ label: string; marks: number }> }
   | {
       type: "numerical";
       minScore: number;
@@ -210,10 +203,7 @@ export function buildRubricOverviewData({
   const rubricStats = new Map(
     orderedRubrics.map((item) => [
       item.rubricId,
-      {
-        marksSum: 0,
-        assessedCount: 0,
-      },
+      { marksSum: 0, assessedCount: 0 },
     ]),
   );
 
@@ -275,11 +265,7 @@ export function buildRubricOverviewData({
       continue;
     }
 
-    student.rubrics[cellIndex] = {
-      ...existingCell,
-      marks,
-      assessed: true,
-    };
+    student.rubrics[cellIndex] = { ...existingCell, marks, assessed: true };
 
     student.marks += marks;
     student.maxMarks += rubricMeta.maxMarks;

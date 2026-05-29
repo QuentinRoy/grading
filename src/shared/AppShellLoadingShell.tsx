@@ -3,9 +3,7 @@
 import { type ReactNode } from "react";
 import AppShellTopBar from "./AppShellTopBar";
 
-type AppShellLoadingShellProps = {
-  showNavigation: boolean;
-};
+type AppShellLoadingShellProps = { showNavigation: boolean };
 
 export default function AppShellLoadingShell({
   showNavigation,

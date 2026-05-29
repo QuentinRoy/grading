@@ -50,11 +50,7 @@ export default function RubricGradeRow({
         marks={rubric.marks}
         disabled={disabled}
         onAssess={(selectedLabel) =>
-          onAssess({
-            rubricId: id,
-            type: "ordinal",
-            selectedLabel,
-          })
+          onAssess({ rubricId: id, type: "ordinal", selectedLabel })
         }
       />
     );
@@ -66,11 +62,7 @@ export default function RubricGradeRow({
         maxScore={rubric.maxScore}
         disabled={disabled}
         onAssess={(score) =>
-          onAssess({
-            rubricId: id,
-            type: "numerical",
-            score,
-          })
+          onAssess({ rubricId: id, type: "numerical", score })
         }
       />
     );
@@ -80,11 +72,7 @@ export default function RubricGradeRow({
         value={assessment?.passed}
         disabled={disabled}
         onAssess={(passed) =>
-          onAssess({
-            rubricId: id,
-            type: "boolean",
-            passed,
-          })
+          onAssess({ rubricId: id, type: "boolean", passed })
         }
       />
     );

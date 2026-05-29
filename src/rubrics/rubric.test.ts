@@ -41,12 +41,7 @@ describe("booleanToMarks", () => {
   it("returns marks when passed", () => {
     expect(
       markBooleanRubric(
-        {
-          id: "r1",
-          type: "boolean",
-          marks: 2,
-          falseMarks: -1,
-        },
+        { id: "r1", type: "boolean", marks: 2, falseMarks: -1 },
         true,
       ),
     ).toBe(2);
@@ -55,12 +50,7 @@ describe("booleanToMarks", () => {
   it("returns falseMarks when not passed", () => {
     expect(
       markBooleanRubric(
-        {
-          id: "r1",
-          type: "boolean",
-          marks: 2,
-          falseMarks: -1,
-        },
+        { id: "r1", type: "boolean", marks: 2, falseMarks: -1 },
         false,
       ),
     ).toBe(-1);

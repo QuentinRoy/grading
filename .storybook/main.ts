@@ -4,10 +4,7 @@ import type { StorybookConfig } from "@storybook/nextjs-vite";
 const config: StorybookConfig = {
   stories: ["../src/**/*.stories.@(ts|tsx)"],
   addons: ["@storybook/addon-vitest"],
-  framework: {
-    name: "@storybook/nextjs-vite",
-    options: {},
-  },
+  framework: { name: "@storybook/nextjs-vite", options: {} },
   async viteFinal(config) {
     const { mergeConfig } = await import("vite");
 

@@ -84,10 +84,7 @@ async function loadSubmissionsFromDb(projectId?: string) {
     teamMembersBySubmissionId.set(submissionId, names);
   }
 
-  return {
-    submissions,
-    teamMembersBySubmissionId,
-  };
+  return { submissions, teamMembersBySubmissionId };
 }
 
 export async function loadSubmissions(

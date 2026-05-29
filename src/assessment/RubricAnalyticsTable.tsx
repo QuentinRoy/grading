@@ -14,9 +14,7 @@ import CompletionProgress from "./CompletionProgress";
 import QuestionDetailsTooltip from "./QuestionDetailsTooltip";
 import RubricDetailsTooltip from "./RubricDetailsTooltip";
 
-type RubricAnalyticsTableProps = {
-  rubrics: RubricOverviewRow[];
-};
+type RubricAnalyticsTableProps = { rubrics: RubricOverviewRow[] };
 
 function formatMarks(value: number | null): string {
   if (value == null || Number.isNaN(value)) {

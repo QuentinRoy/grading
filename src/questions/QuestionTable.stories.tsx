@@ -10,10 +10,7 @@ const sampleQuestions: QuestionManagementItem[] = [
     position: 0,
     assessmentCount: 12,
     rubricCount: 2,
-    question: {
-      label: "Correctness",
-      rubrics: [],
-    },
+    question: { label: "Correctness", rubrics: [] },
   },
   {
     id: "q2",
@@ -21,10 +18,7 @@ const sampleQuestions: QuestionManagementItem[] = [
     position: 1,
     assessmentCount: 8,
     rubricCount: 3,
-    question: {
-      label: "Code Quality",
-      rubrics: [],
-    },
+    question: { label: "Code Quality", rubrics: [] },
   },
 ];
 
@@ -48,8 +42,4 @@ type Story = StoryObj<typeof meta>;
 
 export const Populated: Story = {};
 
-export const Empty: Story = {
-  args: {
-    questions: [],
-  },
-};
+export const Empty: Story = { args: { questions: [] } };

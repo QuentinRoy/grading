@@ -132,11 +132,7 @@ async function loadQuestionsFromDb(projectId?: string): Promise<QuestionRow[]> {
       maxMarks: number;
       reversed: boolean;
     }>,
-    ordinalMarks: Array<{
-      rubricId: string;
-      label: string;
-      marks: number;
-    }>,
+    ordinalMarks: Array<{ rubricId: string; label: string; marks: number }>,
   ): QuestionRow[] => {
     const booleanRubricById = new Map(
       booleanRubrics.map((row) => [
@@ -358,10 +354,7 @@ export async function loadQuestions(projectId?: string): Promise<Grid> {
   return Object.fromEntries(
     rows.map((row) => [
       row.id,
-      {
-        label: row.label ?? undefined,
-        rubrics: row.rubrics.map(toRubric),
-      },
+      { label: row.label ?? undefined, rubrics: row.rubrics.map(toRubric) },
     ]),
   );
 }
@@ -377,10 +370,7 @@ export async function loadQuestion(
     return undefined;
   }
 
-  return {
-    label: row.label ?? undefined,
-    rubrics: row.rubrics.map(toRubric),
-  };
+  return { label: row.label ?? undefined, rubrics: row.rubrics.map(toRubric) };
 }
 
 export type ManagedRubricInput =
@@ -487,15 +477,11 @@ function assertUniqueIds(label: string, ids: string[]): void {
   const rubrics = ids.map(() => ({}) as { id?: string });
   for (const indexes of duplicateIndexes) {
     for (const index of indexes) {
-      rubrics[index] = {
-        id: `${label} must be unique.`,
-      };
+      rubrics[index] = { id: `${label} must be unique.` };
     }
   }
 
-  throw new QuestionsValidationError({
-    fieldErrors: { rubrics },
-  });
+  throw new QuestionsValidationError({ fieldErrors: { rubrics } });
 }
 
 export async function loadManagedQuestions(
@@ -539,9 +525,7 @@ export async function loadManagedQuestions(
 export async function getQuestionDeleteImpact(
   questionId: string,
   projectId: string,
-): Promise<{
-  assessmentCount: number;
-}> {
+): Promise<{ assessmentCount: number }> {
   const projectRowId = await resolveProjectRowId(projectId);
   if (projectRowId == null) {
     throw new Error("Project id is required.");
@@ -559,9 +543,7 @@ export async function getQuestionDeleteImpact(
 
   const row = await query.executeTakeFirst();
 
-  return {
-    assessmentCount: Number(row?.assessmentCount ?? 0),
-  };
+  return { assessmentCount: Number(row?.assessmentCount ?? 0) };
 }
 
 export async function saveManagedQuestion(
@@ -637,10 +619,7 @@ export async function saveManagedQuestion(
     } else {
       await tx
         .updateTable("question")
-        .set({
-          id: requestedId,
-          label: normalizeOptionalText(input.label),
-        })
+        .set({ id: requestedId, label: normalizeOptionalText(input.label) })
         .where("id", "=", originalId)
         .where("question.projectId", "=", projectRowId)
         .execute();
@@ -813,10 +792,12 @@ export async function saveManagedQuestion(
         .insertInto("booleanRubric")
         .values(booleanRows)
         .onConflict((conflict) =>
-          conflict.column("rubricId").doUpdateSet((eb) => ({
-            marks: eb.ref("excluded.marks"),
-            falseMarks: eb.ref("excluded.falseMarks"),
-          })),
+          conflict
+            .column("rubricId")
+            .doUpdateSet((eb) => ({
+              marks: eb.ref("excluded.marks"),
+              falseMarks: eb.ref("excluded.falseMarks"),
+            })),
         )
         .execute();
     }
@@ -826,13 +807,15 @@ export async function saveManagedQuestion(
         .insertInto("numericalRubric")
         .values(numericalRows)
         .onConflict((conflict) =>
-          conflict.column("rubricId").doUpdateSet((eb) => ({
-            minScore: eb.ref("excluded.minScore"),
-            maxScore: eb.ref("excluded.maxScore"),
-            minMarks: eb.ref("excluded.minMarks"),
-            maxMarks: eb.ref("excluded.maxMarks"),
-            reversed: eb.ref("excluded.reversed"),
-          })),
+          conflict
+            .column("rubricId")
+            .doUpdateSet((eb) => ({
+              minScore: eb.ref("excluded.minScore"),
+              maxScore: eb.ref("excluded.maxScore"),
+              minMarks: eb.ref("excluded.minMarks"),
+              maxMarks: eb.ref("excluded.maxMarks"),
+              reversed: eb.ref("excluded.reversed"),
+            })),
         )
         .execute();
     }
@@ -916,9 +899,7 @@ export async function saveManagedQuestion(
           .onConflict((conflict) =>
             conflict
               .columns(["ordinalRubricId", "label"])
-              .doUpdateSet((eb) => ({
-                marks: eb.ref("excluded.marks"),
-              })),
+              .doUpdateSet((eb) => ({ marks: eb.ref("excluded.marks") })),
           )
           .execute();
       }
@@ -985,9 +966,7 @@ export async function reorderQuestions(
 
   await db
     .updateTable("question")
-    .set({
-      position: sql`case ${sql.join(conditions, sql` `)} end`,
-    })
+    .set({ position: sql`case ${sql.join(conditions, sql` `)} end` })
     .where("id", "in", questionIds)
     .where("question.projectId", "=", projectRowId)
     .execute();

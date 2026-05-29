@@ -1,9 +1,6 @@
 export const APP_SHELL_DRAWER_WIDTH = 280;
 
-export type ProjectRouteContext = {
-  projectId: string;
-  projectSlug: string;
-};
+export type ProjectRouteContext = { projectId: string; projectSlug: string };
 
 export function getProjectRouteContext(
   pathname: string,
@@ -17,10 +14,7 @@ export function getProjectRouteContext(
     return null;
   }
 
-  return {
-    projectId: segments[1],
-    projectSlug: segments[2],
-  };
+  return { projectId: segments[1], projectSlug: segments[2] };
 }
 
 export function displayProjectName(projectSlug: string): string {

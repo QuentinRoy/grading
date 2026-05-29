@@ -2,11 +2,7 @@ import yaml from "js-yaml";
 import type { Grid, Rubric } from "@/db/types";
 
 type ExportFormat = {
-  questions: Array<{
-    id: string;
-    label?: string;
-    rubrics: Rubric[];
-  }>;
+  questions: Array<{ id: string; label?: string; rubrics: Rubric[] }>;
 };
 
 export function exportQuestionsToYaml(questions: Grid): string {

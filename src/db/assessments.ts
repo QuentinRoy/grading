@@ -147,10 +147,7 @@ async function saveAssessmentWithDb(
     .executeTakeFirst();
 
   if (submission == null) {
-    return {
-      success: false,
-      error: assessmentErrors.contextMissing,
-    };
+    return { success: false, error: assessmentErrors.contextMissing };
   }
 
   const question = await queryDb
@@ -161,10 +158,7 @@ async function saveAssessmentWithDb(
     .executeTakeFirst();
 
   if (question == null) {
-    return {
-      success: false,
-      error: assessmentErrors.contextMissing,
-    };
+    return { success: false, error: assessmentErrors.contextMissing };
   }
 
   const rubric = await queryDb
@@ -190,19 +184,13 @@ async function saveAssessmentWithDb(
     .executeTakeFirst();
 
   if (rubric == null || rubric.questionId !== question.rowId) {
-    return {
-      success: false,
-      error: assessmentErrors.criterionMissing,
-    };
+    return { success: false, error: assessmentErrors.criterionMissing };
   }
 
   const rubricRowId = rubric.rowId;
 
   if (rubric.type !== rubricValue.type) {
-    return {
-      success: false,
-      error: assessmentErrors.criterionChanged,
-    };
+    return { success: false, error: assessmentErrors.criterionChanged };
   }
 
   await queryDb
@@ -228,11 +216,7 @@ async function saveAssessmentWithDb(
 
   await queryDb
     .insertInto("rubricAssessment")
-    .values({
-      assessmentId,
-      rubricId: rubricRowId,
-      type: rubricValue.type,
-    })
+    .values({ assessmentId, rubricId: rubricRowId, type: rubricValue.type })
     .onConflict((conflict) =>
       conflict
         .columns(["assessmentId", "rubricId"])
@@ -255,10 +239,7 @@ async function saveAssessmentWithDb(
     await Promise.all([
       queryDb
         .insertInto("booleanRubricAssessment")
-        .values({
-          rubricAssessmentId,
-          passed: value.passed,
-        })
+        .values({ rubricAssessmentId, passed: value.passed })
         .onConflict((conflict) =>
           conflict
             .column("rubricAssessmentId")
@@ -292,19 +273,13 @@ async function saveAssessmentWithDb(
 
     const allowedValues = ordinalLabels.map((item) => item.label);
     if (!allowedValues.includes(value.selectedLabel)) {
-      return {
-        success: false,
-        error: assessmentErrors.invalidOption,
-      };
+      return { success: false, error: assessmentErrors.invalidOption };
     }
 
     await Promise.all([
       queryDb
         .insertInto("ordinalRubricAssessment")
-        .values({
-          rubricAssessmentId,
-          selectedLabel: value.selectedLabel,
-        })
+        .values({ rubricAssessmentId, selectedLabel: value.selectedLabel })
         .onConflict((conflict) =>
           conflict
             .column("rubricAssessmentId")
@@ -346,10 +321,7 @@ async function saveAssessmentWithDb(
         : null;
 
     if (minScore == null || maxScore == null || maxScore <= minScore) {
-      return {
-        success: false,
-        error: assessmentErrors.invalidScoreRange,
-      };
+      return { success: false, error: assessmentErrors.invalidScoreRange };
     }
 
     if (parsed < minScore) {
@@ -359,19 +331,13 @@ async function saveAssessmentWithDb(
       };
     }
     if (parsed > maxScore) {
-      return {
-        success: false,
-        error: `Enter a score of at most ${maxScore}.`,
-      };
+      return { success: false, error: `Enter a score of at most ${maxScore}.` };
     }
 
     await Promise.all([
       queryDb
         .insertInto("numericalRubricAssessment")
-        .values({
-          rubricAssessmentId,
-          score: parsed,
-        })
+        .values({ rubricAssessmentId, score: parsed })
         .onConflict((conflict) =>
           conflict.column("rubricAssessmentId").doUpdateSet({ score: parsed }),
         )
@@ -416,13 +382,15 @@ export async function saveAssessment({
   questionId,
   rubric: rubricValue,
 }: SaveAssessmentParams): Promise<SaveAssessmentResult> {
-  const result = await db.transaction().execute((tx) =>
-    saveAssessmentWithDb(tx, {
-      submissionId,
-      questionId,
-      rubric: rubricValue,
-    }),
-  );
+  const result = await db
+    .transaction()
+    .execute((tx) =>
+      saveAssessmentWithDb(tx, {
+        submissionId,
+        questionId,
+        rubric: rubricValue,
+      }),
+    );
 
   if (result.success) {
     updateTags(

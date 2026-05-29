@@ -23,10 +23,7 @@ import QuestionList from "@/questions/QuestionList";
 import { getSubmissionLabel } from "@/submissions/getSubmissionLabel";
 
 type ProjectAssessmentsPageProps = {
-  params: Promise<{
-    projectId: string;
-    projectSlug: string;
-  }>;
+  params: Promise<{ projectId: string; projectSlug: string }>;
 };
 
 export default async function ProjectAssessmentPage({

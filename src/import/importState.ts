@@ -4,6 +4,4 @@ export type ImportState = {
   errors?: string[];
 };
 
-export const initialImportState: ImportState = {
-  status: "idle",
-};
+export const initialImportState: ImportState = { status: "idle" };

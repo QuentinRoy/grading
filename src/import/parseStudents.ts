@@ -5,10 +5,7 @@ import { studentRowsSchema } from "./schemas";
 import type { ImportedStudent, NormalizedImportedSubmission } from "./types";
 
 export function parseStudentsCsv(content: string): ImportedStudent[] {
-  const rows = parseCSV(content, {
-    columns: true,
-    skip_empty_lines: true,
-  });
+  const rows = parseCSV(content, { columns: true, skip_empty_lines: true });
 
   return studentRowsSchema.parse(rows);
 }
@@ -60,10 +57,6 @@ export function groupStudentsIntoSubmissions(
     }
     usedIds.add(id);
 
-    return {
-      id,
-      type: "individual",
-      students: groupedStudents,
-    };
+    return { id, type: "individual", students: groupedStudents };
   });
 }

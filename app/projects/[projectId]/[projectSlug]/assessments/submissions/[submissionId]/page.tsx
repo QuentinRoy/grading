@@ -23,9 +23,7 @@ type PageParams = {
   submissionId: string;
 };
 
-type SubmissionPageProps = {
-  params: Promise<PageParams>;
-};
+type SubmissionPageProps = { params: Promise<PageParams> };
 
 export default function ProjectSubmissionPage({ params }: SubmissionPageProps) {
   return <ProjectSubmissionPageContent params={params} />;

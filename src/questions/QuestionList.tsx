@@ -3,11 +3,7 @@
 import { List, ListItemButton, ListItemText } from "@mui/material";
 import Link from "next/link";
 
-type QuestionListItem = {
-  id: string;
-  label: string;
-  href: string;
-};
+type QuestionListItem = { id: string; label: string; href: string };
 
 export default function QuestionList({
   questions,

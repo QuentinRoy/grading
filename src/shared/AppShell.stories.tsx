@@ -7,16 +7,9 @@ const meta = {
   component: AppShell,
   parameters: {
     layout: "fullscreen",
-    nextjs: {
-      navigation: {
-        pathname: "/projects/123/test-project",
-      },
-    },
+    nextjs: { navigation: { pathname: "/projects/123/test-project" } },
   },
-  args: {
-    showNavigation: true,
-    children: <p>Page content</p>,
-  },
+  args: { showNavigation: true, children: <p>Page content</p> },
 } satisfies Meta<typeof AppShell>;
 
 export default meta;
@@ -25,6 +18,4 @@ type Story = StoryObj<typeof meta>;
 
 export const WithNavigation: Story = {};
 
-export const WithoutNavigation: Story = {
-  args: { showNavigation: false },
-};
+export const WithoutNavigation: Story = { args: { showNavigation: false } };

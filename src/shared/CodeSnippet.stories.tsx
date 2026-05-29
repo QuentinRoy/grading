@@ -52,10 +52,7 @@ type Story = StoryObj<typeof meta>;
 export const TypeScript: Story = {};
 
 export const Bash: Story = {
-  args: {
-    language: "bash",
-    children: `pnpm prisma generate`,
-  },
+  args: { language: "bash", children: `pnpm prisma generate` },
 };
 
 export const Python: Story = {

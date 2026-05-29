@@ -59,10 +59,9 @@ export function useLocalStorage<T>(
   const serialize = options?.serialize ?? defaultSerialize<T>;
   const deserialize = options?.deserialize ?? defaultDeserialize<T>;
 
-  const snapshotCacheRef = useRef<{
-    raw: string | null;
-    value: T;
-  } | null>(null);
+  const snapshotCacheRef = useRef<{ raw: string | null; value: T } | null>(
+    null,
+  );
 
   const subscribe = useCallback(
     (onStoreChange: () => void) => {
@@ -111,10 +110,7 @@ export function useLocalStorage<T>(
 
     const value = tryDeserialize(raw, fallback, deserialize);
 
-    snapshotCacheRef.current = {
-      raw,
-      value,
-    };
+    snapshotCacheRef.current = { raw, value };
 
     return value;
   }, [key, fallback, deserialize]);

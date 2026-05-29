@@ -3,9 +3,7 @@ import { useState } from "react";
 import { expect, screen, userEvent, waitFor } from "storybook/test";
 import AppShellNavigationShell from "./AppShellNavigationShell";
 
-type NavigationShellStoryArgs = {
-  showNavigation: boolean;
-};
+type NavigationShellStoryArgs = { showNavigation: boolean };
 
 function ControlledNavigationShell({
   showNavigation,
@@ -27,15 +25,9 @@ const meta = {
   component: ControlledNavigationShell,
   parameters: {
     layout: "fullscreen",
-    nextjs: {
-      navigation: {
-        pathname: "/projects/123/test-project",
-      },
-    },
+    nextjs: { navigation: { pathname: "/projects/123/test-project" } },
   },
-  args: {
-    showNavigation: true,
-  },
+  args: { showNavigation: true },
 } satisfies Meta<typeof ControlledNavigationShell>;
 
 export default meta;

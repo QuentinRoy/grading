@@ -31,11 +31,7 @@ function summaryMetric(title: string, value: string): ReactElement {
   return (
     <Paper
       variant="outlined"
-      sx={{
-        p: 2,
-        minWidth: { xs: "100%", sm: 210 },
-        flex: "1 1 210px",
-      }}
+      sx={{ p: 2, minWidth: { xs: "100%", sm: 210 }, flex: "1 1 210px" }}
     >
       <Typography variant="caption" color="text.secondary">
         {title}
@@ -46,10 +42,7 @@ function summaryMetric(title: string, value: string): ReactElement {
 }
 
 type ProjectAssessmentsOverviewPageProps = {
-  params: Promise<{
-    projectId: string;
-    projectSlug: string;
-  }>;
+  params: Promise<{ projectId: string; projectSlug: string }>;
 };
 
 export default function ProjectAssessmentsOverviewPage({

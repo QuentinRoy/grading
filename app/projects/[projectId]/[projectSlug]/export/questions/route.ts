@@ -5,10 +5,7 @@ import { loadQuestions } from "@/db/questions";
 import { exportQuestionsToYaml } from "@/export/questionsExport";
 
 type RouteParams = {
-  params: Promise<{
-    projectId: string;
-    projectSlug: string;
-  }>;
+  params: Promise<{ projectId: string; projectSlug: string }>;
 };
 
 export async function GET(request: NextRequest, { params }: RouteParams) {

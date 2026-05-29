@@ -5,10 +5,7 @@ import type { NormalizedImportedSubmission } from "./types";
 export async function saveStudents(
   submissions: NormalizedImportedSubmission[],
   projectId: string,
-): Promise<{
-  submissionCount: number;
-  studentCount: number;
-}> {
+): Promise<{ submissionCount: number; studentCount: number }> {
   const submissionsByOwner = submissions.map((submission) => {
     const firstStudent = submission.students[0];
     let studentId: string | undefined;
@@ -26,11 +23,7 @@ export async function saveStudents(
       studentId = firstStudent.id;
     }
 
-    return {
-      type: submission.type,
-      teamName: submission.team,
-      studentId,
-    };
+    return { type: submission.type, teamName: submission.team, studentId };
   });
 
   const studentsToUpsert = submissions.flatMap((submission) =>
@@ -211,14 +204,16 @@ export async function saveStudents(
         .insertInto("submission")
         .values(teamSubmissions)
         .onConflict((conflict) =>
-          conflict.column("teamId").doUpdateSet({
-            type: "team",
-            projectId: (expressionBuilder) =>
-              expressionBuilder.ref("excluded.projectId"),
-            teamId: (expressionBuilder) =>
-              expressionBuilder.ref("excluded.teamId"),
-            studentId: null,
-          }),
+          conflict
+            .column("teamId")
+            .doUpdateSet({
+              type: "team",
+              projectId: (expressionBuilder) =>
+                expressionBuilder.ref("excluded.projectId"),
+              teamId: (expressionBuilder) =>
+                expressionBuilder.ref("excluded.teamId"),
+              studentId: null,
+            }),
         )
         .execute();
     }
@@ -248,14 +243,16 @@ export async function saveStudents(
         .insertInto("submission")
         .values(individualSubmissions)
         .onConflict((conflict) =>
-          conflict.column("studentId").doUpdateSet({
-            type: "individual",
-            projectId: (expressionBuilder) =>
-              expressionBuilder.ref("excluded.projectId"),
-            studentId: (expressionBuilder) =>
-              expressionBuilder.ref("excluded.studentId"),
-            teamId: null,
-          }),
+          conflict
+            .column("studentId")
+            .doUpdateSet({
+              type: "individual",
+              projectId: (expressionBuilder) =>
+                expressionBuilder.ref("excluded.projectId"),
+              studentId: (expressionBuilder) =>
+                expressionBuilder.ref("excluded.studentId"),
+              teamId: null,
+            }),
         )
         .execute();
     }

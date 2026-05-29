@@ -1,30 +1,12 @@
 import { type Kysely } from "kysely";
 
 const projectForeignKeys = [
-  {
-    table: "assessment",
-    constraint: "Assessment_projectId_fkey",
-  },
-  {
-    table: "question",
-    constraint: "Question_projectId_fkey",
-  },
-  {
-    table: "rubric",
-    constraint: "Rubric_projectId_fkey",
-  },
-  {
-    table: "student",
-    constraint: "Student_projectId_fkey",
-  },
-  {
-    table: "submission",
-    constraint: "Submission_projectId_fkey",
-  },
-  {
-    table: "team",
-    constraint: "Team_projectId_fkey",
-  },
+  { table: "assessment", constraint: "Assessment_projectId_fkey" },
+  { table: "question", constraint: "Question_projectId_fkey" },
+  { table: "rubric", constraint: "Rubric_projectId_fkey" },
+  { table: "student", constraint: "Student_projectId_fkey" },
+  { table: "submission", constraint: "Submission_projectId_fkey" },
+  { table: "team", constraint: "Team_projectId_fkey" },
 ] as const;
 
 export async function up(db: Kysely<unknown>): Promise<void> {

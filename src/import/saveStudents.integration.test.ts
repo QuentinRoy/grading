@@ -14,11 +14,7 @@ function makeSubmissions(
       id: `submission-${sharedStudentId}`,
       type: "individual",
       students: [
-        {
-          id: sharedStudentId,
-          lastName: "Shared",
-          firstName: "Student",
-        },
+        { id: sharedStudentId, lastName: "Shared", firstName: "Student" },
       ],
     },
     {

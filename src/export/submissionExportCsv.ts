@@ -30,10 +30,7 @@ export type ExportRubricPlan =
   | ExportOrdinalRubricPlan
   | ExportNumericalRubricPlan;
 
-export type ExportQuestionPlan = {
-  id: string;
-  rubrics: ExportRubricPlan[];
-};
+export type ExportQuestionPlan = { id: string; rubrics: ExportRubricPlan[] };
 
 export type SubmissionExportAssessmentValue = string | number | boolean;
 

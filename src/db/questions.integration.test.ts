@@ -70,11 +70,7 @@ async function createAssessedBooleanQuestionFixture(
 
   const submission = await db
     .insertInto("submission")
-    .values({
-      projectId,
-      type: "individual",
-      studentId: student.rowId,
-    })
+    .values({ projectId, type: "individual", studentId: student.rowId })
     .returning("id")
     .executeTakeFirstOrThrow();
 
@@ -116,11 +112,7 @@ async function createAssessedBooleanQuestionFixture(
 
   await db
     .insertInto("booleanRubric")
-    .values({
-      rubricId: rubric.rowId,
-      marks: 2,
-      falseMarks: 0,
-    })
+    .values({ rubricId: rubric.rowId, marks: 2, falseMarks: 0 })
     .execute();
 
   const assessment = await db
@@ -145,10 +137,7 @@ async function createAssessedBooleanQuestionFixture(
 
   await db
     .insertInto("booleanRubricAssessment")
-    .values({
-      rubricAssessmentId: rubricAssessment.id,
-      passed: true,
-    })
+    .values({ rubricAssessmentId: rubricAssessment.id, passed: true })
     .execute();
 
   return {
@@ -212,16 +201,8 @@ async function createOrdinalQuestionFixture(
   await db
     .insertInto("ordinalRubricValue")
     .values([
-      {
-        ordinalRubricId: ordinalRubric.id,
-        label: "A",
-        marks: 4,
-      },
-      {
-        ordinalRubricId: ordinalRubric.id,
-        label: "B",
-        marks: 2,
-      },
+      { ordinalRubricId: ordinalRubric.id, label: "A", marks: 4 },
+      { ordinalRubricId: ordinalRubric.id, label: "B", marks: 2 },
     ])
     .execute();
 
@@ -446,10 +427,7 @@ test("saveManagedQuestion replaces ordinal rubric values using the provided labe
           id: fixture.rubricId,
           type: "ordinal",
           label: "Ordinal",
-          marks: {
-            B: 2.5,
-            C: 1,
-          },
+          marks: { B: 2.5, C: 1 },
         },
       ],
     },

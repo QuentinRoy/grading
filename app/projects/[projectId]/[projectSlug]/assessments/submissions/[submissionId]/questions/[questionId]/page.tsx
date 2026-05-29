@@ -25,9 +25,7 @@ type PageParams = {
   questionId: string;
 };
 
-type QuestionSubmissionPageProps = {
-  params: Promise<PageParams>;
-};
+type QuestionSubmissionPageProps = { params: Promise<PageParams> };
 
 export default function ProjectQuestionSubmissionPage({
   params,

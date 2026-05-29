@@ -3,10 +3,7 @@ import { cacheLife } from "next/cache";
 import { assessmentQuestionCacheTag, CACHE_TAGS, cacheTags } from "./cacheTags";
 import { db } from "./kysely";
 
-export type SubmissionProgressMetric = {
-  completed: number;
-  total: number;
-};
+export type SubmissionProgressMetric = { completed: number; total: number };
 
 export async function loadSubmissionQuestionProgress(
   questionId: string,
@@ -90,13 +87,7 @@ export async function loadSubmissionQuestionProgress(
         totalRubrics,
       );
 
-      return [
-        submissionId,
-        {
-          completed,
-          total: totalRubrics,
-        },
-      ];
+      return [submissionId, { completed, total: totalRubrics }];
     }),
   );
 }
@@ -205,13 +196,7 @@ export async function loadSubmissionOverviewProgress(
         totalQuestions,
       );
 
-      return [
-        submissionId,
-        {
-          completed,
-          total: totalQuestions,
-        },
-      ];
+      return [submissionId, { completed, total: totalQuestions }];
     }),
   );
 }

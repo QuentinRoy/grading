@@ -1,9 +1,7 @@
 import type { ReactNode } from "react";
 import AppShell from "@/shared/AppShell";
 
-type ProjectScopedLayoutProps = {
-  children: ReactNode;
-};
+type ProjectScopedLayoutProps = { children: ReactNode };
 
 export default function ProjectScopedLayout({
   children,

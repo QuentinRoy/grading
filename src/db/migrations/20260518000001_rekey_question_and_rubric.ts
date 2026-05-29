@@ -7,23 +7,10 @@ type MigrationDB = {
     question_id: string | number;
     submission_id: number;
   };
-  boolean_rubric: {
-    id: Generated<number>;
-    rubric_id: string | number;
-  };
-  numerical_rubric: {
-    id: Generated<number>;
-    rubric_id: string | number;
-  };
-  ordinal_rubric: {
-    id: Generated<number>;
-    rubric_id: string | number;
-  };
-  question: {
-    id: string;
-    project_id: number;
-    row_id: Generated<number>;
-  };
+  boolean_rubric: { id: Generated<number>; rubric_id: string | number };
+  numerical_rubric: { id: Generated<number>; rubric_id: string | number };
+  ordinal_rubric: { id: Generated<number>; rubric_id: string | number };
+  question: { id: string; project_id: number; row_id: Generated<number> };
   rubric: {
     id: string;
     project_id: number;
@@ -35,9 +22,7 @@ type MigrationDB = {
     id: Generated<number>;
     rubric_id: string | number;
   };
-  project: {
-    id: Generated<number>;
-  };
+  project: { id: Generated<number> };
 };
 
 export async function up(db: Kysely<MigrationDB>): Promise<void> {

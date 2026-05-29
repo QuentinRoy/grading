@@ -10,9 +10,7 @@ const createProjectPublicId = () => `p-${nanoid()}`;
 
 type ProjectRow = Pick<Project, "id" | "name">;
 
-export type ProjectSummary = ProjectRow & {
-  slug: string;
-};
+export type ProjectSummary = ProjectRow & { slug: string };
 
 function normalizeSlug(value: string): string {
   return value
@@ -36,11 +34,7 @@ export function toProjectSlug(nameOrSlug: string): string {
 }
 
 function toProjectSummary(row: ProjectRow): ProjectSummary {
-  return {
-    id: row.id,
-    slug: toProjectSlug(row.name),
-    name: row.name,
-  };
+  return { id: row.id, slug: toProjectSlug(row.name), name: row.name };
 }
 
 export async function loadProjects(): Promise<ProjectSummary[]> {
@@ -93,10 +87,7 @@ export async function createProject(input: {
     try {
       inserted = await db
         .insertInto("project")
-        .values({
-          id: publicId,
-          name,
-        })
+        .values({ id: publicId, name })
         .returning(["id", "name"])
         .executeTakeFirstOrThrow();
       break;

@@ -43,10 +43,7 @@ export type QuestionManagementItem = {
   position: number;
   assessmentCount: number;
   rubricCount: number;
-  question: {
-    label?: string;
-    rubrics: Rubric[];
-  };
+  question: { label?: string; rubrics: Rubric[] };
 };
 
 export function toEditorValue(
@@ -96,9 +93,5 @@ export function toEditorValue(
 }
 
 export function createEmptyQuestionEditorValue(): QuestionEditorValue {
-  return {
-    id: "",
-    label: "",
-    rubrics: [],
-  };
+  return { id: "", label: "", rubrics: [] };
 }

@@ -8,11 +8,7 @@ const meta = {
   title: "Rubrics/RubricGradeRow",
   component: RubricGradeRow,
   tags: ["autodocs"],
-  args: {
-    onAssess: fn(),
-    disabled: false,
-    isPending: false,
-  },
+  args: { onAssess: fn(), disabled: false, isPending: false },
   decorators: [
     (Story): ReactElement => (
       <Grid container spacing={1} sx={{ alignItems: "center" }}>

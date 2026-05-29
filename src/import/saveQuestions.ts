@@ -5,10 +5,7 @@ import type { ImportedQuestions } from "./types";
 export async function saveQuestions(
   questions: ImportedQuestions,
   projectId: string,
-): Promise<{
-  questionCount: number;
-  rubricCount: number;
-}> {
+): Promise<{ questionCount: number; rubricCount: number }> {
   const questionsById = questions.map((question, position) => ({
     id: question.id,
     label: question.label ?? null,
@@ -60,12 +57,7 @@ export async function saveQuestions(
   const ordinalRubricSources = questions.flatMap((question) =>
     question.rubrics.flatMap((rubric) =>
       rubric.type === "ordinal"
-        ? [
-            {
-              rubricId: rubric.id,
-              marks: rubric.marks,
-            },
-          ]
+        ? [{ rubricId: rubric.id, marks: rubric.marks }]
         : [],
     ),
   );
@@ -219,10 +211,12 @@ export async function saveQuestions(
         .insertInto("booleanRubric")
         .values(booleanRubricRows)
         .onConflict((conflict) =>
-          conflict.column("rubricId").doUpdateSet((expressionBuilder) => ({
-            marks: expressionBuilder.ref("excluded.marks"),
-            falseMarks: expressionBuilder.ref("excluded.falseMarks"),
-          })),
+          conflict
+            .column("rubricId")
+            .doUpdateSet((expressionBuilder) => ({
+              marks: expressionBuilder.ref("excluded.marks"),
+              falseMarks: expressionBuilder.ref("excluded.falseMarks"),
+            })),
         )
         .execute();
     }
@@ -251,13 +245,15 @@ export async function saveQuestions(
         .insertInto("numericalRubric")
         .values(numericalRubricRows)
         .onConflict((conflict) =>
-          conflict.column("rubricId").doUpdateSet((expressionBuilder) => ({
-            minScore: expressionBuilder.ref("excluded.minScore"),
-            maxScore: expressionBuilder.ref("excluded.maxScore"),
-            minMarks: expressionBuilder.ref("excluded.minMarks"),
-            maxMarks: expressionBuilder.ref("excluded.maxMarks"),
-            reversed: expressionBuilder.ref("excluded.reversed"),
-          })),
+          conflict
+            .column("rubricId")
+            .doUpdateSet((expressionBuilder) => ({
+              minScore: expressionBuilder.ref("excluded.minScore"),
+              maxScore: expressionBuilder.ref("excluded.maxScore"),
+              minMarks: expressionBuilder.ref("excluded.minMarks"),
+              maxMarks: expressionBuilder.ref("excluded.maxMarks"),
+              reversed: expressionBuilder.ref("excluded.reversed"),
+            })),
         )
         .execute();
     }
@@ -272,9 +268,7 @@ export async function saveQuestions(
           );
         }
 
-        return {
-          rubricId: rubricRowId,
-        };
+        return { rubricId: rubricRowId };
       });
 
       await tx
@@ -365,9 +359,6 @@ export async function saveQuestions(
       }
     }
 
-    return {
-      questionCount: questionIds.length,
-      rubricCount: rubricIds.length,
-    };
+    return { questionCount: questionIds.length, rubricCount: rubricIds.length };
   });
 }

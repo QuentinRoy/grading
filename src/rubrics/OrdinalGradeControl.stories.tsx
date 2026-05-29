@@ -15,11 +15,7 @@ const meta = {
   component: OrdinalGradeControl,
   tags: ["autodocs"],
   parameters: { layout: "centered" },
-  args: {
-    onAssess: fn(),
-    disabled: false,
-    marks: exampleMarks,
-  },
+  args: { onAssess: fn(), disabled: false, marks: exampleMarks },
 } satisfies Meta<typeof OrdinalGradeControl>;
 
 export default meta;
@@ -28,16 +24,10 @@ type Story = StoryObj<typeof meta>;
 
 export const Unset: Story = {};
 
-export const Selected: Story = {
-  args: { value: "Good" },
-};
+export const Selected: Story = { args: { value: "Good" } };
 
 export const Disabled: Story = {
   args: { value: "Satisfactory", disabled: true },
 };
 
-export const TwoValues: Story = {
-  args: {
-    marks: { Pass: 1, Fail: 0 },
-  },
-};
+export const TwoValues: Story = { args: { marks: { Pass: 1, Fail: 0 } } };

@@ -75,8 +75,5 @@ export function summarizeQuestionSections(
     }
   });
 
-  return {
-    ...summary,
-    totalQuestions: questions.length,
-  };
+  return { ...summary, totalQuestions: questions.length };
 }

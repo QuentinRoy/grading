@@ -10,9 +10,7 @@ export const metadata = {
   description: "Simple assessment helper for rubric-based evaluation",
 };
 
-type RootLayoutProps = {
-  children: ReactNode;
-};
+type RootLayoutProps = { children: ReactNode };
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (

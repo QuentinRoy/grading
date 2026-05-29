@@ -18,9 +18,7 @@ function createDb() {
   }
 
   return new Kysely<DB>({
-    dialect: new PostgresDialect({
-      pool: new Pool({ connectionString }),
-    }),
+    dialect: new PostgresDialect({ pool: new Pool({ connectionString }) }),
   });
 }
 
@@ -75,10 +73,7 @@ async function hardConfirm(
   question: string,
   expectedAnswer: string,
 ): Promise<boolean> {
-  const rl = createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
 
   return new Promise((resolve) => {
     rl.question(

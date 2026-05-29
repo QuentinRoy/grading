@@ -144,11 +144,7 @@ describe("buildRubricOverviewData", () => {
       label: "Correct",
       description: "Correct answer",
       type: "boolean",
-      properties: {
-        type: "boolean",
-        trueMarks: 2,
-        falseMarks: 0,
-      },
+      properties: { type: "boolean", trueMarks: 2, falseMarks: 0 },
     });
 
     expect(data.rubrics[1]?.details).toEqual({

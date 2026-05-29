@@ -40,11 +40,7 @@ function toSubmissionSubmitter(params: {
       );
     }
 
-    return {
-      id: params.id,
-      type: "team",
-      teamName: params.teamName,
-    };
+    return { id: params.id, type: "team", teamName: params.teamName };
   }
 
   if (params.studentId == null || params.studentId.length === 0) {
@@ -53,11 +49,7 @@ function toSubmissionSubmitter(params: {
     );
   }
 
-  return {
-    id: params.id,
-    type: "individual",
-    studentId: params.studentId,
-  };
+  return { id: params.id, type: "individual", studentId: params.studentId };
 }
 
 async function assertSubmissionInvariants(projectId: string) {
@@ -228,7 +220,9 @@ async function loadQuestionPlan(
   }));
 }
 
-export async function createSubmissionExport(projectId: string): Promise<{
+export async function createSubmissionExport(
+  projectId: string,
+): Promise<{
   questions: ExportQuestionPlan[];
   rows: AsyncGenerator<SubmissionExportDataRow>;
 }> {
@@ -270,9 +264,7 @@ export async function createSubmissionExport(projectId: string): Promise<{
           valuesByKey.get(buildAssessmentKey(question.id, rubric.id)),
         );
 
-        const rowRubric: SubmissionExportRubricData = {
-          rubricId: rubric.id,
-        };
+        const rowRubric: SubmissionExportRubricData = { rubricId: rubric.id };
 
         const assessment = getAssessmentValue(assessedRubric);
         if (assessment != null) {
@@ -469,9 +461,7 @@ export function createCsvSubmissionExportStream(exportData: {
       const stringifier = stringify({
         header: true,
         columns: exportData.headers,
-        cast: {
-          boolean: (value: boolean) => String(value),
-        },
+        cast: { boolean: (value: boolean) => String(value) },
       });
 
       stringifier.on("data", (chunk: string | Buffer) => {

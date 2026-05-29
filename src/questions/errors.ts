@@ -27,10 +27,7 @@ export class QuestionsValidationError extends Error {
   constructor({
     fieldErrors = {},
     formErrors = [],
-  }: {
-    fieldErrors?: QuestionsFieldErrors;
-    formErrors?: string[];
-  }) {
+  }: { fieldErrors?: QuestionsFieldErrors; formErrors?: string[] }) {
     super("Validation failed");
     this.name = "QuestionsValidationError";
     this.fieldErrors = fieldErrors;
@@ -46,10 +43,7 @@ function setRubricFieldError(
 ): void {
   const rubrics = fieldErrors.rubrics ?? [];
   const current = rubrics[index] ?? {};
-  rubrics[index] = {
-    ...current,
-    [field]: message,
-  };
+  rubrics[index] = { ...current, [field]: message };
   fieldErrors.rubrics = rubrics;
 }
 
@@ -103,10 +97,7 @@ export function toQuestionsValidationError(error: unknown): {
   formErrors: string[];
 } {
   if (error instanceof QuestionsValidationError) {
-    return {
-      fieldErrors: error.fieldErrors,
-      formErrors: error.formErrors,
-    };
+    return { fieldErrors: error.fieldErrors, formErrors: error.formErrors };
   }
 
   if (error instanceof ZodError) {
@@ -114,14 +105,8 @@ export function toQuestionsValidationError(error: unknown): {
   }
 
   if (error instanceof Error) {
-    return {
-      fieldErrors: {},
-      formErrors: [error.message],
-    };
+    return { fieldErrors: {}, formErrors: [error.message] };
   }
 
-  return {
-    fieldErrors: {},
-    formErrors: ["Unknown question validation error"],
-  };
+  return { fieldErrors: {}, formErrors: ["Unknown question validation error"] };
 }

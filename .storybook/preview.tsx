@@ -16,15 +16,8 @@ function MuiDecorator(Story: () => ReactElement): ReactNode {
 const preview: Preview = {
   decorators: [MuiDecorator],
   parameters: {
-    nextjs: {
-      appDirectory: true,
-    },
-    controls: {
-      matchers: {
-        color: /(background|color)$/i,
-        date: /Date$/i,
-      },
-    },
+    nextjs: { appDirectory: true },
+    controls: { matchers: { color: /(background|color)$/i, date: /Date$/i } },
   },
 };
 

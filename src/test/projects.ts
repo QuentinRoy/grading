@@ -5,10 +5,7 @@ import { buildTestId } from "./dbIntegration";
 export async function createProjectRecord(db: Kysely<DB>, name: string) {
   const project = await db
     .insertInto("project")
-    .values({
-      id: buildTestId("project"),
-      name,
-    })
+    .values({ id: buildTestId("project"), name })
     .returning(["id", "rowId", "name"])
     .executeTakeFirstOrThrow();
 

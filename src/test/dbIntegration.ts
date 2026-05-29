@@ -44,11 +44,7 @@ export function createMigrator(
 ): Migrator {
   return new Migrator({
     db: dbInstance,
-    provider: new FileMigrationProvider({
-      fs,
-      path,
-      migrationFolder,
-    }),
+    provider: new FileMigrationProvider({ fs, path, migrationFolder }),
   });
 }
 
@@ -156,10 +152,7 @@ async function ensureExternalTemplate(
       await adminPool.end();
     }
 
-    return {
-      adminConnectionUrl,
-      templateDbName,
-    };
+    return { adminConnectionUrl, templateDbName };
   })();
 
   return externalTemplatePromise;

@@ -60,10 +60,7 @@ function deserializeExportOptions(raw: string): ExportPersistedOptions {
   };
 }
 
-type NavigationItem = {
-  label: string;
-  href: string;
-};
+type NavigationItem = { label: string; href: string };
 
 type NavigationZoneProps = {
   title: string;

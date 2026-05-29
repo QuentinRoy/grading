@@ -36,18 +36,12 @@ test("saveQuestions allows the same question and rubric ids in different project
   await using projectB = await createProject(db, "Import Project B");
 
   const resultA = await saveQuestions(
-    makeQuestions({
-      questionLabel: "Question A",
-      rubricLabel: "Rubric A",
-    }),
+    makeQuestions({ questionLabel: "Question A", rubricLabel: "Rubric A" }),
     projectA.id,
   );
 
   const resultB = await saveQuestions(
-    makeQuestions({
-      questionLabel: "Question B",
-      rubricLabel: "Rubric B",
-    }),
+    makeQuestions({ questionLabel: "Question B", rubricLabel: "Rubric B" }),
     projectB.id,
   );
 
@@ -154,18 +148,12 @@ test("saveQuestions still upserts duplicate ids within the same project", async 
   const projectRowId = project.rowId;
 
   await saveQuestions(
-    makeQuestions({
-      questionLabel: "Before",
-      rubricLabel: "Rubric before",
-    }),
+    makeQuestions({ questionLabel: "Before", rubricLabel: "Rubric before" }),
     project.id,
   );
 
   await saveQuestions(
-    makeQuestions({
-      questionLabel: "After",
-      rubricLabel: "Rubric after",
-    }),
+    makeQuestions({ questionLabel: "After", rubricLabel: "Rubric after" }),
     project.id,
   );
 

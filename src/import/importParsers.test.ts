@@ -92,17 +92,8 @@ Smith,Alice,s1,
 Jones,Bob,s2,Team A`);
 
     expect(students).toEqual([
-      {
-        lastName: "Smith",
-        firstName: "Alice",
-        id: "s1",
-      },
-      {
-        lastName: "Jones",
-        firstName: "Bob",
-        id: "s2",
-        team: "Team A",
-      },
+      { lastName: "Smith", firstName: "Alice", id: "s1" },
+      { lastName: "Jones", firstName: "Bob", id: "s2", team: "Team A" },
     ]);
   });
 });
@@ -110,23 +101,9 @@ Jones,Bob,s2,Team A`);
 describe("groupStudentsIntoSubmissions", () => {
   it("groups team students and creates individual submissions", () => {
     const students = [
-      {
-        lastName: "Smith",
-        firstName: "Alice",
-        id: "s1",
-      },
-      {
-        lastName: "Jones",
-        firstName: "Bob",
-        id: "s2",
-        team: "Team A",
-      },
-      {
-        lastName: "Ray",
-        firstName: "Cora",
-        id: "s3",
-        team: "Team A",
-      },
+      { lastName: "Smith", firstName: "Alice", id: "s1" },
+      { lastName: "Jones", firstName: "Bob", id: "s2", team: "Team A" },
+      { lastName: "Ray", firstName: "Cora", id: "s3", team: "Team A" },
     ];
 
     const submissions = groupStudentsIntoSubmissions(students);
@@ -148,18 +125,8 @@ describe("groupStudentsIntoSubmissions", () => {
 
   it("generates unique submission ids when team slugs collide", () => {
     const students = [
-      {
-        lastName: "One",
-        firstName: "Alpha",
-        id: "s1",
-        team: "Team A",
-      },
-      {
-        lastName: "Two",
-        firstName: "Beta",
-        id: "s2",
-        team: "Team-A",
-      },
+      { lastName: "One", firstName: "Alpha", id: "s1", team: "Team A" },
+      { lastName: "Two", firstName: "Beta", id: "s2", team: "Team-A" },
     ];
 
     const submissions = groupStudentsIntoSubmissions(students);

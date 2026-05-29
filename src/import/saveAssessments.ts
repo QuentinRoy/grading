@@ -172,11 +172,7 @@ function parseAssessmentValue(params: {
         }
       }
 
-      return {
-        rubricId: rubricInfo.id,
-        type: "ordinal",
-        selectedLabel: value,
-      };
+      return { rubricId: rubricInfo.id, type: "ordinal", selectedLabel: value };
     }
     case "numerical": {
       const score = parseFloat(value);
@@ -184,11 +180,7 @@ function parseAssessmentValue(params: {
         throw new Error(`Invalid numerical value "${value}"`);
       }
 
-      return {
-        rubricId: rubricInfo.id,
-        type: "numerical",
-        score,
-      };
+      return { rubricId: rubricInfo.id, type: "numerical", score };
     }
     default: {
       throw new Error(`Unknown rubric type: ${rubricInfo.type}`);
@@ -199,9 +191,7 @@ function parseAssessmentValue(params: {
 export async function saveAssessments(
   assessmentRows: ImportedAssessmentRow[],
   projectId: string,
-): Promise<{
-  assessmentCount: number;
-}> {
+): Promise<{ assessmentCount: number }> {
   const project = await db
     .selectFrom("project")
     .select("rowId")
@@ -305,10 +295,7 @@ export async function saveAssessments(
     const submitter = row.submitter;
     const submissionId =
       submissionsByLookup.get(
-        submissionLookupKey({
-          submissionType,
-          submitter,
-        }),
+        submissionLookupKey({ submissionType, submitter }),
       ) ?? null;
 
     if (submissionId === "ambiguous") {
@@ -332,10 +319,7 @@ export async function saveAssessments(
       }
 
       try {
-        const assessment = parseAssessmentValue({
-          value,
-          rubricInfo,
-        });
+        const assessment = parseAssessmentValue({ value, rubricInfo });
 
         preparedAssessments.push({
           submissionId,
@@ -372,8 +356,6 @@ export async function saveAssessments(
       successCount++;
     }
 
-    return {
-      assessmentCount: successCount,
-    };
+    return { assessmentCount: successCount };
   });
 }

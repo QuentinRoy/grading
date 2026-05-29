@@ -4,9 +4,7 @@ import net from "node:net";
 import { setTimeout as delay } from "node:timers/promises";
 import { Pool } from "pg";
 
-type RunResult = {
-  code: number;
-};
+type RunResult = { code: number };
 
 const DEFAULT_POSTGRES_USER = "postgres";
 const DEFAULT_POSTGRES_PASSWORD = "postgres";
@@ -19,10 +17,7 @@ function run(
   env: NodeJS.ProcessEnv,
 ): Promise<RunResult> {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, {
-      env,
-      stdio: "inherit",
-    });
+    const child = spawn(command, args, { env, stdio: "inherit" });
 
     child.on("error", reject);
     child.on("exit", (code) => {

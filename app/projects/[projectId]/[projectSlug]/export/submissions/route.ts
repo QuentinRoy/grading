@@ -3,10 +3,7 @@ import { createCsvSubmissionExport } from "@/export/submissionExport";
 import { parseExportOptions } from "./exportOptions";
 
 type RouteParams = {
-  params: Promise<{
-    projectId: string;
-    projectSlug: string;
-  }>;
+  params: Promise<{ projectId: string; projectSlug: string }>;
 };
 
 export async function GET(

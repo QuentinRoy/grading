@@ -16,11 +16,7 @@ const rubrics = [
       label: "Correctness",
       description: "Checks final correctness",
       type: "boolean" as const,
-      properties: {
-        type: "boolean" as const,
-        trueMarks: 5,
-        falseMarks: 0,
-      },
+      properties: { type: "boolean" as const, trueMarks: 5, falseMarks: 0 },
     },
   },
   {
@@ -55,9 +51,7 @@ const meta = {
   component: RubricAnalyticsTable,
   tags: ["autodocs"],
   parameters: { layout: "padded" },
-  args: {
-    rubrics,
-  },
+  args: { rubrics },
 } satisfies Meta<typeof RubricAnalyticsTable>;
 
 export default meta;
@@ -66,21 +60,13 @@ type Story = StoryObj<typeof meta>;
 
 export const Partial: Story = {};
 
-export const Empty: Story = {
-  args: {
-    rubrics: [],
-  },
-};
+export const Empty: Story = { args: { rubrics: [] } };
 
 export const LowAverage: Story = {
   args: {
     rubrics: rubrics.map((row) =>
       row.rubricId === "r-explanation"
-        ? {
-            ...row,
-            averageMarks: 0.8,
-            averagePercent: 20,
-          }
+        ? { ...row, averageMarks: 0.8, averagePercent: 20 }
         : row,
     ),
   },

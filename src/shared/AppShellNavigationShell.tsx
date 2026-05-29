@@ -68,10 +68,7 @@ export default function AppShellNavigationShell({
             paper: {
               "aria-label": "Project navigation",
               id: drawerId,
-              sx: {
-                width: APP_SHELL_DRAWER_WIDTH,
-                boxSizing: "border-box",
-              },
+              sx: { width: APP_SHELL_DRAWER_WIDTH, boxSizing: "border-box" },
             },
           }}
         >

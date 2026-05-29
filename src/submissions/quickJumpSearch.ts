@@ -6,10 +6,7 @@ export type SubmissionSearchTarget = {
   submissionId: string;
   displayLabel: string;
   memberNames: string[];
-  progress: {
-    completed: number;
-    total: number;
-  };
+  progress: { completed: number; total: number };
   isCompleted: boolean;
 };
 
@@ -160,11 +157,9 @@ export function createSubmissionSearch(
     const normalizedQuery = normalizeQuery(query);
 
     if (normalizedQuery.length === 0) {
-      return targets.slice(0, 20).map((target) => ({
-        ...target,
-        combinedScore: 0,
-        matchReason: "",
-      }));
+      return targets
+        .slice(0, 20)
+        .map((target) => ({ ...target, combinedScore: 0, matchReason: "" }));
     }
 
     const results = fuse.search(normalizedQuery, { limit: 20 });

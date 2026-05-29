@@ -124,9 +124,7 @@ const DraggableQuestionItem = memo(function DraggableQuestionItem({
         sx={{
           flex: 1,
           backgroundColor: "transparent",
-          "&:hover": {
-            backgroundColor: "transparent",
-          },
+          "&:hover": { backgroundColor: "transparent" },
         }}
       >
         <ListItemText
@@ -215,10 +213,7 @@ export default function QuestionTable({
     setReorderError(null);
 
     // Persist a complete, contiguous position map to avoid collisions.
-    const updates = reorderedAll.map((q, idx) => ({
-      id: q.id,
-      position: idx,
-    }));
+    const updates = reorderedAll.map((q, idx) => ({ id: q.id, position: idx }));
 
     startTransition(() => {
       void onReorder(updates).catch(() => {

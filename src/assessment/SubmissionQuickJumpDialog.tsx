@@ -166,9 +166,7 @@ export default function SubmissionQuickJumpDialog({
                     mb: 1,
                     borderRadius: 1,
                     backgroundColor: isHighlighted ? "action.hover" : undefined,
-                    "&:hover": {
-                      backgroundColor: "action.hover",
-                    },
+                    "&:hover": { backgroundColor: "action.hover" },
                   }}
                 >
                   <ListItemText

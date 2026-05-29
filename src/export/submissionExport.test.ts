@@ -31,64 +31,31 @@ describe("createCsvSubmissionExportDataStream", () => {
     const questions: ExportQuestionPlan[] = [
       {
         id: "q1",
-        rubrics: [
-          {
-            id: "r1",
-            type: "boolean",
-            marks: 2,
-            falseMarks: 0,
-          },
-        ],
+        rubrics: [{ id: "r1", type: "boolean", marks: 2, falseMarks: 0 }],
       },
     ];
 
     async function* rows(): AsyncGenerator<SubmissionExportDataRow> {
       yield {
-        submission: {
-          id: "sub-1",
-          type: "individual",
-          studentId: "stu-1",
-        },
+        submission: { id: "sub-1", type: "individual", studentId: "stu-1" },
         questions: [
           {
             questionId: "q1",
-            rubrics: [
-              {
-                rubricId: "r1",
-                assessment: true,
-                marks: 2,
-              },
-            ],
+            rubrics: [{ rubricId: "r1", assessment: true, marks: 2 }],
           },
         ],
       };
 
       yield {
-        submission: {
-          id: "sub-2",
-          type: "individual",
-          studentId: "stu-2",
-        },
-        questions: [
-          {
-            questionId: "q1",
-            rubrics: [
-              {
-                rubricId: "r1",
-              },
-            ],
-          },
-        ],
+        submission: { id: "sub-2", type: "individual", studentId: "stu-2" },
+        questions: [{ questionId: "q1", rubrics: [{ rubricId: "r1" }] }],
       };
     }
 
     const stream = createCsvSubmissionExportDataStream({
       questions,
       rows: rows(),
-      options: {
-        includeRubricAssessment: true,
-        includeRubricMarks: true,
-      },
+      options: { includeRubricAssessment: true, includeRubricMarks: true },
     });
     const content = await readStream(stream);
 

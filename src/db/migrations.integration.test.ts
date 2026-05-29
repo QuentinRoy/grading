@@ -34,10 +34,7 @@ describe("Kysely migrations", () => {
     try {
       const output = execSync(
         "git ls-files src/db/migrations/ --cached --others --exclude-standard",
-        {
-          encoding: "utf-8",
-          cwd: process.cwd(),
-        },
+        { encoding: "utf-8", cwd: process.cwd() },
       );
       currentMigrations = output
         .trim()

@@ -36,11 +36,7 @@ function toCreateProjectErrorMessage(error: unknown): string {
   return "Could not create project. Reload the page and try again.";
 }
 
-type ProjectsPageProps = {
-  searchParams: Promise<{
-    error?: string;
-  }>;
-};
+type ProjectsPageProps = { searchParams: Promise<{ error?: string }> };
 
 export default async function ProjectsPage({
   searchParams,

@@ -5,9 +5,7 @@ import Typography from "@mui/material/Typography";
 import type { ReactElement } from "react";
 import type { GlobalAssessmentProgress } from "../db/types";
 
-type GlobalAssessmentSummaryProps = {
-  progress: GlobalAssessmentProgress;
-};
+type GlobalAssessmentSummaryProps = { progress: GlobalAssessmentProgress };
 
 type MetricCardProps = {
   title: string;

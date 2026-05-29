@@ -6,10 +6,7 @@ import { assessmentsImportAction } from "@/import/assessmentsImportAction";
 import { projectImportAssessmentsPath } from "@/projects/routes";
 
 type ProjectImportAssessmentsPageProps = {
-  params: Promise<{
-    projectId: string;
-    projectSlug: string;
-  }>;
+  params: Promise<{ projectId: string; projectSlug: string }>;
 };
 
 export default async function ProjectImportAssessmentsPage({

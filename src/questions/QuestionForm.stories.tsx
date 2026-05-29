@@ -15,14 +15,7 @@ const meta = {
     initialValue: {
       id: "q1",
       label: "Correctness",
-      rubrics: [
-        {
-          id: "q1-pass",
-          type: "boolean",
-          marks: 1,
-          falseMarks: 0,
-        },
-      ],
+      rubrics: [{ id: "q1-pass", type: "boolean", marks: 1, falseMarks: 0 }],
     },
     onCancel: fn(),
   },
@@ -34,20 +27,13 @@ type Story = StoryObj<typeof meta>;
 
 export const Create: Story = {};
 
-export const Edit: Story = {
-  args: {
-    mode: "edit",
-    originalQuestionId: "q1",
-  },
-};
+export const Edit: Story = { args: { mode: "edit", originalQuestionId: "q1" } };
 
 export const WithErrors: Story = {
   args: {
     actionState: {
       status: "error",
-      fieldErrors: {
-        rubrics: [{ id: "Rubric ids must be unique." }],
-      },
+      fieldErrors: { rubrics: [{ id: "Rubric ids must be unique." }] },
       formErrors: [],
     },
   },

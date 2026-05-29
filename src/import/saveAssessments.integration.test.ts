@@ -43,11 +43,7 @@ async function createAssessmentFixture(
 
   const submission = await db
     .insertInto("submission")
-    .values({
-      projectId,
-      type: "individual",
-      studentId: studentRow.rowId,
-    })
+    .values({ projectId, type: "individual", studentId: studentRow.rowId })
     .returning("id")
     .executeTakeFirstOrThrow();
 
@@ -89,11 +85,7 @@ async function createAssessmentFixture(
 
   await db
     .insertInto("booleanRubric")
-    .values({
-      rubricId: createdRubric.rowId,
-      marks: 2,
-      falseMarks: 0,
-    })
+    .values({ rubricId: createdRubric.rowId, marks: 2, falseMarks: 0 })
     .execute();
 
   return {

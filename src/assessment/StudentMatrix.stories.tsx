@@ -16,11 +16,7 @@ const rubrics = [
       label: "Correctness",
       description: "Checks final correctness",
       type: "boolean" as const,
-      properties: {
-        type: "boolean" as const,
-        trueMarks: 5,
-        falseMarks: 0,
-      },
+      properties: { type: "boolean" as const, trueMarks: 5, falseMarks: 0 },
     },
   },
   {
@@ -61,12 +57,7 @@ const students = [
     totalRubrics: 2,
     rubrics: [
       { rubricId: "r-correctness", marks: 5, maxMarks: 5, assessed: true },
-      {
-        rubricId: "r-explanation",
-        marks: 2.5,
-        maxMarks: 4,
-        assessed: true,
-      },
+      { rubricId: "r-explanation", marks: 2.5, maxMarks: 4, assessed: true },
     ],
   },
   {
@@ -79,12 +70,7 @@ const students = [
     totalRubrics: 2,
     rubrics: [
       { rubricId: "r-correctness", marks: 2, maxMarks: 5, assessed: true },
-      {
-        rubricId: "r-explanation",
-        marks: null,
-        maxMarks: 4,
-        assessed: false,
-      },
+      { rubricId: "r-explanation", marks: null, maxMarks: 4, assessed: false },
     ],
   },
 ];
@@ -94,10 +80,7 @@ const meta = {
   component: StudentMatrix,
   tags: ["autodocs"],
   parameters: { layout: "padded" },
-  args: {
-    rubrics,
-    students,
-  },
+  args: { rubrics, students },
 } satisfies Meta<typeof StudentMatrix>;
 
 export default meta;
@@ -106,12 +89,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Partial: Story = {};
 
-export const Empty: Story = {
-  args: {
-    rubrics: [],
-    students: [],
-  },
-};
+export const Empty: Story = { args: { rubrics: [], students: [] } };
 
 export const Complete: Story = {
   args: {

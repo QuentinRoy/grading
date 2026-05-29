@@ -24,17 +24,10 @@ export async function saveQuestionAction(
     const payload = parseManagedQuestionPayload(payloadRaw);
     const result = await saveManagedQuestion(payload, projectId);
 
-    return {
-      status: "success",
-      message: `Saved question ${result.id}.`,
-    };
+    return { status: "success", message: `Saved question ${result.id}.` };
   } catch (error) {
     const { fieldErrors, formErrors } = toQuestionsValidationError(error);
-    return {
-      status: "error",
-      fieldErrors,
-      formErrors,
-    };
+    return { status: "error", fieldErrors, formErrors };
   }
 }
 
@@ -69,11 +62,7 @@ export async function deleteQuestionAction(
     };
   } catch (error) {
     const { fieldErrors, formErrors } = toQuestionsValidationError(error);
-    return {
-      status: "error",
-      fieldErrors,
-      formErrors,
-    };
+    return { status: "error", fieldErrors, formErrors };
   }
 }
 

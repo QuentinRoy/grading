@@ -9,10 +9,7 @@ import {
 } from "@/projects/routes";
 
 type ProjectDashboardPageProps = {
-  params: Promise<{
-    projectId: string;
-    projectSlug: string;
-  }>;
+  params: Promise<{ projectId: string; projectSlug: string }>;
 };
 
 export default async function ProjectDashboardPage({

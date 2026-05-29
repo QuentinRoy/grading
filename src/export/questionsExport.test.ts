@@ -142,16 +142,7 @@ describe("exportQuestionsToYaml", () => {
 
   it("omits label when undefined", () => {
     const questions: Grid = {
-      q1: {
-        rubrics: [
-          {
-            id: "r1",
-            type: "boolean",
-            marks: 1,
-            falseMarks: 0,
-          },
-        ],
-      },
+      q1: { rubrics: [{ id: "r1", type: "boolean", marks: 1, falseMarks: 0 }] },
     };
 
     const yaml = exportQuestionsToYaml(questions);
@@ -185,12 +176,7 @@ describe("exportQuestionsToYaml", () => {
       q2: {
         label: "Question 2",
         rubrics: [
-          {
-            id: "r2",
-            type: "ordinal",
-            marks: { A: 2, B: 1 },
-            label: "Grade",
-          },
+          { id: "r2", type: "ordinal", marks: { A: 2, B: 1 }, label: "Grade" },
         ],
       },
     };

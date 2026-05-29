@@ -6,10 +6,7 @@ import type { RubricType, SubmissionType } from "./generated/db";
 // broad generated table-shape re-export from here).
 export type { RubricType, SubmissionType };
 
-type ProgressMetric = {
-  completed: number;
-  total: number;
-};
+type ProgressMetric = { completed: number; total: number };
 
 export type GlobalAssessmentProgress = {
   submissions: ProgressMetric;
@@ -17,10 +14,7 @@ export type GlobalAssessmentProgress = {
   rubrics: ProgressMetric;
 };
 
-type SubmissionBase = {
-  id: string;
-  type: SubmissionType;
-};
+type SubmissionBase = { id: string; type: SubmissionType };
 
 type SubmissionDisplay = {
   displayLabel?: string;
@@ -55,11 +49,7 @@ export type SubmissionSubmitter =
       }
     >
   | Simplify<
-      SubmissionBase & {
-        type: "team";
-        studentId?: undefined;
-        teamName: string;
-      }
+      SubmissionBase & { type: "team"; studentId?: undefined; teamName: string }
     >;
 
 type RubricBase = {
@@ -71,18 +61,9 @@ type RubricBase = {
 
 export type Rubric =
   | Simplify<
-      RubricBase & {
-        type: "boolean";
-        marks: number;
-        falseMarks: number;
-      }
+      RubricBase & { type: "boolean"; marks: number; falseMarks: number }
     >
-  | Simplify<
-      RubricBase & {
-        type: "ordinal";
-        marks: Record<string, number>;
-      }
-    >
+  | Simplify<RubricBase & { type: "ordinal"; marks: Record<string, number> }>
   | Simplify<
       RubricBase & {
         type: "numerical";
@@ -94,36 +75,14 @@ export type Rubric =
       }
     >;
 
-type AssessmentRubricValueBase = {
-  rubricId: string;
-  type: RubricType;
-};
+type AssessmentRubricValueBase = { rubricId: string; type: RubricType };
 export type AssessmentRubricValue =
+  | Simplify<AssessmentRubricValueBase & { type: "boolean"; passed: boolean }>
   | Simplify<
-      AssessmentRubricValueBase & {
-        type: "boolean";
-        passed: boolean;
-      }
+      AssessmentRubricValueBase & { type: "ordinal"; selectedLabel: string }
     >
-  | Simplify<
-      AssessmentRubricValueBase & {
-        type: "ordinal";
-        selectedLabel: string;
-      }
-    >
-  | Simplify<
-      AssessmentRubricValueBase & {
-        type: "numerical";
-        score: number;
-      }
-    >;
+  | Simplify<AssessmentRubricValueBase & { type: "numerical"; score: number }>;
 
-export type Question = {
-  label?: string;
-  rubrics: Rubric[];
-  solution?: string;
-};
+export type Question = { label?: string; rubrics: Rubric[]; solution?: string };
 
-export type Grid = {
-  [id: string]: Question;
-};
+export type Grid = { [id: string]: Question };

@@ -4,21 +4,11 @@ import { buildTestId, createTestDb } from "../test/dbIntegration";
 import { createProject } from "../test/projects";
 import type { DB } from "./generated/db";
 
-type RubricRowIds = {
-  boolean: number;
-  ordinal: number;
-  numerical: number;
-};
+type RubricRowIds = { boolean: number; ordinal: number; numerical: number };
 
 type AssessmentConstraintFixture = {
-  ordinalRubricAssessmentIds: {
-    primary: number;
-    secondary: number;
-  };
-  numericalRubricAssessmentIds: {
-    primary: number;
-    secondary: number;
-  };
+  ordinalRubricAssessmentIds: { primary: number; secondary: number };
+  numericalRubricAssessmentIds: { primary: number; secondary: number };
 };
 
 async function createAssessmentConstraintFixture(
@@ -241,16 +231,8 @@ async function createAssessmentConstraintFixture(
   await db
     .insertInto("ordinalRubricValue")
     .values([
-      {
-        ordinalRubricId: ordinalRubric.id,
-        label: "A",
-        marks: 4,
-      },
-      {
-        ordinalRubricId: ordinalRubric.id,
-        label: "B",
-        marks: 2,
-      },
+      { ordinalRubricId: ordinalRubric.id, label: "A", marks: 4 },
+      { ordinalRubricId: ordinalRubric.id, label: "B", marks: 2 },
     ])
     .execute();
 
@@ -497,10 +479,7 @@ test("submission owner/type check rejects invalid rows and rolls back transactio
 
   const team = await db
     .insertInto("team")
-    .values({
-      projectId: project.rowId,
-      name: buildTestId("team"),
-    })
+    .values({ projectId: project.rowId, name: buildTestId("team") })
     .returning("id")
     .executeTakeFirstOrThrow();
 
@@ -517,11 +496,7 @@ test("submission owner/type check rejects invalid rows and rolls back transactio
     db.transaction().execute(async (trx) => {
       await trx
         .insertInto("submission")
-        .values({
-          projectId: project.rowId,
-          type: "team",
-          teamId: team.id,
-        })
+        .values({ projectId: project.rowId, type: "team", teamId: team.id })
         .execute();
 
       await trx
@@ -561,11 +536,7 @@ test("rubric subtype triggers reject mismatched subtype rows and roll back trans
 
   await db
     .insertInto("booleanRubric")
-    .values({
-      rubricId: rubricRowIds.boolean,
-      marks: 2,
-      falseMarks: 0,
-    })
+    .values({ rubricId: rubricRowIds.boolean, marks: 2, falseMarks: 0 })
     .execute();
 
   await expect(
@@ -577,11 +548,7 @@ test("rubric subtype triggers reject mismatched subtype rows and roll back trans
 
       await trx
         .insertInto("booleanRubric")
-        .values({
-          rubricId: rubricRowIds.ordinal,
-          marks: 2,
-          falseMarks: 0,
-        })
+        .values({ rubricId: rubricRowIds.ordinal, marks: 2, falseMarks: 0 })
         .execute();
     }),
   ).rejects.toThrow("requires Rubric.type boolean");

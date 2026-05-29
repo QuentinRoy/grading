@@ -4,10 +4,7 @@ import Box from "@mui/material/Box";
 import React from "react";
 import { getHighlighter } from "./shiki-setup";
 
-type CodeSnippetProps = {
-  children: string;
-  language?: string;
-};
+type CodeSnippetProps = { children: string; language?: string };
 
 export default async function CodeSnippet({
   children,
@@ -31,9 +28,7 @@ export default async function CodeSnippet({
           padding: 2,
           fontFamily: "'Monaspace Neon', monospace",
         },
-        "& code": {
-          fontFamily: "'Monaspace Neon', monospace",
-        },
+        "& code": { fontFamily: "'Monaspace Neon', monospace" },
       }}
     >
       <Box className="code" dangerouslySetInnerHTML={{ __html: html }} />

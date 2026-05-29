@@ -164,14 +164,8 @@ async function loadGlobalAssessmentProgressFromDb(
         ).length;
 
   return {
-    submissions: {
-      completed: completedSubmissions,
-      total: totalSubmissions,
-    },
-    questions: {
-      completed: completedQuestions,
-      total: totalQuestions,
-    },
+    submissions: { completed: completedSubmissions, total: totalSubmissions },
+    questions: { completed: completedQuestions, total: totalQuestions },
     rubrics: {
       completed: Math.min(
         Number(rubricAssessmentsCount.count),

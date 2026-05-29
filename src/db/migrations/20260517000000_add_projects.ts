@@ -16,11 +16,7 @@ const tablesWithProjectEntries = (
 type TableWithProjectName = (typeof tablesWithProjectEntries)[number]["table"];
 
 type MigrationDB = {
-  project: {
-    id: Generated<number>;
-    public_id: string;
-    name: string;
-  };
+  project: { id: Generated<number>; public_id: string; name: string };
 } & Record<TableWithProjectName, { project_id: number | null }>;
 
 async function addProjectIdColumn({

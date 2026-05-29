@@ -10,10 +10,7 @@ import {
 import QuestionsManagementClient from "@/questions/QuestionsManagementClient";
 
 type ProjectQuestionsPageProps = {
-  params: Promise<{
-    projectId: string;
-    projectSlug: string;
-  }>;
+  params: Promise<{ projectId: string; projectSlug: string }>;
 };
 
 export default async function ProjectQuestionsPage({

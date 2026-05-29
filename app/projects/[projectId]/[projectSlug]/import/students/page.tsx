@@ -6,10 +6,7 @@ import { studentsImportAction } from "@/import/studentsImportAction";
 import { projectImportStudentsPath } from "@/projects/routes";
 
 type ProjectImportStudentsPageProps = {
-  params: Promise<{
-    projectId: string;
-    projectSlug: string;
-  }>;
+  params: Promise<{ projectId: string; projectSlug: string }>;
 };
 
 export default async function ProjectImportStudentsPage({

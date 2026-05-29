@@ -1,8 +1,6 @@
 {
   "compilerOptions": {
-    "paths": {
-      "@/*": ["./src/*"]
-    },
+    "paths": { "@/*": ["./src/*"] },
 
     "esModuleInterop": true,
     "skipLibCheck": true,

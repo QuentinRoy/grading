@@ -6,10 +6,7 @@ import { type ReactNode, Suspense, useState } from "react";
 import AppShellLoadingShell from "./AppShellLoadingShell";
 import AppShellNavigationShell from "./AppShellNavigationShell";
 
-type AppShellProps = {
-  children: ReactNode;
-  showNavigation?: boolean;
-};
+type AppShellProps = { children: ReactNode; showNavigation?: boolean };
 
 export default function AppShell({
   children,

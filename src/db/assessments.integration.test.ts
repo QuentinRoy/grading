@@ -6,10 +6,7 @@ import type { DB } from "./generated/db";
 
 vi.mock("server-only", () => ({}));
 
-vi.mock("next/cache", () => ({
-  cacheTag: vi.fn(),
-  updateTag: vi.fn(),
-}));
+vi.mock("next/cache", () => ({ cacheTag: vi.fn(), updateTag: vi.fn() }));
 
 async function loadAssessmentsWithDb(db: Kysely<DB>) {
   vi.resetModules();
@@ -25,20 +22,12 @@ type AssessmentFixture = {
   studentId: string;
   studentRowId: number;
   submissionId: string;
-  rubricIds: {
-    boolean: string;
-    ordinal: string;
-    numerical: string;
-  };
+  rubricIds: { boolean: string; ordinal: string; numerical: string };
 };
 
 type AssessmentFixtureOptions = {
   questionId?: string;
-  rubricIds?: {
-    boolean: string;
-    ordinal: string;
-    numerical: string;
-  };
+  rubricIds?: { boolean: string; ordinal: string; numerical: string };
 };
 
 async function createAssessmentFixture(
@@ -156,33 +145,20 @@ async function createAssessmentFixture(
 
   await db
     .insertInto("booleanRubric")
-    .values({
-      rubricId: booleanRubricRowId,
-      marks: 2,
-    })
+    .values({ rubricId: booleanRubricRowId, marks: 2 })
     .execute();
 
   const ordinalRubric = await db
     .insertInto("ordinalRubric")
-    .values({
-      rubricId: ordinalRubricRowId,
-    })
+    .values({ rubricId: ordinalRubricRowId })
     .returning("id")
     .executeTakeFirstOrThrow();
 
   await db
     .insertInto("ordinalRubricValue")
     .values([
-      {
-        ordinalRubricId: ordinalRubric.id,
-        label: "A",
-        marks: 3,
-      },
-      {
-        ordinalRubricId: ordinalRubric.id,
-        label: "B",
-        marks: 1,
-      },
+      { ordinalRubricId: ordinalRubric.id, label: "A", marks: 3 },
+      { ordinalRubricId: ordinalRubric.id, label: "B", marks: 1 },
     ])
     .execute();
 
@@ -420,11 +396,7 @@ describe("assessment DB integration", () => {
         fixtureB.questionId,
       );
       expect(projectBAssessment).toEqual([
-        {
-          rubricId: fixtureB.rubricIds.boolean,
-          type: "boolean",
-          passed: true,
-        },
+        { rubricId: fixtureB.rubricIds.boolean, type: "boolean", passed: true },
       ]);
 
       const projectAAssessment = await loadAssessment(
