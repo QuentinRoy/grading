@@ -22,6 +22,23 @@ TODO lists should not replace issue descriptions, acceptance criteria, follow-up
 
 Before marking a PR as ready for review, resolve or remove temporary TODO items where possible.
 
+## Pull request titles
+
+Prefer the commit message convention in `docs/guides/commit-message-conventions.md` for pull request titles when it stays readable:
+
+```txt
+<area>: <imperative summary>
+```
+
+Examples:
+
+```txt
+projects: centralise slug canonicalisation behind a route-kind helper
+docs: clarify TypeScript function parameter conventions
+```
+
+A more descriptive title is acceptable when the area-prefixed shape would hide important review context.
+
 ## Labels
 
 Labels are shared across issues and pull/merge requests.

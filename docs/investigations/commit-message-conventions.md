@@ -1,7 +1,9 @@
 # Investigation: commit message conventions
 
-Status: Current investigation
+Status: Completed
 Date: 2026-05-20
+Resolution: Adopted lightweight area-prefixed commit messages in `docs/guides/commit-message-conventions.md`.
+Follow-up: None
 Related: README workflow conventions, AGENTS.md, PR #71, PR #95
 
 ## Question
@@ -10,9 +12,9 @@ What commit message convention should this repository use to keep history readab
 
 ## Executive summary
 
-This repository does not need full Conventional Commits or commit linting.
+This investigation is resolved.
 
-The best fit is a lightweight, human-readable convention inspired by Git and Node.js style:
+The accepted convention is now documented in `docs/guides/commit-message-conventions.md`:
 
 ```txt
 <area>: <imperative summary>
@@ -30,9 +32,19 @@ ui: fix drawer close behavior on iPad
 
 This gives agents and humans a stable pattern to imitate without requiring type classification, release automation, or enforcement.
 
+## Outcome
+
+Adopt a lightweight, human-readable convention inspired by Git and Node.js style.
+
+Do not add commit linting or blocking checks.
+
+Treat the convention as guidance for humans and agents, especially for commit titles, squash merge titles, and pull request titles when the format stays readable.
+
+The stable guide owns the operational rules. The rest of this file remains as historical rationale.
+
 ## Context
 
-Recent repository history mixes several styles:
+Recent repository history mixed several styles:
 
 ```txt
 docs: improve GitHub issue form templates
@@ -43,9 +55,9 @@ Clarify label handling as GitHub metadata in templates and agent instructions
 Fix #60: Refactor AppShell for reliable drawer behavior and improved tests
 ```
 
-All of these are understandable, but the mixture makes it easy for coding agents to invent new conventions.
+All of these are understandable, but the mixture made it easy for coding agents to invent new conventions.
 
-The goal is not strict compliance. The goal is to make the common case predictable.
+The goal was not strict compliance. The goal was to make the common case predictable.
 
 ## Options considered
 
@@ -177,7 +189,9 @@ Source: `angular/angular` `contributing-docs/commit-message-guidelines.md`.
 
 This is valuable when release tooling consumes commit messages, but this repository does not currently need that level of structure.
 
-## Recommendation
+## Superseded recommendation
+
+The original recommendation below was promoted to `docs/guides/commit-message-conventions.md`.
 
 Adopt a lightweight preference:
 
@@ -290,8 +304,8 @@ Validation:
 - Do not require Conventional Commits.
 - Do not maintain a strict area registry unless drift becomes a real problem.
 
-## Possible follow-ups
+## Follow-ups completed
 
-- Add a short commit message section to README or `docs/guides/contributing.md`.
-- Add one line to `AGENTS.md` telling agents to prefer the lightweight area-prefix convention.
-- If PR titles continue to drift, document PR title guidance before considering tooling.
+- Added the stable guide at `docs/guides/commit-message-conventions.md`.
+- Added a short `AGENTS.md` rule telling agents to prefer the lightweight area-prefix convention.
+- Added pull request title guidance to `docs/guides/issue-and-pr-conventions.md`.
