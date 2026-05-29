@@ -43,7 +43,7 @@ Investigations and active plans can guide work, but they do not override higher-
 - Use `docs/investigations/` for audits, comparisons, and open-ended technical exploration.
 - Use `docs/adr/` for durable architectural decisions.
 - Use `docs/design/` for chosen implementation designs.
-- Use `docs/reference/` for durable facts about the current system.
+- Use `docs/reference/` for durable facts about current system behavior, formats, and contracts.
 - Use `plans/active/` for temporary execution plans and `plans/completed/` for archived plans. See `docs/index.md` for the canonical doc map.
 - Keep agent instructions short and navigational. Prefer linking to focused docs over copying long guidance here.
 
@@ -83,8 +83,9 @@ Investigations and active plans can guide work, but they do not override higher-
     - introducing `any`
     - weakening types only to silence errors
 
-
 - Prefer improving types, restructuring code, extracting helpers, or adjusting interfaces before suppressing tooling feedback.
+
+- Prefer call-site readability over brevity for TypeScript function parameters. Use named-object parameters for domain actions, mutations, booleans, optional values, multiple same-type values, or exported/reused helpers where positional order is not obvious from variable-based call sites. See `docs/guides/typescript-api-design.md`.
 
 - Avoid using `as` for type assertions. Prefer type guards, generics, `satisfies`, or narrowing to satisfy the compiler. Any use of `as` must be accompanied by a comment explaining why the alternatives
 would introduce undue complexity.
