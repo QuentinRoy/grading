@@ -12,6 +12,14 @@ _Avoid_: public_id, internal project id, numeric project key
 Internal surrogate database key for a project row, used for joins and foreign keys.
 _Avoid_: project id (when meaning internal), public project id
 
+**Project Slug**:
+Human-readable URL segment derived from a project's name; cosmetic and may be stale. Not an identifier — the **Project ID** resolves the project.
+_Avoid_: project identifier, lookup key, permalink
+
+**Canonical Project URL**:
+A project URL whose **Project Slug** segment matches the project's current slug; URLs carrying a stale slug redirect to it.
+_Avoid_: correct URL, real URL
+
 **DB Boundary**:
 Project Row ID stays inside database read/write functions and must not leave that layer.
 _Avoid_: leaking row_id into routes, UI models, import/export contracts
