@@ -9,11 +9,11 @@ import {
 	Typography,
 } from "@mui/material";
 import { cacheTag } from "next/cache";
-import { redirect } from "next/navigation";
 import { loadProjectByPublicId } from "@/db/projects";
 import { loadQuestions } from "@/db/questions";
 import { loadSubmissionOverviewProgress } from "@/db/submissionProgress";
 import { loadSubmissions } from "@/db/submissions";
+import { canonicalProjectRedirect } from "@/projects/canonicalProjectRedirect";
 import {
 	projectAssessmentSubmissionPath,
 	projectAssessmentSubmissionQuestionPath,
@@ -50,9 +50,11 @@ async function ProjectAssessmentPageContent({
 
 	const project = await loadProjectByPublicId(projectId, { required: true });
 
-	if (project.slug !== projectSlug) {
-		redirect(projectOverviewPath(project.id, project.slug));
-	}
+	canonicalProjectRedirect({
+		project,
+		requestedSlug: projectSlug,
+		route: { kind: "assessments" },
+	});
 
 	const [grid, submissions, progressBySubmissionId] = await Promise.all([
 		loadQuestions(project.id),

@@ -1,7 +1,6 @@
-import { redirect } from "next/navigation";
 import { loadProjectByPublicId } from "@/db/projects";
 import { loadManagedQuestions } from "@/db/questions";
-import { projectQuestionsPath } from "@/projects/projectPaths";
+import { canonicalProjectRedirect } from "@/projects/canonicalProjectRedirect";
 import {
 	deleteQuestionAction,
 	reorderQuestionsAction,
@@ -19,9 +18,11 @@ export default async function ProjectQuestionsPage({
 	const { projectId, projectSlug } = await params;
 	const project = await loadProjectByPublicId(projectId, { required: true });
 
-	if (project.slug !== projectSlug) {
-		redirect(projectQuestionsPath(project.id, project.slug));
-	}
+	canonicalProjectRedirect({
+		project,
+		requestedSlug: projectSlug,
+		route: { kind: "questions" },
+	});
 
 	const questions = await loadManagedQuestions(project.id);
 

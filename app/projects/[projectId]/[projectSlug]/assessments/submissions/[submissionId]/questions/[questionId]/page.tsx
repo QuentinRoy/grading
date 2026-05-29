@@ -3,17 +3,15 @@ import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import { cacheTag } from "next/cache";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import SubmissionAssessmentClient from "@/assessment/SubmissionAssessmentClient";
 import { loadAssessment } from "@/db/assessments";
 import { loadProjectByPublicId } from "@/db/projects";
 import { loadQuestion } from "@/db/questions";
 import { loadSubmissionQuestionProgress } from "@/db/submissionProgress";
 import { loadSubmissions } from "@/db/submissions";
-import {
-	projectAssessmentSubmissionQuestionPath,
-	projectAssessmentsPath,
-} from "@/projects/projectPaths";
+import { canonicalProjectRedirect } from "@/projects/canonicalProjectRedirect";
+import { projectAssessmentsPath } from "@/projects/projectPaths";
 import { attachAssessment } from "@/rubrics/rubric";
 import CodeSnippet from "@/shared/CodeSnippet";
 import MuiNextLink from "@/shared/MuiNextLink";
@@ -39,16 +37,11 @@ async function ProjectQuestionSubmissionPageContent({
 	const { projectId, projectSlug, submissionId, questionId } = await params;
 	const project = await loadProjectByPublicId(projectId, { required: true });
 
-	if (project.slug !== projectSlug) {
-		redirect(
-			projectAssessmentSubmissionQuestionPath(
-				project.id,
-				project.slug,
-				submissionId,
-				questionId,
-			),
-		);
-	}
+	canonicalProjectRedirect({
+		project,
+		requestedSlug: projectSlug,
+		route: { kind: "submissionQuestion", submissionId, questionId },
+	});
 
 	return (
 		<Container maxWidth="md" sx={{ py: 5 }}>

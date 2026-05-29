@@ -1,9 +1,8 @@
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { loadProjectByPublicId } from "@/db/projects";
 import QuestionsImportForm from "@/import/QuestionsImportForm";
 import { questionsImportAction } from "@/import/questionsImportAction";
-import { projectImportQuestionsPath } from "@/projects/projectPaths";
+import { canonicalProjectRedirect } from "@/projects/canonicalProjectRedirect";
 
 type ProjectImportQuestionsPageProps = {
 	params: Promise<{ projectId: string; projectSlug: string }>;
@@ -15,9 +14,11 @@ export default async function ProjectImportQuestionsPage({
 	const { projectId, projectSlug } = await params;
 	const project = await loadProjectByPublicId(projectId, { required: true });
 
-	if (project.slug !== projectSlug) {
-		redirect(projectImportQuestionsPath(project.id, project.slug));
-	}
+	canonicalProjectRedirect({
+		project,
+		requestedSlug: projectSlug,
+		route: { kind: "importQuestions" },
+	});
 
 	return (
 		<Suspense>

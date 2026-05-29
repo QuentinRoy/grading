@@ -2,17 +2,15 @@ import Box from "@mui/material/Box";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import SubmissionOverviewAssessmentClient from "@/assessment/SubmissionOverviewAssessmentClient";
 import { loadAssessment } from "@/db/assessments";
 import { loadProjectByPublicId } from "@/db/projects";
 import { loadQuestions } from "@/db/questions";
 import { loadSubmissionOverviewProgress } from "@/db/submissionProgress";
 import { loadSubmissions } from "@/db/submissions";
-import {
-	projectAssessmentSubmissionPath,
-	projectAssessmentsPath,
-} from "@/projects/projectPaths";
+import { canonicalProjectRedirect } from "@/projects/canonicalProjectRedirect";
+import { projectAssessmentsPath } from "@/projects/projectPaths";
 import { attachAssessment } from "@/rubrics/rubric";
 import MuiNextLink from "@/shared/MuiNextLink";
 import { getSubmissionLabel } from "@/submissions/getSubmissionLabel";
@@ -34,11 +32,11 @@ async function ProjectSubmissionPageContent({ params }: SubmissionPageProps) {
 
 	const project = await loadProjectByPublicId(projectId, { required: true });
 
-	if (project.slug !== projectSlug) {
-		redirect(
-			projectAssessmentSubmissionPath(project.id, project.slug, submissionId),
-		);
-	}
+	canonicalProjectRedirect({
+		project,
+		requestedSlug: projectSlug,
+		route: { kind: "submission", submissionId },
+	});
 
 	const [submissions, questionGrid, progressBySubmissionId] = await Promise.all(
 		[
