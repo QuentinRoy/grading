@@ -15,6 +15,35 @@
 - Read `CONTEXT.md` before changing domain terminology, public/API contracts, database boundaries, import/export formats, or code involving project identifiers.
 - Treat `CONTEXT.md` as the canonical glossary for repository-wide domain language. Prefer its terms exactly, especially `Project ID` for public identifiers and `Project Row ID` for internal database keys.
 
+## Agent operating protocol
+
+Before editing:
+
+1. Read this file.
+2. Use `docs/index.md` to locate task-relevant repository guidance.
+3. Read only the focused docs needed for the requested task. Do not load every doc by default.
+4. If no focused guidance applies, state that briefly before proceeding.
+
+When planning, explicitly list the repository guidance consulted and the conventions that apply. If the task is small enough to skip a formal plan, still mention any relevant guidance in the final summary.
+
+Before finishing, review the changed files against the consulted guidance. Mention any relevant convention intentionally not followed and why.
+
+## Guidance routing
+
+Use this table to find the canonical guidance instead of copying rules into this file:
+
+- Domain terminology, project identifiers, public/API contracts, database boundaries, import/export formats → `CONTEXT.md`.
+- Documentation placement and lifecycle → `docs/index.md`.
+- GitHub issues, pull requests, labels, templates, and collaboration workflow → `docs/guides/issue-and-pr-conventions.md`.
+- Commit titles and squash merge titles → `docs/guides/commit-message-conventions.md`.
+- TypeScript public/helper APIs and function parameter design → `docs/guides/typescript-api-design.md`.
+- Database migration conventions → `docs/reference/database-migrations.md`.
+- Testing conventions and test-command selection → `docs/reference/testing-conventions.md`.
+- Accepted architecture decisions → `docs/adr/`.
+- Chosen implementation designs → `docs/design/`.
+- Open-ended audits, comparisons, and option analysis → `docs/investigations/`.
+- Temporary execution plans → `plans/active/`.
+
 ## Skills
 
 - Load `.agents/skills/caveman/SKILL.md` at session start and use `lite` mode by default for terse, token-efficient communication.
