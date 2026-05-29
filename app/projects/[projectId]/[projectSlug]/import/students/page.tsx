@@ -1,9 +1,8 @@
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { loadProjectByPublicId } from "@/db/projects";
 import StudentsImportForm from "@/import/StudentsImportForm";
 import { studentsImportAction } from "@/import/studentsImportAction";
-import { projectImportStudentsPath } from "@/projects/projectPaths";
+import { canonicalProjectRedirect } from "@/projects/canonicalProjectRedirect";
 
 type ProjectImportStudentsPageProps = {
 	params: Promise<{ projectId: string; projectSlug: string }>;
@@ -15,9 +14,11 @@ export default async function ProjectImportStudentsPage({
 	const { projectId, projectSlug } = await params;
 	const project = await loadProjectByPublicId(projectId, { required: true });
 
-	if (project.slug !== projectSlug) {
-		redirect(projectImportStudentsPath(project.id, project.slug));
-	}
+	canonicalProjectRedirect({
+		project,
+		requestedSlug: projectSlug,
+		route: { kind: "importStudents" },
+	});
 
 	return (
 		<Suspense>
