@@ -6,12 +6,13 @@ import { type ReactNode, Suspense, useState } from "react";
 import AppShellLoadingShell from "./AppShellLoadingShell";
 import AppShellNavigationShell from "./AppShellNavigationShell";
 
-type AppShellProps = { children: ReactNode; showNavigation?: boolean };
+type AppShellProps =
+	| { showNavigation: true; projectName: string; children: ReactNode }
+	| { showNavigation?: false; children: ReactNode };
 
-export default function AppShell({
-	children,
-	showNavigation = true,
-}: AppShellProps) {
+export default function AppShell(props: AppShellProps) {
+	const { children } = props;
+	const showNavigation = props.showNavigation ?? false;
 	const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
 
 	return (
@@ -20,7 +21,9 @@ export default function AppShell({
 				fallback={<AppShellLoadingShell showNavigation={showNavigation} />}
 			>
 				<AppShellNavigationShell
-					showNavigation={showNavigation}
+					{...(props.showNavigation
+						? { showNavigation: true, projectName: props.projectName }
+						: { showNavigation: false })}
 					drawerOpen={drawerOpen}
 					onOpenDrawer={() => setDrawerOpen(true)}
 					onCloseDrawer={() => setDrawerOpen(false)}

@@ -12,7 +12,7 @@ import { loadSubmissions } from "@/db/submissions";
 import {
 	projectAssessmentSubmissionPath,
 	projectAssessmentsPath,
-} from "@/projects/routes";
+} from "@/projects/projectPaths";
 import { attachAssessment } from "@/rubrics/rubric";
 import MuiNextLink from "@/shared/MuiNextLink";
 import { getSubmissionLabel } from "@/submissions/getSubmissionLabel";
@@ -32,10 +32,7 @@ export default function ProjectSubmissionPage({ params }: SubmissionPageProps) {
 async function ProjectSubmissionPageContent({ params }: SubmissionPageProps) {
 	const { submissionId, projectId, projectSlug } = await params;
 
-	const project = await loadProjectByPublicId(projectId);
-	if (project == null) {
-		notFound();
-	}
+	const project = await loadProjectByPublicId(projectId, { required: true });
 
 	if (project.slug !== projectSlug) {
 		redirect(

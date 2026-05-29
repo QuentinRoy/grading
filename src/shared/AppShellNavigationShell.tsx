@@ -4,34 +4,36 @@ import { Toolbar } from "@mui/material";
 import Drawer from "@mui/material/Drawer";
 import { usePathname } from "next/navigation";
 import { type ReactNode, useId } from "react";
-import { projectDashboardPath } from "@/projects/routes";
+import { projectDashboardPath } from "@/projects/projectPaths";
 import {
 	APP_SHELL_DRAWER_WIDTH,
-	displayProjectName,
 	getProjectRouteContext,
 } from "./AppShell.shared";
 import AppShellDrawerContent from "./AppShellDrawerContent";
 import AppShellTopBar from "./AppShellTopBar";
 
-type AppShellNavigationShellProps = {
-	showNavigation: boolean;
-	drawerOpen: boolean;
-	onOpenDrawer: () => void;
-	onCloseDrawer: () => void;
-};
+type AppShellNavigationShellProps =
+	| {
+			showNavigation: true;
+			projectName: string;
+			drawerOpen: boolean;
+			onOpenDrawer: () => void;
+			onCloseDrawer: () => void;
+	  }
+	| {
+			showNavigation: false;
+			drawerOpen: boolean;
+			onOpenDrawer: () => void;
+			onCloseDrawer: () => void;
+	  };
 
-export default function AppShellNavigationShell({
-	showNavigation,
-	drawerOpen,
-	onOpenDrawer,
-	onCloseDrawer,
-}: AppShellNavigationShellProps): ReactNode {
+export default function AppShellNavigationShell(
+	props: AppShellNavigationShellProps,
+): ReactNode {
+	const { showNavigation, drawerOpen, onOpenDrawer, onCloseDrawer } = props;
 	const pathname = usePathname();
 	const projectRouteContext = getProjectRouteContext(pathname);
-	const title =
-		showNavigation && projectRouteContext != null
-			? displayProjectName(projectRouteContext.projectSlug)
-			: "BonPoint";
+	const title = props.showNavigation ? props.projectName : "BonPoint";
 	const drawerId = useId();
 
 	return (
@@ -55,7 +57,7 @@ export default function AppShellNavigationShell({
 				drawerId={showNavigation ? drawerId : undefined}
 			/>
 
-			{showNavigation && (
+			{props.showNavigation && (
 				// Intentionally use non-swipeable Drawer.
 				// Swipe gestures conflict with browser navigation
 				// on iPad/Safari and opening via the hamburger
@@ -76,6 +78,7 @@ export default function AppShellNavigationShell({
 					<Toolbar />
 					<AppShellDrawerContent
 						projectRouteContext={projectRouteContext}
+						projectName={props.projectName}
 						onDismiss={onCloseDrawer}
 					/>
 				</Drawer>

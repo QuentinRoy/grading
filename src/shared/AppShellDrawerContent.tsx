@@ -26,12 +26,9 @@ import {
 	projectImportStudentsPath,
 	projectOverviewPath,
 	projectQuestionsPath,
-} from "@/projects/routes";
+} from "@/projects/projectPaths";
 import { useLocalStorage } from "@/utils/useLocalStorage";
-import {
-	displayProjectName,
-	type ProjectRouteContext,
-} from "./AppShell.shared";
+import { type ProjectRouteContext } from "./AppShell.shared";
 
 const EXPORT_STORAGE_KEY = "export-csv-options-v1";
 
@@ -97,11 +94,13 @@ function NavigationZone({
 
 type AppShellDrawerContentProps = {
 	projectRouteContext: ProjectRouteContext | null;
+	projectName: string;
 	onDismiss?: () => void;
 };
 
 export default function AppShellDrawerContent({
 	projectRouteContext,
+	projectName,
 	onDismiss,
 }: AppShellDrawerContentProps): ReactNode {
 	const [exportOptions, setExportOptions] =
@@ -220,10 +219,7 @@ export default function AppShellDrawerContent({
 							onClick={onDismiss}
 							sx={{ borderRadius: 1 }}
 						>
-							<ListItemText
-								primary={displayProjectName(projectRouteContext.projectSlug)}
-								secondary="Change project"
-							/>
+							<ListItemText primary={projectName} secondary="Change project" />
 						</ListItemButton>
 					</List>
 				</Box>

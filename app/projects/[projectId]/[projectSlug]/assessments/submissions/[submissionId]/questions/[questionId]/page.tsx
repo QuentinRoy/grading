@@ -13,7 +13,7 @@ import { loadSubmissions } from "@/db/submissions";
 import {
 	projectAssessmentSubmissionQuestionPath,
 	projectAssessmentsPath,
-} from "@/projects/routes";
+} from "@/projects/projectPaths";
 import { attachAssessment } from "@/rubrics/rubric";
 import CodeSnippet from "@/shared/CodeSnippet";
 import MuiNextLink from "@/shared/MuiNextLink";
@@ -37,11 +37,7 @@ async function ProjectQuestionSubmissionPageContent({
 	params,
 }: QuestionSubmissionPageProps) {
 	const { projectId, projectSlug, submissionId, questionId } = await params;
-	const project = await loadProjectByPublicId(projectId);
-
-	if (project == null) {
-		notFound();
-	}
+	const project = await loadProjectByPublicId(projectId, { required: true });
 
 	if (project.slug !== projectSlug) {
 		redirect(
@@ -76,11 +72,7 @@ async function QuestionHeaderSection({
 	"use cache";
 	cacheTag("questions", `questions:${questionId}`);
 
-	const project = await loadProjectByPublicId(projectId);
-
-	if (project == null) {
-		notFound();
-	}
+	const project = await loadProjectByPublicId(projectId, { required: true });
 
 	const question = await loadQuestion(questionId, project.id);
 
@@ -134,11 +126,7 @@ async function SubmissionRubricSection({
 	cacheTag(`questions:${questionId}`);
 	cacheTag("submissions");
 
-	const project = await loadProjectByPublicId(projectId);
-
-	if (project == null) {
-		notFound();
-	}
+	const project = await loadProjectByPublicId(projectId, { required: true });
 
 	const [question, submissions, assessments, progressBySubmissionId] =
 		await Promise.all([
