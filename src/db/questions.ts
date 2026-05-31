@@ -4,7 +4,6 @@ import { cacheLife } from "next/cache";
 import { QuestionsValidationError } from "@/questions/errors";
 import { CACHE_TAGS, cacheTags, updateTags } from "./cacheTags";
 import { db } from "./kysely";
-import { withProjectScope } from "./projectScope";
 import type { Grid, Question, Rubric, RubricType } from "./types";
 
 function toNumber(value: string | number): number {
@@ -487,22 +486,28 @@ function assertUniqueIds(label: string, ids: string[]): void {
 export async function loadManagedQuestions(
 	projectId?: string,
 ): Promise<ManagedQuestionDetails[]> {
-	const projectRowId = await resolveProjectRowId(projectId);
-
-	const countsQuery = db
-		.selectFrom("assessment")
-		.innerJoin("question", "question.rowId", "assessment.questionId")
-		.select(({ fn }) => [
-			"question.id as questionId",
-			fn.count<number>("assessment.id").as("assessmentCount"),
-		])
-		.groupBy("question.id");
-
 	const [rows, counts] = await Promise.all([
 		loadQuestionsFromDb(projectId),
-		projectRowId != null
-			? countsQuery.where("assessment.projectId", "=", projectRowId).execute()
-			: countsQuery.execute(),
+		db
+			.selectFrom("assessment")
+			.innerJoin("question", "question.rowId", "assessment.questionId")
+			.innerJoin("project", "project.rowId", "assessment.projectId")
+			.$if(projectId != null, (qb) => {
+				if (projectId == null) {
+					throw new Error(
+						`Unexpected null projectId. This is likely a bug in Kysely.`,
+					);
+				}
+				return qb
+					.innerJoin("project", "project.rowId", "assessment.projectId")
+					.where("project.id", "=", projectId);
+			})
+			.select(({ fn }) => [
+				"question.id as questionId",
+				fn.count<number>("assessment.id").as("assessmentCount"),
+			])
+			.groupBy("question.id")
+			.execute(),
 	]);
 
 	const assessmentCountByQuestionId = new Map(
@@ -924,16 +929,19 @@ export async function deleteManagedQuestion(
 	projectId: string,
 ): Promise<{ assessmentCount: number }> {
 	const impact = await getQuestionDeleteImpact(questionId, projectId);
-	const projectRowId = await resolveProjectRowId(projectId);
-	if (projectRowId == null) {
-		throw new Error("Project id is required.");
-	}
 
-	let query = db.deleteFrom("question").where("id", "=", questionId);
-
-	query = query.where("question.projectId", "=", projectRowId);
-
-	await query.execute();
+	await db
+		.deleteFrom("question")
+		.where("question.id", "=", questionId)
+		.where(
+			"question.projectId",
+			"=",
+			db
+				.selectFrom("project")
+				.select("rowId")
+				.where("project.id", "=", projectId),
+		)
+		.execute();
 
 	updateTags(
 		CACHE_TAGS.questions,
@@ -945,31 +953,62 @@ export async function deleteManagedQuestion(
 	return impact;
 }
 
+function findDuplicates(values: string[]): string[] {
+	const seen = new Set<string>();
+	const duplicates = new Set<string>();
+	for (const value of values) {
+		if (seen.has(value)) {
+			duplicates.add(value);
+		} else {
+			seen.add(value);
+		}
+	}
+	return [...duplicates];
+}
+
 export async function reorderQuestions(
 	updates: Array<{ id: string; position: number }>,
 	projectId: string,
 ): Promise<void> {
-	if (updates.length === 0) {
-		return;
-	}
+	if (updates.length === 0) return;
 
 	const questionIds = updates.map((u) => u.id);
+	const duplicateIds = findDuplicates(questionIds);
+	if (duplicateIds.length > 0) {
+		throw new Error(
+			`Each question can only be reordered once per request. Duplicated question ids: ${duplicateIds.join(", ")}.`,
+		);
+	}
+
 	const conditions = updates.map(
 		({ id, position }) =>
 			sql`when ${sql.ref("id")} = ${sql.lit(id)} then ${sql.lit(position)}`,
 	);
 
-	const projectRowId = await resolveProjectRowId(projectId);
-	if (projectRowId == null) {
-		throw new Error("Project id is required.");
-	}
+	await db.transaction().execute(async (tx) => {
+		const updated = await tx
+			.updateTable("question")
+			.set({ position: sql`case ${sql.join(conditions, sql` `)} end` })
+			.where("question.id", "in", questionIds)
+			.where(
+				"question.projectId",
+				"=",
+				tx
+					.selectFrom("project")
+					.select("rowId")
+					.where("project.id", "=", projectId),
+			)
+			.returning("question.id")
+			.execute();
 
-	await db
-		.updateTable("question")
-		.set({ position: sql`case ${sql.join(conditions, sql` `)} end` })
-		.where("id", "in", questionIds)
-		.where("question.projectId", "=", projectRowId)
-		.execute();
+		if (updated.length !== questionIds.length) {
+			const foundIds = new Set(updated.map((row) => row.id));
+			const missingIds = questionIds.filter((id) => !foundIds.has(id));
+			throw new Error(
+				`Some questions were not found in this project: ${missingIds.join(", ")}.`,
+			);
+		}
+	});
 
 	updateTags(CACHE_TAGS.questions);
 }

@@ -149,6 +149,41 @@ async function createAssessedBooleanQuestionFixture(
 	};
 }
 
+async function createQuestion(
+	db: Kysely<DB>,
+	projectId: number,
+	position: number,
+): Promise<{ id: string; rowId: number }> {
+	const id = buildTestId("question");
+
+	await db
+		.insertInto("question")
+		.values({ projectId, id, label: `Question ${position}`, position })
+		.execute();
+
+	const question = await db
+		.selectFrom("question")
+		.select("rowId")
+		.where("projectId", "=", projectId)
+		.where("id", "=", id)
+		.executeTakeFirstOrThrow();
+
+	return { id, rowId: question.rowId };
+}
+
+async function getQuestionPositions(
+	db: Kysely<DB>,
+	projectId: number,
+): Promise<Record<string, number>> {
+	const rows = await db
+		.selectFrom("question")
+		.select(["id", "position"])
+		.where("projectId", "=", projectId)
+		.execute();
+
+	return Object.fromEntries(rows.map((row) => [row.id, row.position]));
+}
+
 async function createOrdinalQuestionFixture(
 	db: Kysely<DB>,
 	projectId: number,
@@ -490,4 +525,126 @@ test("deleteManagedQuestion reports impact and cascades linked assessments", asy
 
 	expect(questionRows).toHaveLength(0);
 	expect(assessmentRows).toHaveLength(0);
+});
+
+test("reorderQuestions updates positions for the provided questions", async () => {
+	await using db = await createTestDb();
+	const { reorderQuestions } = await loadQuestionsModuleWithDb(db);
+
+	await using project = await createProject(db, "Reorder Project");
+	const first = await createQuestion(db, project.rowId, 0);
+	const second = await createQuestion(db, project.rowId, 1);
+	const third = await createQuestion(db, project.rowId, 2);
+
+	await reorderQuestions(
+		[
+			{ id: third.id, position: 0 },
+			{ id: first.id, position: 1 },
+			{ id: second.id, position: 2 },
+		],
+		project.id,
+	);
+
+	const positions = await getQuestionPositions(db, project.rowId);
+	expect(positions).toEqual({ [third.id]: 0, [first.id]: 1, [second.id]: 2 });
+});
+
+test("reorderQuestions leaves questions outside the update list untouched", async () => {
+	await using db = await createTestDb();
+	const { reorderQuestions } = await loadQuestionsModuleWithDb(db);
+
+	await using project = await createProject(db, "Reorder Partial Project");
+	const first = await createQuestion(db, project.rowId, 0);
+	const second = await createQuestion(db, project.rowId, 1);
+	const untouched = await createQuestion(db, project.rowId, 2);
+
+	await reorderQuestions(
+		[
+			{ id: first.id, position: 1 },
+			{ id: second.id, position: 0 },
+		],
+		project.id,
+	);
+
+	const positions = await getQuestionPositions(db, project.rowId);
+	expect(positions).toEqual({
+		[first.id]: 1,
+		[second.id]: 0,
+		[untouched.id]: 2,
+	});
+});
+
+test("reorderQuestions only affects questions in the given project", async () => {
+	await using db = await createTestDb();
+	const { reorderQuestions } = await loadQuestionsModuleWithDb(db);
+
+	await using project = await createProject(db, "Reorder Scoped Project");
+	await using otherProject = await createProject(db, "Reorder Other Project");
+
+	const question = await createQuestion(db, project.rowId, 0);
+	const otherQuestion = await createQuestion(db, otherProject.rowId, 0);
+
+	await reorderQuestions([{ id: question.id, position: 5 }], project.id);
+
+	const positions = await getQuestionPositions(db, project.rowId);
+	expect(positions).toEqual({ [question.id]: 5 });
+
+	const otherPositions = await getQuestionPositions(db, otherProject.rowId);
+	expect(otherPositions).toEqual({ [otherQuestion.id]: 0 });
+});
+
+test("reorderQuestions does nothing when given no updates", async () => {
+	await using db = await createTestDb();
+	const { reorderQuestions } = await loadQuestionsModuleWithDb(db);
+
+	await using project = await createProject(db, "Reorder Empty Project");
+	const question = await createQuestion(db, project.rowId, 0);
+
+	await reorderQuestions([], project.id);
+
+	const positions = await getQuestionPositions(db, project.rowId);
+	expect(positions).toEqual({ [question.id]: 0 });
+});
+
+test("reorderQuestions throws and changes nothing when an id is not found", async () => {
+	await using db = await createTestDb();
+	const { reorderQuestions } = await loadQuestionsModuleWithDb(db);
+
+	await using project = await createProject(db, "Reorder Missing Project");
+	const existing = await createQuestion(db, project.rowId, 0);
+	const missingId = buildTestId("question-missing");
+
+	await expect(
+		reorderQuestions(
+			[
+				{ id: existing.id, position: 1 },
+				{ id: missingId, position: 0 },
+			],
+			project.id,
+		),
+	).rejects.toThrow(missingId);
+
+	const positions = await getQuestionPositions(db, project.rowId);
+	expect(positions).toEqual({ [existing.id]: 0 });
+});
+
+test("reorderQuestions throws when the same id is provided more than once", async () => {
+	await using db = await createTestDb();
+	const { reorderQuestions } = await loadQuestionsModuleWithDb(db);
+
+	await using project = await createProject(db, "Reorder Duplicate Project");
+	const question = await createQuestion(db, project.rowId, 0);
+
+	await expect(
+		reorderQuestions(
+			[
+				{ id: question.id, position: 1 },
+				{ id: question.id, position: 2 },
+			],
+			project.id,
+		),
+	).rejects.toThrow(question.id);
+
+	const positions = await getQuestionPositions(db, project.rowId);
+	expect(positions).toEqual({ [question.id]: 0 });
 });
