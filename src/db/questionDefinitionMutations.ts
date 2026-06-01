@@ -462,19 +462,6 @@ export async function deleteQuestionDefinition(
 	return { deleted: (result?.numDeletedRows ?? 0n) > 0n };
 }
 
-function findDuplicates(values: string[]): string[] {
-	const seen = new Set<string>();
-	const duplicates = new Set<string>();
-	for (const value of values) {
-		if (seen.has(value)) {
-			duplicates.add(value);
-		} else {
-			seen.add(value);
-		}
-	}
-	return [...duplicates];
-}
-
 export async function reorderQuestions(
 	updates: Array<{ id: string; position: number }>,
 	projectId: string,
@@ -482,12 +469,12 @@ export async function reorderQuestions(
 	if (updates.length === 0) return;
 
 	const questionIds = updates.map((u) => u.id);
-	const duplicateIds = findDuplicates(questionIds);
-	if (duplicateIds.length > 0) {
+	const duplicateGroups = findDuplicateGroups(questionIds);
+	if (duplicateGroups.length > 0) {
 		throw new Error(
-			`Each question can only be reordered once per request. Duplicated question ids: ${duplicateIds.join(
-				", ",
-			)}.`,
+			`Each question can only be reordered once per request. Duplicated question ids: ${duplicateGroups
+				.map((group) => group.key)
+				.join(", ")}.`,
 		);
 	}
 
