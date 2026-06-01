@@ -1,6 +1,6 @@
 import type { Kysely } from "kysely";
-import type { DB } from "../db/generated/db";
-import { buildTestId } from "./dbIntegration";
+import type { DB } from "#db/generated/db.ts";
+import { buildTestId } from "./dbIntegration.ts";
 
 export async function createProjectRecord(db: Kysely<DB>, name: string) {
 	const project = await db

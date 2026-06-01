@@ -2,7 +2,7 @@ import { Grid } from "@mui/material";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import type { ReactElement } from "react";
 import { fn } from "storybook/test";
-import RubricGradeRow from "./RubricGradeRow";
+import RubricGradeRow from "./RubricGradeRow.tsx";
 
 const meta = {
 	title: "Rubrics/RubricGradeRow",

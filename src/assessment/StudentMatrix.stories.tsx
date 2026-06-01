@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import StudentMatrix from "./StudentMatrix";
+import StudentMatrix from "./StudentMatrix.tsx";
 
 const rubrics = [
 	{

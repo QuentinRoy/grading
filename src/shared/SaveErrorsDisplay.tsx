@@ -4,8 +4,8 @@ import MuiAlert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Link from "@mui/material/Link";
 import NextLink from "next/link";
-import { projectAssessmentSubmissionQuestionPath } from "@/projects/projectPaths";
-import { useSaveErrors } from "./SaveErrorsProvider";
+import { projectAssessmentSubmissionQuestionPath } from "#projects/projectPaths.ts";
+import { useSaveErrors } from "./SaveErrorsProvider.tsx";
 
 export function SaveErrorsDisplay() {
 	const { errors, dismissError } = useSaveErrors();

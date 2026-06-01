@@ -1,12 +1,12 @@
 import { type Kysely } from "kysely";
 import { expect, test, vi } from "vitest";
-import { buildTestId, createTestDb } from "../test/dbIntegration";
-import { createProject } from "../test/projects";
-import type { DB } from "./generated/db";
+import { buildTestId, createTestDb } from "#test/dbIntegration.ts";
+import { createProject } from "#test/projects.ts";
+import type { DB } from "./generated/db.ts";
 
 vi.mock("server-only", () => ({}));
 
-vi.mock("@/questions/errors", () => ({
+vi.mock("#questions/errors.ts", () => ({
 	QuestionsValidationError: class QuestionsValidationError extends Error {
 		details?: unknown;
 
@@ -29,9 +29,9 @@ async function loadQuestionsModuleWithDb(db: Kysely<DB>) {
 	vi.doMock("./kysely", () => ({ db }));
 
 	const [read, managed, commands] = await Promise.all([
-		import("./questionsRead"),
-		import("./questionsManaged"),
-		import("./questionsCommands"),
+		import("./questionsRead.ts"),
+		import("./questionsManaged.ts"),
+		import("./questionsCommands.ts"),
 	]);
 
 	vi.doUnmock("./kysely");

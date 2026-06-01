@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, fn, screen, userEvent, waitFor } from "storybook/test";
-import DeleteQuestionDialog from "./DeleteQuestionDialog";
+import DeleteQuestionDialog from "./DeleteQuestionDialog.tsx";
 
 const meta = {
 	title: "Questions/DeleteQuestionDialog",

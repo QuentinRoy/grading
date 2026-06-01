@@ -9,18 +9,18 @@ import {
 	Typography,
 } from "@mui/material";
 import { cacheTag } from "next/cache";
-import { loadProjectByPublicId } from "@/db/projects";
-import { loadQuestions } from "@/db/questions";
-import { loadSubmissionOverviewProgress } from "@/db/submissionProgress";
-import { loadSubmissions } from "@/db/submissions";
-import { canonicalProjectRedirect } from "@/projects/canonicalProjectRedirect";
+import { loadProjectByPublicId } from "#db/projects.ts";
+import { loadQuestions } from "#db/questions.ts";
+import { loadSubmissionOverviewProgress } from "#db/submissionProgress.ts";
+import { loadSubmissions } from "#db/submissions.ts";
+import { canonicalProjectRedirect } from "#projects/canonicalProjectRedirect.ts";
 import {
 	projectAssessmentSubmissionPath,
 	projectAssessmentSubmissionQuestionPath,
 	projectOverviewPath,
-} from "@/projects/projectPaths";
-import QuestionList from "@/questions/QuestionList";
-import { getSubmissionLabel } from "@/submissions/getSubmissionLabel";
+} from "#projects/projectPaths.ts";
+import QuestionList from "#questions/QuestionList.tsx";
+import { getSubmissionLabel } from "#submissions/getSubmissionLabel.ts";
 
 type ProjectAssessmentsPageProps = {
 	params: Promise<{ projectId: string; projectSlug: string }>;

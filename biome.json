@@ -20,10 +20,37 @@
 		"rules": {
 			"recommended": false,
 			"complexity": { "noUselessTypeConstraint": "error" },
-			"correctness": { "noUnusedVariables": "error" },
+			"correctness": {
+				"noUnusedVariables": "error",
+				"useImportExtensions": "error"
+			},
 			"style": {
 				"noCommonJs": "error",
 				"noNamespace": "error",
+				"noRestrictedImports": {
+					"level": "error",
+					"options": {
+						"patterns": [
+							{
+								"group": ["@/**"],
+								"message": "The @/ path alias was removed (see docs/adr/0003). Use a #feature/… subpath for cross-feature imports or a relative ./… import within a feature."
+							},
+							{
+								"group": [
+									"#*",
+									"#*/**",
+									"!#*.ts",
+									"!#*.tsx",
+									"!#*.css",
+									"!#*/**/*.ts",
+									"!#*/**/*.tsx",
+									"!#*/**/*.css"
+								],
+								"message": "Internal # subpath imports must include an explicit .ts/.tsx extension (see docs/adr/0003) so raw `node` execution resolves them."
+							}
+						]
+					}
+				},
 				"useArrayLiterals": "error",
 				"useAsConstAssertion": "error",
 				"useBlockStatements": "off",

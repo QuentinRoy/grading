@@ -14,12 +14,12 @@ import {
 } from "@mui/material";
 import { type ReactElement, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
-import type { QuestionsActionState } from "./state";
-import type { QuestionManagementItem } from "./types";
+import type { QuestionsActionState } from "./state.ts";
+import type { QuestionManagementItem } from "./types.ts";
 import {
 	buildDeleteConfirmationPhrase,
 	matchesDeleteConfirmation,
-} from "./useDeleteConfirmation";
+} from "./useDeleteConfirmation.ts";
 
 type DeleteQuestionDialogProps = {
 	open: boolean;

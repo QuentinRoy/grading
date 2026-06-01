@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
-import NumericalGradeControl from "./NumericalGradeControl";
+import NumericalGradeControl from "./NumericalGradeControl.tsx";
 
 const meta = {
 	title: "Rubrics/NumericalGradeControl",

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import {
 	createEmptyQuestionEditorValue,
 	type QuestionEditorValue,
-} from "./types";
+} from "./types.ts";
 
 export function useQuestionDraft(initialValue?: QuestionEditorValue) {
 	const [draft, setDraft] = useState<QuestionEditorValue>(

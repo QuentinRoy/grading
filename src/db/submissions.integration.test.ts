@@ -1,8 +1,8 @@
 import type { Kysely } from "kysely";
 import { expect, test, vi } from "vitest";
-import { createTestDb } from "../test/dbIntegration";
-import { createProject } from "../test/projects";
-import type { DB } from "./generated/db";
+import { createTestDb } from "#test/dbIntegration.ts";
+import { createProject } from "#test/projects.ts";
+import type { DB } from "./generated/db.ts";
 
 vi.mock("server-only", () => ({}));
 
@@ -116,7 +116,7 @@ async function createTeamAndSubmission(
 async function loadSubmissionsWithDb(db: Kysely<DB>, projectId: string) {
 	vi.resetModules();
 	vi.doMock("./kysely", () => ({ db }));
-	const { loadSubmissions } = await import("./submissions");
+	const { loadSubmissions } = await import("./submissions.ts");
 	vi.doUnmock("./kysely");
 	return loadSubmissions(projectId);
 }

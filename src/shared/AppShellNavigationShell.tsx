@@ -4,13 +4,13 @@ import { Toolbar } from "@mui/material";
 import Drawer from "@mui/material/Drawer";
 import { usePathname } from "next/navigation";
 import { type ReactNode, useId } from "react";
-import { projectDashboardPath } from "@/projects/projectPaths";
+import { projectDashboardPath } from "#projects/projectPaths.ts";
 import {
 	APP_SHELL_DRAWER_WIDTH,
 	getProjectRouteContext,
-} from "./AppShell.shared";
-import AppShellDrawerContent from "./AppShellDrawerContent";
-import AppShellTopBar from "./AppShellTopBar";
+} from "./AppShell.shared.ts";
+import AppShellDrawerContent from "./AppShellDrawerContent.tsx";
+import AppShellTopBar from "./AppShellTopBar.tsx";
 
 type AppShellNavigationShellProps =
 	| {

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { useState } from "react";
 import { expect, screen, userEvent, waitFor } from "storybook/test";
-import AppShellNavigationShell from "./AppShellNavigationShell";
+import AppShellNavigationShell from "./AppShellNavigationShell.tsx";
 
 type NavigationShellStoryArgs = {
 	showNavigation: boolean;

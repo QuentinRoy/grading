@@ -1,5 +1,5 @@
-import type { Simplify } from "@/utils/utils";
-import type { RubricType, SubmissionType } from "./generated/db";
+import type { Simplify } from "#utils/utils.ts";
+import type { RubricType, SubmissionType } from "./generated/db.ts";
 
 // Policy: keep schema-correlated types in this file derived from generated DB
 // types to prevent drift, while exposing only curated app-facing contracts (no

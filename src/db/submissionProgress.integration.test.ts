@@ -1,8 +1,8 @@
 import type { Kysely } from "kysely";
 import { expect, test, vi } from "vitest";
-import { buildTestId, createTestDb } from "../test/dbIntegration";
-import { createProject } from "../test/projects";
-import type { DB } from "./generated/db";
+import { buildTestId, createTestDb } from "#test/dbIntegration.ts";
+import { createProject } from "#test/projects.ts";
+import type { DB } from "./generated/db.ts";
 
 vi.mock("server-only", () => ({}));
 
@@ -170,7 +170,7 @@ async function loadProgressWithDb(
 		updateTag: vi.fn(),
 	}));
 	const { loadSubmissionQuestionProgress } = await import(
-		"./submissionProgress"
+		"./submissionProgress.ts"
 	);
 	vi.doUnmock("./kysely");
 	return loadSubmissionQuestionProgress(questionId, projectId);
@@ -185,7 +185,7 @@ async function loadOverviewProgressWithDb(db: Kysely<DB>, projectId: string) {
 		updateTag: vi.fn(),
 	}));
 	const { loadSubmissionOverviewProgress } = await import(
-		"./submissionProgress"
+		"./submissionProgress.ts"
 	);
 	vi.doUnmock("./kysely");
 	return loadSubmissionOverviewProgress(projectId);

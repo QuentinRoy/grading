@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, screen, userEvent, waitFor } from "storybook/test";
-import AppShell from "./AppShell";
+import AppShell from "./AppShell.tsx";
 
 const meta = {
 	title: "Shared/AppShell",

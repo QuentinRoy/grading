@@ -1,13 +1,13 @@
 "use server";
 
 import { revalidateTag } from "next/cache";
-import { toImportErrorState } from "./actionUtils";
-import type { ImportState } from "./importState";
+import { toImportErrorState } from "./actionUtils.ts";
+import type { ImportState } from "./importState.ts";
 import {
 	groupStudentsIntoSubmissions,
 	parseStudentsCsv,
-} from "./parseStudents";
-import { saveStudents } from "./saveStudents";
+} from "./parseStudents.ts";
+import { saveStudents } from "./saveStudents.ts";
 
 export async function studentsImportAction(
 	projectId: string,

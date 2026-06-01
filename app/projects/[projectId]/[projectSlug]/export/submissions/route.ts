@@ -1,6 +1,6 @@
-import { loadProjectByPublicId } from "@/db/projects";
-import { createCsvSubmissionExport } from "@/export/submissionExport";
-import { parseExportOptions } from "./exportOptions";
+import { loadProjectByPublicId } from "#db/projects.ts";
+import { createCsvSubmissionExport } from "#export/submissionExport.ts";
+import { parseExportOptions } from "./exportOptions.ts";
 
 type RouteParams = {
 	params: Promise<{ projectId: string; projectSlug: string }>;

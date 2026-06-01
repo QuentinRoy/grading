@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { CamelCasePlugin, Kysely, PostgresDialect } from "kysely";
 import { FileMigrationProvider, Migrator } from "kysely/migration";
 import { Pool } from "pg";
-import type { DB } from "../db/generated/db";
+import type { DB } from "#db/generated/db.ts";
 
 export type StartedTestDatabase = {
 	db: Kysely<DB>;

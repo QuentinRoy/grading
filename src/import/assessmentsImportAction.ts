@@ -1,10 +1,10 @@
 "use server";
 
 import { revalidateTag } from "next/cache";
-import { toImportErrorState } from "./actionUtils";
-import type { ImportState } from "./importState";
-import { parseAssessmentsCsv } from "./parseAssessments";
-import { saveAssessments } from "./saveAssessments";
+import { toImportErrorState } from "./actionUtils.ts";
+import type { ImportState } from "./importState.ts";
+import { parseAssessmentsCsv } from "./parseAssessments.ts";
+import { saveAssessments } from "./saveAssessments.ts";
 
 export async function assessmentsImportAction(
 	projectId: string,

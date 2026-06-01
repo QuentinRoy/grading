@@ -10,10 +10,10 @@ import {
 } from "@mui/material";
 import { type ReactElement, useMemo } from "react";
 import { useFormStatus } from "react-dom";
-import RubricEditorList from "./RubricEditorList";
-import type { QuestionsActionState } from "./state";
-import type { QuestionEditorValue } from "./types";
-import { useQuestionDraft } from "./useQuestionDraft";
+import RubricEditorList from "./RubricEditorList.tsx";
+import type { QuestionsActionState } from "./state.ts";
+import type { QuestionEditorValue } from "./types.ts";
+import { useQuestionDraft } from "./useQuestionDraft.ts";
 
 type QuestionFormProps = {
 	mode: "create" | "edit";

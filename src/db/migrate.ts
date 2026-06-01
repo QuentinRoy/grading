@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { Kysely, PostgresDialect } from "kysely";
 import { FileMigrationProvider, Migrator } from "kysely/migration";
 import { Pool } from "pg";
-import type { DB } from "./generated/db";
+import type { DB } from "./generated/db.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

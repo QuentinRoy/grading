@@ -2,9 +2,9 @@
 
 import { Stack } from "@mui/material";
 import { type ReactElement } from "react";
-import type { QuestionRubricFieldErrors } from "./errors";
-import RubricEditorPaper, { NumberField } from "./RubricEditorPaper";
-import type { RubricEditorValue } from "./types";
+import type { QuestionRubricFieldErrors } from "./errors.ts";
+import RubricEditorPaper, { NumberField } from "./RubricEditorPaper.tsx";
+import type { RubricEditorValue } from "./types.ts";
 
 type BooleanRubric = Extract<RubricEditorValue, { type: "boolean" }>;
 

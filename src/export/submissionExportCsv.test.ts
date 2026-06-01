@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { SubmissionSubmitter } from "@/db/types";
+import type { SubmissionSubmitter } from "#db/types.ts";
 import {
 	buildSubmissionExportHeaders,
 	buildSubmissionExportRecord,
-} from "./submissionExportCsv";
+} from "./submissionExportCsv.ts";
 
 describe("submission CSV ordering", () => {
 	const questions = [

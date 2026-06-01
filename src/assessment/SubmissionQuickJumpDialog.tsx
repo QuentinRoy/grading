@@ -19,11 +19,11 @@ import {
 	useRef,
 	useState,
 } from "react";
-import type { Submission } from "@/db/types";
+import type { Submission } from "#db/types.ts";
 import {
 	buildSubmissionSearchTargets,
 	createSubmissionSearch,
-} from "@/submissions/quickJumpSearch";
+} from "#submissions/quickJumpSearch.ts";
 
 type SubmissionQuickJumpDialogProps = {
 	open: boolean;

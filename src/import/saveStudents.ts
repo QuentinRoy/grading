@@ -1,6 +1,6 @@
 import "server-only";
-import { db } from "../db/kysely";
-import type { NormalizedImportedSubmission } from "./types";
+import { db } from "#db/kysely.ts";
+import type { NormalizedImportedSubmission } from "./types.ts";
 
 export async function saveStudents(
 	submissions: NormalizedImportedSubmission[],

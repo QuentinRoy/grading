@@ -1,9 +1,9 @@
 import "server-only";
 import { customAlphabet } from "nanoid";
 import { cacheLife, revalidateTag } from "next/cache";
-import { CACHE_TAGS, cacheTags, projectCacheTag } from "./cacheTags";
-import type { Project } from "./generated/db";
-import { db } from "./kysely";
+import { CACHE_TAGS, cacheTags, projectCacheTag } from "./cacheTags.ts";
+import type { Project } from "./generated/db.ts";
+import { db } from "./kysely.ts";
 
 const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 10);
 const createProjectPublicId = () => `p-${nanoid()}`;

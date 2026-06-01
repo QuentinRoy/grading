@@ -1,8 +1,8 @@
 import { parse as parseCSV } from "csv-parse/sync";
-import type { NonEmptyArray } from "@/utils/utils";
-import { toSlug } from "./saveUtils";
-import { studentRowsSchema } from "./schemas";
-import type { ImportedStudent, NormalizedImportedSubmission } from "./types";
+import type { NonEmptyArray } from "#utils/utils.ts";
+import { toSlug } from "./saveUtils.ts";
+import { studentRowsSchema } from "./schemas.ts";
+import type { ImportedStudent, NormalizedImportedSubmission } from "./types.ts";
 
 export function parseStudentsCsv(content: string): ImportedStudent[] {
 	const rows = parseCSV(content, { columns: true, skip_empty_lines: true });

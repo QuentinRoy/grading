@@ -1,10 +1,10 @@
 "use server";
 
 import { revalidateTag } from "next/cache";
-import { toImportErrorState } from "./actionUtils";
-import type { ImportState } from "./importState";
-import { parseQuestionsYaml } from "./parseQuestions";
-import { saveQuestions } from "./saveQuestions";
+import { toImportErrorState } from "./actionUtils.ts";
+import type { ImportState } from "./importState.ts";
+import { parseQuestionsYaml } from "./parseQuestions.ts";
+import { saveQuestions } from "./saveQuestions.ts";
 
 export async function questionsImportAction(
 	projectId: string,

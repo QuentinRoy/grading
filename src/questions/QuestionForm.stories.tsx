@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
-import QuestionForm from "./QuestionForm";
+import QuestionForm from "./QuestionForm.tsx";
 
 const meta = {
 	title: "Questions/QuestionForm",

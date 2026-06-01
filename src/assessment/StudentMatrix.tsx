@@ -12,9 +12,9 @@ import type { ReactElement } from "react";
 import type {
 	RubricOverviewRow,
 	RubricOverviewStudentRow,
-} from "@/db/rubricOverviewBuilder";
-import CompletionProgress from "./CompletionProgress";
-import RubricDetailsTooltip from "./RubricDetailsTooltip";
+} from "#db/rubricOverviewBuilder.ts";
+import CompletionProgress from "./CompletionProgress.tsx";
+import RubricDetailsTooltip from "./RubricDetailsTooltip.tsx";
 
 type StudentMatrixProps = {
 	rubrics: RubricOverviewRow[];

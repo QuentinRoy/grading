@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode } from "react";
-import AppShellTopBar from "./AppShellTopBar";
+import AppShellTopBar from "./AppShellTopBar.tsx";
 
 type AppShellLoadingShellProps = { showNavigation: boolean };
 

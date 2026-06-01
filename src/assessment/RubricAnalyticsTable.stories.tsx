@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import RubricAnalyticsTable from "./RubricAnalyticsTable";
+import RubricAnalyticsTable from "./RubricAnalyticsTable.tsx";
 
 const rubrics = [
 	{

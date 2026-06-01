@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { parseQuestionsYaml } from "./parseQuestions";
+import { parseQuestionsYaml } from "./parseQuestions.ts";
 import {
 	groupStudentsIntoSubmissions,
 	parseStudentsCsv,
-} from "./parseStudents";
+} from "./parseStudents.ts";
 
 describe("parseQuestionsYaml", () => {
 	it("parses valid questions YAML", () => {

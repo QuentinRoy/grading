@@ -6,17 +6,17 @@ import Typography from "@mui/material/Typography";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactElement, useEffect, useState } from "react";
-import { projectAssessmentSubmissionQuestionPath } from "@/projects/projectPaths";
-import type { AssessedRubric } from "@/rubrics/rubric";
-import type { AssessmentRubricValue, Submission } from "../db/types";
-import { type SaveError, useSaveErrors } from "../shared/SaveErrorsProvider";
-import { getSubmissionLabel } from "../submissions/getSubmissionLabel";
-import AssessmentProgressSummary from "./AssessmentProgressSummary";
-import { summarizeRubrics } from "./assessmentSummary";
-import RubricGradeList from "./RubricGradeList";
-import SubmissionQuickJumpDialog from "./SubmissionQuickJumpDialog";
-import { saveAssessment } from "./saveAssessment";
-import { useAssessmentSession } from "./useAssessmentSession";
+import type { AssessmentRubricValue, Submission } from "#db/types.ts";
+import { projectAssessmentSubmissionQuestionPath } from "#projects/projectPaths.ts";
+import type { AssessedRubric } from "#rubrics/rubric.ts";
+import { type SaveError, useSaveErrors } from "#shared/SaveErrorsProvider.tsx";
+import { getSubmissionLabel } from "#submissions/getSubmissionLabel.ts";
+import AssessmentProgressSummary from "./AssessmentProgressSummary.tsx";
+import { summarizeRubrics } from "./assessmentSummary.ts";
+import RubricGradeList from "./RubricGradeList.tsx";
+import SubmissionQuickJumpDialog from "./SubmissionQuickJumpDialog.tsx";
+import { saveAssessment } from "./saveAssessment.ts";
+import { useAssessmentSession } from "./useAssessmentSession.ts";
 
 type SubmissionAssessmentClientProps = {
 	projectId: string;

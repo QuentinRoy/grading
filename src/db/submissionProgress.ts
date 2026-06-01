@@ -1,7 +1,11 @@
 import "server-only";
 import { cacheLife } from "next/cache";
-import { assessmentQuestionCacheTag, CACHE_TAGS, cacheTags } from "./cacheTags";
-import { db } from "./kysely";
+import {
+	assessmentQuestionCacheTag,
+	CACHE_TAGS,
+	cacheTags,
+} from "./cacheTags.ts";
+import { db } from "./kysely.ts";
 
 export type SubmissionProgressMetric = { completed: number; total: number };
 

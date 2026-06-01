@@ -1,6 +1,6 @@
 import "server-only";
-import { db } from "../db/kysely";
-import type { ImportedQuestions } from "./types";
+import { db } from "#db/kysely.ts";
+import type { ImportedQuestions } from "./types.ts";
 
 export async function saveQuestions(
 	questions: ImportedQuestions,

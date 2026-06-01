@@ -1,7 +1,7 @@
 import { expect, test, vi } from "vitest";
-import { createTestDb } from "../test/dbIntegration";
-import { createProject } from "../test/projects";
-import type { ImportedQuestions } from "./types";
+import { createTestDb } from "#test/dbIntegration.ts";
+import { createProject } from "#test/projects.ts";
+import type { ImportedQuestions } from "./types.ts";
 
 vi.mock("server-only", () => ({}));
 
@@ -30,7 +30,7 @@ test("saveQuestions allows the same question and rubric ids in different project
 	await using db = await createTestDb();
 	vi.resetModules();
 	using _kyselyMock = vi.doMock("../db/kysely", () => ({ db }));
-	const { saveQuestions } = await import("./saveQuestions");
+	const { saveQuestions } = await import("./saveQuestions.ts");
 
 	await using projectA = await createProject(db, "Import Project A");
 	await using projectB = await createProject(db, "Import Project B");
@@ -75,7 +75,7 @@ test("saveQuestions updates only the target project rows", async () => {
 	await using db = await createTestDb();
 	vi.resetModules();
 	using _kyselyMock = vi.doMock("../db/kysely", () => ({ db }));
-	const { saveQuestions } = await import("./saveQuestions");
+	const { saveQuestions } = await import("./saveQuestions.ts");
 
 	await using projectA = await createProject(db, "Isolation Project A");
 	await using projectB = await createProject(db, "Isolation Project B");
@@ -142,7 +142,7 @@ test("saveQuestions still upserts duplicate ids within the same project", async 
 	await using db = await createTestDb();
 	vi.resetModules();
 	using _kyselyMock = vi.doMock("../db/kysely", () => ({ db }));
-	const { saveQuestions } = await import("./saveQuestions");
+	const { saveQuestions } = await import("./saveQuestions.ts");
 
 	await using project = await createProject(db, "Single Project Upsert");
 	const projectRowId = project.rowId;

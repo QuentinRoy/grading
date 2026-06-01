@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { Submission } from "@/db/types";
+import type { Submission } from "#db/types.ts";
 import {
 	buildSubmissionSearchTargets,
 	createSubmissionSearch,
-} from "./quickJumpSearch";
+} from "./quickJumpSearch.ts";
 
 describe("quick jump submission search", () => {
 	const submissions: Submission[] = [

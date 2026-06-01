@@ -35,7 +35,7 @@ import {
 	useState,
 	useTransition,
 } from "react";
-import type { QuestionManagementItem } from "./types";
+import type { QuestionManagementItem } from "./types.ts";
 
 type QuestionTableProps = {
 	questions: QuestionManagementItem[];

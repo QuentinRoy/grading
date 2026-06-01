@@ -1,8 +1,8 @@
 import "server-only";
 import { type NextRequest, NextResponse } from "next/server";
-import { loadProjectByPublicId } from "@/db/projects";
-import { loadQuestions } from "@/db/questions";
-import { exportQuestionsToYaml } from "@/export/questionsExport";
+import { loadProjectByPublicId } from "#db/projects.ts";
+import { loadQuestions } from "#db/questions.ts";
+import { exportQuestionsToYaml } from "#export/questionsExport.ts";
 
 type RouteParams = {
 	params: Promise<{ projectId: string; projectSlug: string }>;

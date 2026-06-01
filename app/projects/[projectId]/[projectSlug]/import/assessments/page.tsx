@@ -1,8 +1,8 @@
 import { Suspense } from "react";
-import { loadProjectByPublicId } from "@/db/projects";
-import AssessmentsImportForm from "@/import/AssessmentsImportForm";
-import { assessmentsImportAction } from "@/import/assessmentsImportAction";
-import { canonicalProjectRedirect } from "@/projects/canonicalProjectRedirect";
+import { loadProjectByPublicId } from "#db/projects.ts";
+import AssessmentsImportForm from "#import/AssessmentsImportForm.tsx";
+import { assessmentsImportAction } from "#import/assessmentsImportAction.ts";
+import { canonicalProjectRedirect } from "#projects/canonicalProjectRedirect.ts";
 
 type ProjectImportAssessmentsPageProps = {
 	params: Promise<{ projectId: string; projectSlug: string }>;

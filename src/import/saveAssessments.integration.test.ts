@@ -3,11 +3,11 @@ import { expect, test, vi } from "vitest";
 import type {
 	SaveAssessmentParams,
 	SaveAssessmentResult,
-} from "../db/assessments";
-import type { DB } from "../db/generated/db";
-import { buildTestId, createTestDb } from "../test/dbIntegration";
-import { createProject } from "../test/projects";
-import type { ImportedAssessmentRow } from "./types";
+} from "#db/assessments.ts";
+import type { DB } from "#db/generated/db.ts";
+import { buildTestId, createTestDb } from "#test/dbIntegration.ts";
+import { createProject } from "#test/projects.ts";
+import type { ImportedAssessmentRow } from "./types.ts";
 
 vi.mock("server-only", () => ({}));
 
@@ -102,14 +102,14 @@ async function loadSaveAssessments(params: {
 		db: Kysely<DB>,
 		input: SaveAssessmentParams,
 	) => Promise<SaveAssessmentResult>;
-}): Promise<typeof import("./saveAssessments").saveAssessments> {
+}): Promise<typeof import("./saveAssessments.ts").saveAssessments> {
 	vi.resetModules();
 	vi.doMock("../db/kysely", () => ({ db: params.db }));
 
 	if (params.saveAssessmentWithDbMock) {
 		vi.doMock("../db/assessments", async () => {
 			const actual =
-				await vi.importActual<typeof import("../db/assessments")>(
+				await vi.importActual<typeof import("#db/assessments.ts")>(
 					"../db/assessments",
 				);
 
@@ -127,7 +127,7 @@ async function loadSaveAssessments(params: {
 		vi.doUnmock("../db/assessments");
 	}
 
-	const { saveAssessments } = await import("./saveAssessments");
+	const { saveAssessments } = await import("./saveAssessments.ts");
 
 	vi.doUnmock("../db/assessments");
 	vi.doUnmock("../db/kysely");
@@ -242,7 +242,7 @@ test("saveAssessments rolls back all writes if a later transactional write fails
 		db,
 		saveAssessmentWithDbMock: async (queryDb, input) => {
 			const actual =
-				await vi.importActual<typeof import("../db/assessments")>(
+				await vi.importActual<typeof import("#db/assessments.ts")>(
 					"../db/assessments",
 				);
 
