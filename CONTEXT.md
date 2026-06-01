@@ -29,8 +29,20 @@ For every feature, row identifiers are internal relational keys and must not lea
 _Avoid_: exposing any `rowId` in app-facing contracts unless an approved exception exists
 
 **Schema Alignment Rule**:
-App-level types that correlate to DB schema should derive from generated DB schema types whenever practical to prevent drift.
+App-level types that correlate to DB schema should derive from the **Generated DB Schema Type** whenever practical to prevent drift. This concerns generated database types (kysely `generated/`), not a **Validation Schema**.
 _Avoid_: manually duplicated enum/shape definitions that can diverge from generated schema
+
+**Generated DB Schema Type**:
+A TypeScript type generated from the database schema (kysely `src/db/generated/`). The source of truth for DB-correlated app types under the **Schema Alignment Rule**.
+_Avoid_: calling these "schemas" unqualified; conflating them with a **Validation Schema**
+
+**Validation Schema**:
+A zod schema at a feature's input boundary that parses untrusted input into a typed value. A pure leaf: it imports only zod (and other schema leaves), never `src/db` or a sibling feature.
+_Avoid_: bare "schema", parser, DTO
+
+**Derived Input Type**:
+The `z.output` of a **Validation Schema** — the single source of truth for what a write command accepts. The command is co-located with the schema it consumes.
+_Avoid_: a hand-written input type that parallels a schema; `z.infer` of the input shape, which diverges under `.transform()`/`.default()`
 
 **Project Read Model**:
 Project read outputs expose only Project ID for identity.

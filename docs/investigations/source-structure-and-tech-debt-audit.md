@@ -138,6 +138,8 @@ Next route files should remain in `app/`. Plain path builders such as project UR
 
 ### Keep `db/` as infrastructure
 
+> Accepted as [ADR 0002](../adr/0002-db-is-infrastructure-features-own-persistence.md): `src/db` is database infrastructure only and must not import from feature folders; features own their read models, write commands, domain types, and validation schemas. The physical moves below remain incremental (Priority 3/4).
+
 The current `src/db` contains many application operations. That makes it hard to distinguish database plumbing from workflow logic. A better convention:
 
 ```txt

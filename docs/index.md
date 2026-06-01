@@ -60,6 +60,8 @@ Open-ended audits and option analysis. Investigations may contain hypotheses and
 
 Short records of durable architecture decisions.
 
+- [0001 Centralise project slug canonicalisation](adr/0001-centralise-slug-canonicalisation.md)
+- [0002 `src/db` is infrastructure; features own persistence](adr/0002-db-is-infrastructure-features-own-persistence.md)
 - Add new ADRs under `docs/adr/`.
 
 ## Designs
