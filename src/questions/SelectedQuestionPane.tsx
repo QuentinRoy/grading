@@ -16,7 +16,7 @@ import { initialQuestionsActionState } from "./state";
 import type { QuestionManagementItem } from "./types";
 
 type SelectedQuestionPaneProps = {
-	question?: QuestionManagementItem;
+	question?: QuestionManagementItem | undefined;
 	deleteAction: (
 		state: import("./state").QuestionsActionState,
 		formData: FormData,

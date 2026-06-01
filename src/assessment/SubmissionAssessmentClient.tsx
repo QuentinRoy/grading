@@ -22,7 +22,7 @@ type SubmissionAssessmentClientProps = {
 	projectId: string;
 	projectSlug: string;
 	questionId: string;
-	questionLabel?: string;
+	questionLabel?: string | undefined;
 	rubrics: AssessedRubric[];
 	submissions: Submission[];
 	progressBySubmissionId: Record<string, { completed: number; total: number }>;

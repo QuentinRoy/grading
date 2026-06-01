@@ -18,7 +18,7 @@ import {
 
 type RubricGradeRowProps = {
 	rubric: AssessedRubric;
-	savedRubric?: AssessedRubric;
+	savedRubric?: AssessedRubric | undefined;
 	isPending: boolean;
 	disabled: boolean;
 	onAssess: (assessment: AssessmentRubricValue) => void;

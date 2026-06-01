@@ -39,7 +39,7 @@ import type { QuestionManagementItem } from "./types";
 
 type QuestionTableProps = {
 	questions: QuestionManagementItem[];
-	selectedQuestionId?: string;
+	selectedQuestionId?: string | undefined;
 	onSelectQuestion: (questionId: string) => void;
 	onCreate: () => void;
 	onReorder: (

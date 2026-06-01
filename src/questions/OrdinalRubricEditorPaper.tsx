@@ -12,7 +12,7 @@ type OrdinalRubricEditorPaperProps = {
 	rubric: OrdinalRubric;
 	onChange: (rubric: RubricEditorValue) => void;
 	onRemove: () => void;
-	fieldErrors?: QuestionRubricFieldErrors;
+	fieldErrors?: QuestionRubricFieldErrors | undefined;
 };
 
 function ordinalMarksToText(value: Record<string, number>): string {

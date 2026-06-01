@@ -317,8 +317,8 @@ function SubmissionNavigation({
 	currentSubmissionId: string;
 	currentSubmissionIndex: number;
 	totalSubmissions: number;
-	previousSubmissionId?: string;
-	nextSubmissionId?: string;
+	previousSubmissionId?: string | undefined;
+	nextSubmissionId?: string | undefined;
 	onOpenLookup: () => void;
 }): ReactElement {
 	return (

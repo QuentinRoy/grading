@@ -9,27 +9,27 @@ import type { Question } from "./types";
 
 export type ManagedRubricInput =
 	| {
-			previousId?: string;
+			previousId?: string | undefined;
 			id: string;
-			description?: string;
-			label?: string;
+			description?: string | undefined;
+			label?: string | undefined;
 			type: "boolean";
 			marks: number;
-			falseMarks?: number;
+			falseMarks?: number | undefined;
 	  }
 	| {
-			previousId?: string;
+			previousId?: string | undefined;
 			id: string;
-			description?: string;
-			label?: string;
+			description?: string | undefined;
+			label?: string | undefined;
 			type: "ordinal";
 			marks: Record<string, number>;
 	  }
 	| {
-			previousId?: string;
+			previousId?: string | undefined;
 			id: string;
-			description?: string;
-			label?: string;
+			description?: string | undefined;
+			label?: string | undefined;
 			type: "numerical";
 			minScore: number;
 			maxScore: number;
@@ -39,15 +39,15 @@ export type ManagedRubricInput =
 	  };
 
 export type ManagedQuestionInput = {
-	originalId?: string;
+	originalId?: string | undefined;
 	id: string;
-	label?: string;
+	label?: string | undefined;
 	rubrics: ManagedRubricInput[];
 };
 
 export type ManagedQuestionSummary = {
 	id: string;
-	label?: string;
+	label?: string | undefined;
 	position: number;
 	assessmentCount: number;
 	rubricCount: number;

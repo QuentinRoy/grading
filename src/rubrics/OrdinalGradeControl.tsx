@@ -6,7 +6,7 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import type { ReactElement } from "react";
 
 type OrdinalGradeControlProps = {
-	value?: string;
+	value?: string | undefined;
 	marks: Record<string, number>;
 	disabled: boolean;
 	onAssess: (value: string) => void;

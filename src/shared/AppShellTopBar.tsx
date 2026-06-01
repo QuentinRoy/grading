@@ -12,10 +12,10 @@ import { type ReactNode } from "react";
 
 type AppShellTopBarProps = {
 	title: string;
-	titleHref?: string;
-	drawerOpen?: boolean;
-	onToggleDrawer?: () => void;
-	drawerId?: string;
+	titleHref?: string | undefined;
+	drawerOpen?: boolean | undefined;
+	onToggleDrawer?: (() => void) | undefined;
+	drawerId?: string | undefined;
 };
 
 export default function AppShellTopBar({

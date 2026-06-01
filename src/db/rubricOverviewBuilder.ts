@@ -25,8 +25,8 @@ type RubricPropertyDetails =
 	  };
 
 export type RubricOverviewPopupDetails = {
-	label?: string;
-	description?: string;
+	label?: string | undefined;
+	description?: string | undefined;
 	type: RubricType;
 	properties: RubricPropertyDetails;
 };

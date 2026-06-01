@@ -1,23 +1,23 @@
 import { ZodError } from "zod";
 
 export type QuestionRubricFieldErrors = {
-	id?: string;
-	label?: string;
-	description?: string;
-	type?: string;
-	marks?: string;
-	falseMarks?: string;
-	minScore?: string;
-	maxScore?: string;
-	minMarks?: string;
-	maxMarks?: string;
-	reversed?: string;
+	id?: string | undefined;
+	label?: string | undefined;
+	description?: string | undefined;
+	type?: string | undefined;
+	marks?: string | undefined;
+	falseMarks?: string | undefined;
+	minScore?: string | undefined;
+	maxScore?: string | undefined;
+	minMarks?: string | undefined;
+	maxMarks?: string | undefined;
+	reversed?: string | undefined;
 };
 
 export type QuestionsFieldErrors = {
-	questionId?: string;
-	confirmationText?: string;
-	rubrics?: QuestionRubricFieldErrors[];
+	questionId?: string | undefined;
+	confirmationText?: string | undefined;
+	rubrics?: QuestionRubricFieldErrors[] | undefined;
 };
 
 export class QuestionsValidationError extends Error {

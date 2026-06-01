@@ -22,7 +22,8 @@
 		"incremental": true,
 		"erasableSyntaxOnly": true,
 		"plugins": [{ "name": "next" }],
-		"strictNullChecks": true
+		"strictNullChecks": true,
+		"exactOptionalPropertyTypes": true
 	},
 	"include": [
 		"**/*.ts",

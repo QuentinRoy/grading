@@ -40,7 +40,7 @@ type BaseImportFormProps = {
 	helpTitle: string;
 	helpContent: ReactNode;
 	helperText: string;
-	defaultValue?: string;
+	defaultValue?: string | undefined;
 	action: ImportAction;
 };
 

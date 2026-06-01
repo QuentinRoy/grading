@@ -7,7 +7,7 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import type { ReactElement } from "react";
 
 type BooleanGradeControlProps = {
-	value?: boolean;
+	value?: boolean | undefined;
 	disabled: boolean;
 	onAssess: (value: boolean) => void;
 };

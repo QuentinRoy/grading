@@ -17,8 +17,8 @@ import { useQuestionDraft } from "./useQuestionDraft";
 
 type QuestionFormProps = {
 	mode: "create" | "edit";
-	originalQuestionId?: string;
-	initialValue?: QuestionEditorValue;
+	originalQuestionId?: string | undefined;
+	initialValue?: QuestionEditorValue | undefined;
 	action: (formData: FormData) => void;
 	actionState: QuestionsActionState;
 	onCancel: () => void;

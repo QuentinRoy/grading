@@ -23,7 +23,7 @@ import {
 
 type DeleteQuestionDialogProps = {
 	open: boolean;
-	question?: QuestionManagementItem;
+	question?: QuestionManagementItem | undefined;
 	action: (formData: FormData) => void;
 	actionState: QuestionsActionState;
 	onClose: () => void;

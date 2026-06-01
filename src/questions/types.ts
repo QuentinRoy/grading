@@ -2,33 +2,33 @@ import type { Rubric } from "@/db/types";
 
 export type QuestionEditorValue = {
 	id: string;
-	label?: string;
+	label?: string | undefined;
 	rubrics: RubricEditorValue[];
 };
 
 export type RubricEditorValue =
 	| {
-			previousId?: string;
+			previousId?: string | undefined;
 			id: string;
-			description?: string;
-			label?: string;
+			description?: string | undefined;
+			label?: string | undefined;
 			type: "boolean";
 			marks: number;
-			falseMarks?: number;
+			falseMarks?: number | undefined;
 	  }
 	| {
-			previousId?: string;
+			previousId?: string | undefined;
 			id: string;
-			description?: string;
-			label?: string;
+			description?: string | undefined;
+			label?: string | undefined;
 			type: "ordinal";
 			marks: Record<string, number>;
 	  }
 	| {
-			previousId?: string;
+			previousId?: string | undefined;
 			id: string;
-			description?: string;
-			label?: string;
+			description?: string | undefined;
+			label?: string | undefined;
 			type: "numerical";
 			minScore: number;
 			maxScore: number;
@@ -39,11 +39,11 @@ export type RubricEditorValue =
 
 export type QuestionManagementItem = {
 	id: string;
-	label?: string;
+	label?: string | undefined;
 	position: number;
 	assessmentCount: number;
 	rubricCount: number;
-	question: { label?: string; rubrics: Rubric[] };
+	question: { label?: string | undefined; rubrics: Rubric[] };
 };
 
 export function toEditorValue(

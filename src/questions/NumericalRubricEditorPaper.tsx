@@ -12,7 +12,7 @@ type NumericalRubricEditorPaperProps = {
 	rubric: NumericalRubric;
 	onChange: (rubric: RubricEditorValue) => void;
 	onRemove: () => void;
-	fieldErrors?: QuestionRubricFieldErrors;
+	fieldErrors?: QuestionRubricFieldErrors | undefined;
 };
 
 export default function NumericalRubricEditorPaper({

@@ -62,7 +62,7 @@ type NavigationItem = { label: string; href: string };
 type NavigationZoneProps = {
 	title: string;
 	items: NavigationItem[];
-	onNavigate?: () => void;
+	onNavigate?: (() => void) | undefined;
 };
 
 function NavigationZone({
@@ -81,7 +81,7 @@ function NavigationZone({
 						key={item.href}
 						component={NextLink}
 						href={item.href}
-						onClick={onNavigate}
+						{...(onNavigate && { onClick: onNavigate })}
 						sx={{ borderRadius: 1 }}
 					>
 						<ListItemText primary={item.label} />
@@ -216,7 +216,7 @@ export default function AppShellDrawerContent({
 						<ListItemButton
 							component={NextLink}
 							href={changeProjectPath()}
-							onClick={onDismiss}
+							{...(onDismiss && { onClick: onDismiss })}
 							sx={{ borderRadius: 1 }}
 						>
 							<ListItemText primary={projectName} secondary="Change project" />
@@ -280,7 +280,7 @@ export default function AppShellDrawerContent({
 						href={exportHref}
 						variant="contained"
 						fullWidth
-						onClick={onDismiss}
+						{...(onDismiss && { onClick: onDismiss })}
 					>
 						Download Submissions
 					</Button>
@@ -297,7 +297,7 @@ export default function AppShellDrawerContent({
 						)}
 						variant="outlined"
 						fullWidth
-						onClick={onDismiss}
+						{...(onDismiss && { onClick: onDismiss })}
 					>
 						Download Questions
 					</Button>

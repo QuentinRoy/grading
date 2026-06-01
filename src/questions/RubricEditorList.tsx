@@ -12,7 +12,7 @@ import type { RubricEditorValue } from "./types";
 type RubricEditorListProps = {
 	rubrics: RubricEditorValue[];
 	onChange: (rubrics: RubricEditorValue[]) => void;
-	fieldErrors?: QuestionRubricFieldErrors[];
+	fieldErrors?: QuestionRubricFieldErrors[] | undefined;
 };
 
 export default function RubricEditorList({

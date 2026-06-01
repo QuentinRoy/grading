@@ -14,8 +14,8 @@ export type SaveError = {
 	projectSlug: string;
 	questionId: string;
 	submissionId: string;
-	questionLabel?: string;
-	submissionLabel?: string;
+	questionLabel?: string | undefined;
+	submissionLabel?: string | undefined;
 	message: string;
 };
 

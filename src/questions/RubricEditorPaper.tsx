@@ -101,7 +101,7 @@ type RubricEditorPaperProps = {
 	rubric: RubricEditorValue;
 	onChange: (rubric: RubricEditorValue) => void;
 	onRemove: () => void;
-	fieldErrors?: QuestionRubricFieldErrors;
+	fieldErrors?: QuestionRubricFieldErrors | undefined;
 	children: ReactNode;
 };
 

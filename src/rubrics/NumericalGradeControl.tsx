@@ -4,7 +4,7 @@ import TextField from "@mui/material/TextField";
 import { type ReactElement, useEffect, useState } from "react";
 
 type NumericalGradeControlProps = {
-	value?: number;
+	value?: number | undefined;
 	minScore: number;
 	maxScore: number;
 	disabled: boolean;

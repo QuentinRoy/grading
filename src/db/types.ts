@@ -17,9 +17,9 @@ export type GlobalAssessmentProgress = {
 type SubmissionBase = { id: string; type: SubmissionType };
 
 type SubmissionDisplay = {
-	displayLabel?: string;
-	memberNames?: string[];
-	searchKeys?: string[];
+	displayLabel?: string | undefined;
+	memberNames?: string[] | undefined;
+	searchKeys?: string[] | undefined;
 };
 
 export type Submission =
@@ -83,6 +83,10 @@ export type AssessmentRubricValue =
 	  >
 	| Simplify<AssessmentRubricValueBase & { type: "numerical"; score: number }>;
 
-export type Question = { label?: string; rubrics: Rubric[]; solution?: string };
+export type Question = {
+	label?: string | undefined;
+	rubrics: Rubric[];
+	solution?: string | undefined;
+};
 
 export type Grid = { [id: string]: Question };
