@@ -24,9 +24,9 @@ Before editing:
 3. Read only the focused docs needed for the requested task. Do not load every doc by default.
 4. If no focused guidance applies, state that briefly before proceeding.
 
-When planning, explicitly list the repository guidance consulted and the conventions that apply. If the task is small enough to skip a formal plan, still mention any relevant guidance in the final summary.
+When planning, explicitly list the repository guidance consulted and the conventions that apply. Keep plans short and task-specific. If the task is small enough to skip a formal plan, still mention any relevant guidance in the final summary.
 
-Before finishing, review the changed files against the consulted guidance. Mention any relevant convention intentionally not followed and why.
+Before finishing, review the changed files against the consulted guidance. For code changes, run a simplify pass using `.agents/skills/simplify/SKILL.md` on recently modified code only, then run the relevant checks. Mention checks run, checks not run, and any relevant convention intentionally not followed and why.
 
 ## Guidance routing
 
@@ -37,6 +37,7 @@ Use this table to find the canonical guidance instead of copying rules into this
 - GitHub issues, pull requests, labels, templates, and collaboration workflow → `docs/guides/issue-and-pr-conventions.md`.
 - Commit titles and squash merge titles → `docs/guides/commit-message-conventions.md`.
 - TypeScript public/helper APIs and function parameter design → `docs/guides/typescript-api-design.md`.
+- Avoiding barrel/re-export facade files; import from the owning module → `docs/adr/0004-avoid-barrel-files.md`.
 - Database migration conventions → `docs/reference/database-migrations.md`.
 - Testing conventions and test-command selection → `docs/reference/testing-conventions.md`.
 - Accepted architecture decisions → `docs/adr/`.
@@ -48,6 +49,7 @@ Use this table to find the canonical guidance instead of copying rules into this
 
 - Load `.agents/skills/caveman/SKILL.md` at session start and use `lite` mode by default for terse, token-efficient communication.
 - Temporarily drop caveman mode when clarity, safety, irreversible actions, or public-facing writing require normal prose.
+- Use `.agents/skills/simplify/SKILL.md` after code edits as a focused cleanup pass over recently modified code. Preserve behavior exactly while improving clarity, consistency, naming, control flow, and maintainability.
 - Load other local skills from `.agents/skills/*` only when the task touches that domain. Do not load every skill by default.
 
 ## Instruction precedence
@@ -95,7 +97,24 @@ Investigations and active plans can guide work, but they do not override higher-
 
 - Use Biome for formatting and linting.
 
-- Run repository checks after changes:
+- Keep changes narrowly scoped to the requested task. Avoid opportunistic rewrites, broad renames, file moves, or architectural reshaping unless they are necessary for the task or explicitly requested.
+
+- Prefer readable, boring code over clever code:
+  - make control flow easy to follow;
+  - use names that explain domain intent;
+  - keep functions focused and extract helpers only when they improve readability at call sites;
+  - avoid unnecessary abstraction, genericity, indirection, wrappers, and compatibility layers;
+  - avoid nested ternaries and dense one-liners when explicit control flow is clearer;
+  - delete dead code rather than preserving unused paths.
+
+- After implementing a code change, perform a simplify pass using `.agents/skills/simplify/SKILL.md` over recently modified code:
+  - preserve functionality exactly;
+  - improve clarity, consistency, naming, control flow, and maintainability;
+  - remove unnecessary complexity, nesting, duplication, and indirection;
+  - keep useful abstractions that improve organization;
+  - avoid broad refactors unrelated to the requested task.
+
+- Run repository checks after the implementation and simplify pass:
   - `pnpm run check --fix`
   - `pnpm run check-types`
   - `pnpm test:unit <changed-file-stem>` for each changed source file — vitest matches by path stem (e.g. `src/projects/projectPaths` runs `projectPaths.test.ts`).

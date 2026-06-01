@@ -49,6 +49,12 @@
 			"skillPath": "skills/engineering/prototype/SKILL.md",
 			"computedHash": "e4d0c8f8cb3fc096ee99405a15491da466545cf4a3694bee5a0c9db2fa621a43"
 		},
+		"simplify": {
+			"source": "brianlovin/claude-config",
+			"sourceType": "github",
+			"skillPath": "skills/simplify/SKILL.md",
+			"computedHash": "322a20071306ede626dc73ac05182b08c97b60781e23ec3fbf23f85a4d27d111"
+		},
 		"storybook-args-controls": {
 			"source": "thebushidocollective/han",
 			"sourceType": "github",
