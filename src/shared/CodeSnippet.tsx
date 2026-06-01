@@ -2,7 +2,7 @@ import "@fontsource/monaspace-neon";
 
 import Box from "@mui/material/Box";
 import React from "react";
-import { getHighlighter } from "./shiki-setup";
+import { getHighlighter } from "./shiki-setup.ts";
 
 type CodeSnippetProps = { children: string; language?: string };
 

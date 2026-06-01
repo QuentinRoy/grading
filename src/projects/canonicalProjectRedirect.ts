@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import type { ProjectSummary } from "@/db/projects";
-import { assertNever } from "../utils/utils";
+import type { ProjectSummary } from "#db/projects.ts";
+import { assertNever } from "#utils/utils.ts";
 import {
 	projectAssessmentSubmissionPath,
 	projectAssessmentSubmissionQuestionPath,
@@ -11,7 +11,7 @@ import {
 	projectImportStudentsPath,
 	projectOverviewPath,
 	projectQuestionsPath,
-} from "./projectPaths";
+} from "./projectPaths.ts";
 
 /**
  * Names which project-scoped route a page serves. A page is the only place

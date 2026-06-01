@@ -4,17 +4,17 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { type ReactElement } from "react";
-import type { AssessmentRubricValue } from "../db/types";
-import BooleanGradeControl from "./BooleanGradeControl";
-import NumericalGradeControl from "./NumericalGradeControl";
-import OrdinalGradeControl from "./OrdinalGradeControl";
-import RubricStatusMarker from "./RubricStatusMarker";
+import type { AssessmentRubricValue } from "#db/types.ts";
+import BooleanGradeControl from "./BooleanGradeControl.tsx";
+import NumericalGradeControl from "./NumericalGradeControl.tsx";
+import OrdinalGradeControl from "./OrdinalGradeControl.tsx";
+import RubricStatusMarker from "./RubricStatusMarker.tsx";
 import {
 	type AssessedRubric,
 	getRubricMaxMarks,
 	getRubricMinMarks,
 	markRubric,
-} from "./rubric";
+} from "./rubric.ts";
 
 type RubricGradeRowProps = {
 	rubric: AssessedRubric;

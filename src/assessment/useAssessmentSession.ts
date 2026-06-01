@@ -2,9 +2,9 @@
 
 import { produce } from "immer";
 import { startTransition, useOptimistic, useReducer } from "react";
-import type { AssessmentRubricValue, Submission } from "../db/types";
-import { type AssessedRubric, attachAssessment } from "../rubrics/rubric";
-import { getSubmissionNavigation } from "./submissionNavigation";
+import type { AssessmentRubricValue, Submission } from "#db/types.ts";
+import { type AssessedRubric, attachAssessment } from "#rubrics/rubric.ts";
+import { getSubmissionNavigation } from "./submissionNavigation.ts";
 
 export type SaveRubricResult<TError> =
 	| { success: true }

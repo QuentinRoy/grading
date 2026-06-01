@@ -1,14 +1,14 @@
 import "server-only";
 import { once } from "node:events";
 import { stringify } from "csv-stringify";
-import { db } from "../db/kysely";
-import type { AssessmentRubricValue, SubmissionSubmitter } from "../db/types";
+import { db } from "#db/kysely.ts";
+import type { AssessmentRubricValue, SubmissionSubmitter } from "#db/types.ts";
 import {
 	type AssessedRubric,
 	attachAssessment,
 	markRubric,
-} from "../rubrics/rubric";
-import { assertNever } from "../utils/utils";
+} from "#rubrics/rubric.ts";
+import { assertNever } from "#utils/utils.ts";
 import {
 	buildAssessmentKey,
 	buildSubmissionExportHeaders,
@@ -20,7 +20,7 @@ import {
 	type SubmissionExportQuestionData,
 	type SubmissionExportRecord,
 	type SubmissionExportRubricData,
-} from "./submissionExportCsv";
+} from "./submissionExportCsv.ts";
 
 function toNumber(value: string | number): number {
 	if (typeof value === "number") return value;

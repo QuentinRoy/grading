@@ -2,12 +2,12 @@
 
 import { Button, Stack } from "@mui/material";
 import { type ReactElement } from "react";
-import BooleanRubricEditorPaper from "./BooleanRubricEditorPaper";
-import type { QuestionRubricFieldErrors } from "./errors";
-import NumericalRubricEditorPaper from "./NumericalRubricEditorPaper";
-import OrdinalRubricEditorPaper from "./OrdinalRubricEditorPaper";
-import { createRubric } from "./RubricEditorPaper";
-import type { RubricEditorValue } from "./types";
+import BooleanRubricEditorPaper from "./BooleanRubricEditorPaper.tsx";
+import type { QuestionRubricFieldErrors } from "./errors.ts";
+import NumericalRubricEditorPaper from "./NumericalRubricEditorPaper.tsx";
+import OrdinalRubricEditorPaper from "./OrdinalRubricEditorPaper.tsx";
+import { createRubric } from "./RubricEditorPaper.tsx";
+import type { RubricEditorValue } from "./types.ts";
 
 type RubricEditorListProps = {
 	rubrics: RubricEditorValue[];

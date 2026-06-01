@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 
 import "../styles/globals.css";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
-import { SaveErrorsDisplay } from "@/shared/SaveErrorsDisplay";
-import { SaveErrorsProvider } from "@/shared/SaveErrorsProvider";
+import { SaveErrorsDisplay } from "#shared/SaveErrorsDisplay.tsx";
+import { SaveErrorsProvider } from "#shared/SaveErrorsProvider.tsx";
 
 export const metadata = {
 	title: "Assessment",

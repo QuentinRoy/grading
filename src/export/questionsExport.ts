@@ -1,5 +1,5 @@
 import yaml from "js-yaml";
-import type { Grid, Rubric } from "@/db/types";
+import type { Grid, Rubric } from "#db/types.ts";
 
 type ExportFormat = {
 	questions: Array<{ id: string; label?: string; rubrics: Rubric[] }>;

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { SubmissionType } from "@/db/types";
+import type { SubmissionType } from "#db/types.ts";
 import {
 	assessmentRowSchema,
 	booleanRubricSchema,
@@ -7,7 +7,7 @@ import {
 	ordinalRubricSchema,
 	questionSchema,
 	studentRowSchema,
-} from "./schemas";
+} from "./schemas.ts";
 
 export type ImportedRubric =
 	| z.output<typeof booleanRubricSchema>

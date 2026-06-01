@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseExportOptions } from "./exportOptions";
+import { parseExportOptions } from "./exportOptions.ts";
 
 describe("parseExportOptions", () => {
 	it("parses repeated include params", () => {

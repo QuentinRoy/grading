@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import GlobalAssessmentSummary from "./GlobalAssessmentSummary";
+import GlobalAssessmentSummary from "./GlobalAssessmentSummary.tsx";
 
 const meta = {
 	title: "Assessment/GlobalAssessmentSummary",

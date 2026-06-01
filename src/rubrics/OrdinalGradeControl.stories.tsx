@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
-import OrdinalGradeControl from "./OrdinalGradeControl";
+import OrdinalGradeControl from "./OrdinalGradeControl.tsx";
 
 const exampleMarks = {
 	Excellent: 4,

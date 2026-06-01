@@ -3,8 +3,8 @@
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import { type ReactNode, Suspense, useState } from "react";
-import AppShellLoadingShell from "./AppShellLoadingShell";
-import AppShellNavigationShell from "./AppShellNavigationShell";
+import AppShellLoadingShell from "./AppShellLoadingShell.tsx";
+import AppShellNavigationShell from "./AppShellNavigationShell.tsx";
 
 type AppShellProps =
 	| { showNavigation: true; projectName: string; children: ReactNode }

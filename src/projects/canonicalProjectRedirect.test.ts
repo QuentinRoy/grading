@@ -3,7 +3,7 @@ import {
 	canonicalProjectPath,
 	canonicalProjectRedirect,
 	type ProjectRoute,
-} from "./canonicalProjectRedirect";
+} from "./canonicalProjectRedirect.ts";
 
 const redirect = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({ redirect }));

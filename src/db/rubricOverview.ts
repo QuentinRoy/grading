@@ -1,13 +1,13 @@
 import "server-only";
 import { cacheLife } from "next/cache";
-import { loadQuestions } from "@/db/questions";
-import { CACHE_TAGS, cacheTags } from "./cacheTags";
-import { db } from "./kysely";
+import { CACHE_TAGS, cacheTags } from "./cacheTags.ts";
+import { db } from "./kysely.ts";
+import { loadQuestions } from "./questions.ts";
 import {
 	buildRubricOverviewData,
 	type RubricOverviewAssessmentRecord,
-} from "./rubricOverviewBuilder";
-import { loadSubmissions } from "./submissions";
+} from "./rubricOverviewBuilder.ts";
+import { loadSubmissions } from "./submissions.ts";
 
 export type {
 	RubricOverviewData,
@@ -16,7 +16,7 @@ export type {
 	RubricOverviewStudentCell,
 	RubricOverviewStudentRow,
 	RubricOverviewSummary,
-} from "./rubricOverviewBuilder";
+} from "./rubricOverviewBuilder.ts";
 
 export async function loadRubricOverviewData(projectId: string) {
 	"use cache";

@@ -6,14 +6,14 @@ const deleteManagedQuestion = vi.fn();
 const saveManagedQuestion = vi.fn();
 const reorderQuestions = vi.fn();
 
-vi.mock("@/db/questions", () => ({
+vi.mock("#db/questions.ts", () => ({
 	deleteManagedQuestion: (...args: unknown[]) => deleteManagedQuestion(...args),
 	saveManagedQuestion: (...args: unknown[]) => saveManagedQuestion(...args),
 	reorderQuestions: (...args: unknown[]) => reorderQuestions(...args),
 }));
 
-import { deleteQuestionAction } from "./actions";
-import { initialQuestionsActionState } from "./state";
+import { deleteQuestionAction } from "./actions.ts";
+import { initialQuestionsActionState } from "./state.ts";
 
 function buildDeleteFormData(questionId: string): FormData {
 	const formData = new FormData();

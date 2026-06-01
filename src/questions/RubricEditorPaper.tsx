@@ -14,9 +14,9 @@ import {
 	Typography,
 } from "@mui/material";
 import { type ReactElement, type ReactNode } from "react";
-import { assertNever } from "@/utils/utils";
-import type { QuestionRubricFieldErrors } from "./errors";
-import type { RubricEditorValue } from "./types";
+import { assertNever } from "#utils/utils.ts";
+import type { QuestionRubricFieldErrors } from "./errors.ts";
+import type { RubricEditorValue } from "./types.ts";
 
 function createBooleanRubric(): Extract<
 	RubricEditorValue,

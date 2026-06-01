@@ -1,5 +1,5 @@
-import type { AssessmentRubricValue, Rubric } from "@/db/types";
-import { assertNever } from "../utils/utils";
+import type { AssessmentRubricValue, Rubric } from "#db/types.ts";
+import { assertNever } from "#utils/utils.ts";
 
 export type RubricType = Rubric["type"];
 export type RubricForType<TType extends RubricType> = Extract<

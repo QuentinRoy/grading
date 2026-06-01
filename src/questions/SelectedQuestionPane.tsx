@@ -11,16 +11,16 @@ import {
 	Typography,
 } from "@mui/material";
 import { type ReactElement, useActionState, useState } from "react";
-import DeleteQuestionDialog from "./DeleteQuestionDialog";
-import { initialQuestionsActionState } from "./state";
-import type { QuestionManagementItem } from "./types";
+import DeleteQuestionDialog from "./DeleteQuestionDialog.tsx";
+import { initialQuestionsActionState } from "./state.ts";
+import type { QuestionManagementItem } from "./types.ts";
 
 type SelectedQuestionPaneProps = {
 	question?: QuestionManagementItem | undefined;
 	deleteAction: (
-		state: import("./state").QuestionsActionState,
+		state: import("./state.ts").QuestionsActionState,
 		formData: FormData,
-	) => Promise<import("./state").QuestionsActionState>;
+	) => Promise<import("./state.ts").QuestionsActionState>;
 	onEdit: () => void;
 	onDeleteSuccess: () => void;
 };

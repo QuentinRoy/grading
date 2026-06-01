@@ -1,9 +1,9 @@
 import "server-only";
 import { snakeCase } from "change-case";
-import { saveAssessmentWithDb } from "../db/assessments";
-import { db } from "../db/kysely";
-import type { AssessmentRubricValue, RubricType } from "../db/types";
-import type { ImportedAssessmentRow } from "./types";
+import { saveAssessmentWithDb } from "#db/assessments.ts";
+import { db } from "#db/kysely.ts";
+import type { AssessmentRubricValue, RubricType } from "#db/types.ts";
+import type { ImportedAssessmentRow } from "./types.ts";
 
 const SUBMISSION_TYPE_COLUMN = snakeCase("submissionType");
 const SUBMITTER_COLUMN = snakeCase("submitter");

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { markBooleanRubric, markNumericalRubric } from "./rubric";
+import { markBooleanRubric, markNumericalRubric } from "./rubric.ts";
 
 describe("scoreToMarks", () => {
 	it("maps low scores to low marks by default", () => {

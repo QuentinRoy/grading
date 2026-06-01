@@ -1,8 +1,8 @@
 import { type Kysely } from "kysely";
 import { expect, test } from "vitest";
-import { buildTestId, createTestDb } from "../test/dbIntegration";
-import { createProject } from "../test/projects";
-import type { DB } from "./generated/db";
+import { buildTestId, createTestDb } from "#test/dbIntegration.ts";
+import { createProject } from "#test/projects.ts";
+import type { DB } from "./generated/db.ts";
 
 type RubricRowIds = { boolean: number; ordinal: number; numerical: number };
 

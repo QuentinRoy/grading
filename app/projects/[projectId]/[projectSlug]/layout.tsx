@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { loadProjectByPublicId } from "@/db/projects";
-import AppShell from "@/shared/AppShell";
+import { loadProjectByPublicId } from "#db/projects.ts";
+import AppShell from "#shared/AppShell.tsx";
 
 type ProjectScopedLayoutProps = {
 	children: ReactNode;

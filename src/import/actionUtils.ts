@@ -1,5 +1,5 @@
 import { prettifyError, ZodError } from "zod";
-import type { ImportState } from "./importState";
+import type { ImportState } from "./importState.ts";
 
 export function toImportErrorState(error: unknown): ImportState {
 	if (error instanceof ZodError) {

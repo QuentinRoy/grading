@@ -9,17 +9,17 @@ import {
 	useMemo,
 	useState,
 } from "react";
-import { reorderQuestionsAction, saveQuestionAction } from "./actions";
-import QuestionForm from "./QuestionForm";
-import QuestionTable from "./QuestionTable";
-import SelectedQuestionPane from "./SelectedQuestionPane";
-import type { QuestionsActionState } from "./state";
-import { initialQuestionsActionState } from "./state";
+import { reorderQuestionsAction, saveQuestionAction } from "./actions.ts";
+import QuestionForm from "./QuestionForm.tsx";
+import QuestionTable from "./QuestionTable.tsx";
+import SelectedQuestionPane from "./SelectedQuestionPane.tsx";
+import type { QuestionsActionState } from "./state.ts";
+import { initialQuestionsActionState } from "./state.ts";
 import {
 	createEmptyQuestionEditorValue,
 	type QuestionManagementItem,
 	toEditorValue,
-} from "./types";
+} from "./types.ts";
 
 type QuestionsManagementClientProps = {
 	questions: QuestionManagementItem[];

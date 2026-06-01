@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
-import QuestionTable from "./QuestionTable";
-import type { QuestionManagementItem } from "./types";
+import QuestionTable from "./QuestionTable.tsx";
+import type { QuestionManagementItem } from "./types.ts";
 
 const sampleQuestions: QuestionManagementItem[] = [
 	{

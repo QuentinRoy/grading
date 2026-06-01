@@ -1,15 +1,15 @@
 import "server-only";
 import { sql } from "kysely";
-import { QuestionsValidationError } from "@/questions/errors";
-import { findDuplicateGroups } from "../utils/utils";
-import { CACHE_TAGS, updateTags } from "./cacheTags";
-import { db } from "./kysely";
+import { QuestionsValidationError } from "#questions/errors.ts";
+import { findDuplicateGroups } from "#utils/utils.ts";
+import { CACHE_TAGS, updateTags } from "./cacheTags.ts";
+import { db } from "./kysely.ts";
 import type {
 	ManagedQuestionInput,
 	ManagedRubricInput,
-} from "./questionsManaged";
-import { resolveProjectRowId } from "./questionsRead";
-import type { RubricType } from "./types";
+} from "./questionsManaged.ts";
+import { resolveProjectRowId } from "./questionsRead.ts";
+import type { RubricType } from "./types.ts";
 
 type NormalizedRubricRow = {
 	sourceId: string;

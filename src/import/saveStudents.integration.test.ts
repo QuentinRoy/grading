@@ -1,7 +1,7 @@
 import { expect, test, vi } from "vitest";
-import { createTestDb } from "../test/dbIntegration";
-import { createProject } from "../test/projects";
-import type { NormalizedImportedSubmission } from "./types";
+import { createTestDb } from "#test/dbIntegration.ts";
+import { createProject } from "#test/projects.ts";
+import type { NormalizedImportedSubmission } from "./types.ts";
 
 vi.mock("server-only", () => ({}));
 
@@ -35,7 +35,7 @@ function makeSubmissions(
 test("saveStudents keeps imported student ids and team names isolated per project", async () => {
 	await using db = await createTestDb();
 	vi.doMock("../db/kysely", () => ({ db }));
-	const { saveStudents } = await import("./saveStudents");
+	const { saveStudents } = await import("./saveStudents.ts");
 
 	await using projectA = await createProject(db, "Project A");
 	await using projectB = await createProject(db, "Project B");

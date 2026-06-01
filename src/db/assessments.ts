@@ -1,10 +1,10 @@
 import "server-only";
 import type { Kysely, Transaction } from "kysely";
-import { assertNever } from "../utils/utils";
-import { cacheTags, updateTags } from "./cacheTags";
-import type { DB } from "./generated/db";
-import { db } from "./kysely";
-import type { AssessmentRubricValue } from "./types";
+import { assertNever } from "#utils/utils.ts";
+import { cacheTags, updateTags } from "./cacheTags.ts";
+import type { DB } from "./generated/db.ts";
+import { db } from "./kysely.ts";
+import type { AssessmentRubricValue } from "./types.ts";
 
 export type SaveAssessmentResult =
 	| { success: true }

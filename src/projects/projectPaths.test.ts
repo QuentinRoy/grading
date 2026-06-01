@@ -4,7 +4,7 @@ import {
 	projectAssessmentSubmissionQuestionPath,
 	projectAssessmentsPath,
 	projectOverviewPath,
-} from "./projectPaths";
+} from "./projectPaths.ts";
 
 describe("project assessment routes", () => {
 	const projectId = "proj_123";

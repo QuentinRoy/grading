@@ -4,11 +4,11 @@ import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import type { ReactElement } from "react";
-import RubricAnalyticsTable from "@/assessment/RubricAnalyticsTable";
-import StudentMatrix from "@/assessment/StudentMatrix";
-import { loadProjectByPublicId } from "@/db/projects";
-import { loadRubricOverviewData } from "@/db/rubricOverview";
-import { canonicalProjectRedirect } from "@/projects/canonicalProjectRedirect";
+import RubricAnalyticsTable from "#assessment/RubricAnalyticsTable.tsx";
+import StudentMatrix from "#assessment/StudentMatrix.tsx";
+import { loadProjectByPublicId } from "#db/projects.ts";
+import { loadRubricOverviewData } from "#db/rubricOverview.ts";
+import { canonicalProjectRedirect } from "#projects/canonicalProjectRedirect.ts";
 
 function formatMarks(value: number | null): string {
 	if (value == null || Number.isNaN(value)) {

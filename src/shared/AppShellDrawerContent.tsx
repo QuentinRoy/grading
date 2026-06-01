@@ -26,9 +26,9 @@ import {
 	projectImportStudentsPath,
 	projectOverviewPath,
 	projectQuestionsPath,
-} from "@/projects/projectPaths";
-import { useLocalStorage } from "@/utils/useLocalStorage";
-import { type ProjectRouteContext } from "./AppShell.shared";
+} from "#projects/projectPaths.ts";
+import { useLocalStorage } from "#utils/useLocalStorage.ts";
+import { type ProjectRouteContext } from "./AppShell.shared.ts";
 
 const EXPORT_STORAGE_KEY = "export-csv-options-v1";
 

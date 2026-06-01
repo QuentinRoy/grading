@@ -2,11 +2,11 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { createCsvSubmissionExportDataStream } from "./submissionExport";
+import { createCsvSubmissionExportDataStream } from "./submissionExport.ts";
 import type {
 	ExportQuestionPlan,
 	SubmissionExportDataRow,
-} from "./submissionExportCsv";
+} from "./submissionExportCsv.ts";
 
 async function readStream(stream: ReadableStream<Uint8Array>): Promise<string> {
 	const reader = stream.getReader();

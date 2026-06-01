@@ -1,6 +1,6 @@
 import { parse as parseCSV } from "csv-parse/sync";
-import { assessmentRowsSchema } from "./schemas";
-import type { ImportedAssessmentRow } from "./types";
+import { assessmentRowsSchema } from "./schemas.ts";
+import type { ImportedAssessmentRow } from "./types.ts";
 
 export async function parseAssessmentsCsv(
 	content: string,

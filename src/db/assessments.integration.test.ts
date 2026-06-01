@@ -1,8 +1,8 @@
 import { type Kysely } from "kysely";
 import { describe, expect, test, vi } from "vitest";
-import { buildTestId, createTestDb } from "../test/dbIntegration";
-import { createProject } from "../test/projects";
-import type { DB } from "./generated/db";
+import { buildTestId, createTestDb } from "#test/dbIntegration.ts";
+import { createProject } from "#test/projects.ts";
+import type { DB } from "./generated/db.ts";
 
 vi.mock("server-only", () => ({}));
 
@@ -12,7 +12,7 @@ async function loadAssessmentsWithDb(db: Kysely<DB>) {
 	vi.resetModules();
 	using _kyselyMock = vi.doMock("./kysely", () => ({ db }));
 
-	return await import("./assessments");
+	return await import("./assessments.ts");
 }
 
 type AssessmentFixture = {

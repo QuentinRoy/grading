@@ -2,7 +2,7 @@ import {
 	type AssessedRubric,
 	getRubricMaxMarks,
 	markRubric,
-} from "../rubrics/rubric";
+} from "#rubrics/rubric.ts";
 
 export type AssessmentSummary = {
 	marks: number;

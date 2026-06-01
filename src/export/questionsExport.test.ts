@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Grid } from "@/db/types";
-import { exportQuestionsToYaml } from "./questionsExport";
+import type { Grid } from "#db/types.ts";
+import { exportQuestionsToYaml } from "./questionsExport.ts";
 
 describe("exportQuestionsToYaml", () => {
 	it("exports a boolean rubric question", () => {

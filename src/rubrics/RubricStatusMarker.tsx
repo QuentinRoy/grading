@@ -4,7 +4,7 @@ import { keyframes } from "@emotion/react";
 import type { Theme } from "@mui/material";
 import Box from "@mui/material/Box";
 import type { ReactElement } from "react";
-import { assertNever } from "@/utils/utils";
+import { assertNever } from "#utils/utils.ts";
 
 type RubricStatusMarkerProps = {
 	assessmentStatus: "unassessed" | "assessed";

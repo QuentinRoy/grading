@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findDuplicateGroups } from "./utils";
+import { findDuplicateGroups } from "./utils.ts";
 
 describe("findDuplicateGroups", () => {
 	it("groups primitives by value", () => {

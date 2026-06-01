@@ -4,5 +4,5 @@ export {
 	deleteManagedQuestion,
 	reorderQuestions,
 	saveManagedQuestion,
-} from "./questionsCommands";
-export { loadQuestion, loadQuestions } from "./questionsRead";
+} from "./questionsCommands.ts";
+export { loadQuestion, loadQuestions } from "./questionsRead.ts";

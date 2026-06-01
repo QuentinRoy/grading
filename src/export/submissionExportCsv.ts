@@ -1,4 +1,4 @@
-import type { Rubric, SubmissionSubmitter } from "@/db/types";
+import type { Rubric, SubmissionSubmitter } from "#db/types.ts";
 
 export type ExportOptions = {
 	includeRubricAssessment: boolean;

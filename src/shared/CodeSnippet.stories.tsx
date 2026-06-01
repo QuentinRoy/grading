@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { Suspense } from "react";
-import CodeSnippet from "./CodeSnippet";
+import CodeSnippet from "./CodeSnippet.tsx";
 
 const meta = {
 	title: "Shared/CodeSnippet",

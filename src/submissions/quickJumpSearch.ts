@@ -1,6 +1,6 @@
 import Fuse, { type FuseResultMatch } from "fuse.js";
-import type { Submission } from "@/db/types";
-import { getSubmissionLabel } from "./getSubmissionLabel";
+import type { Submission } from "#db/types.ts";
+import { getSubmissionLabel } from "./getSubmissionLabel.ts";
 
 export type SubmissionSearchTarget = {
 	submissionId: string;

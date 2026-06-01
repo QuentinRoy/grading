@@ -1,11 +1,11 @@
 import "server-only";
-import { db } from "./kysely";
+import { db } from "./kysely.ts";
 import {
 	loadQuestionsFromDb,
 	resolveProjectRowId,
 	toRubric,
-} from "./questionsRead";
-import type { Question } from "./types";
+} from "./questionsRead.ts";
+import type { Question } from "./types.ts";
 
 export type ManagedRubricInput =
 	| {

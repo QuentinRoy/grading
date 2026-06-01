@@ -4,14 +4,14 @@ import {
 	deleteManagedQuestion,
 	reorderQuestions,
 	saveManagedQuestion,
-} from "@/db/questions";
-import { toQuestionsValidationError } from "./errors";
+} from "#db/questions.ts";
+import { toQuestionsValidationError } from "./errors.ts";
 import {
 	matchesDeleteConfirmation,
 	parseDeletePayload,
 	parseManagedQuestionPayload,
-} from "./schemas";
-import { type QuestionsActionState } from "./state";
+} from "./schemas.ts";
+import { type QuestionsActionState } from "./state.ts";
 
 export async function saveQuestionAction(
 	projectId: string,

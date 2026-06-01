@@ -21,8 +21,8 @@ import {
 	useState,
 } from "react";
 import { useFormStatus } from "react-dom";
-import type { ImportState } from "./importState";
-import { initialImportState } from "./importState";
+import type { ImportState } from "./importState.ts";
+import { initialImportState } from "./importState.ts";
 
 type ImportAction = (
 	previousState: ImportState,

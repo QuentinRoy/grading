@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
 	buildRubricOverviewData,
 	type RubricOverviewAssessmentRecord,
-} from "./rubricOverviewBuilder";
-import type { Grid, Submission } from "./types";
+} from "./rubricOverviewBuilder.ts";
+import type { Grid, Submission } from "./types.ts";
 
 describe("buildRubricOverviewData", () => {
 	const submissions: Submission[] = [

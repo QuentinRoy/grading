@@ -1,4 +1,4 @@
-import type { ExportOptions } from "@/export/submissionExportCsv";
+import type { ExportOptions } from "#export/submissionExportCsv.ts";
 
 export function parseExportOptions(
 	searchParams: URLSearchParams,
