@@ -1,5 +1,5 @@
 import { loadProjectByPublicId } from "#db/projects.ts";
-import { loadManagedQuestions } from "#db/questionsManaged.ts";
+import { loadQuestionDefinitions } from "#db/questionDefinitions.ts";
 import { canonicalProjectRedirect } from "#projects/canonicalProjectRedirect.ts";
 import {
 	deleteQuestionAction,
@@ -24,21 +24,14 @@ export default async function ProjectQuestionsPage({
 		route: { kind: "questions" },
 	});
 
-	const questions = await loadManagedQuestions(project.id);
+	const questions = await loadQuestionDefinitions(project.id);
 
 	return (
 		<QuestionsManagementClient
 			saveAction={saveQuestionAction.bind(null, project.id)}
 			deleteAction={deleteQuestionAction.bind(null, project.id)}
 			reorderAction={reorderQuestionsAction.bind(null, project.id)}
-			questions={questions.map((question) => ({
-				id: question.id,
-				label: question.label,
-				position: question.position,
-				assessmentCount: question.assessmentCount,
-				rubricCount: question.rubricCount,
-				question: question.question,
-			}))}
+			questions={questions}
 		/>
 	);
 }

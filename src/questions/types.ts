@@ -1,4 +1,4 @@
-import type { Rubric } from "#db/types.ts";
+import type { QuestionDefinition } from "#db/types.ts";
 
 export type QuestionEditorValue = {
 	id: string;
@@ -37,18 +37,7 @@ export type RubricEditorValue =
 			reversed: boolean;
 	  };
 
-export type QuestionManagementItem = {
-	id: string;
-	label?: string | undefined;
-	position: number;
-	assessmentCount: number;
-	rubricCount: number;
-	question: { label?: string | undefined; rubrics: Rubric[] };
-};
-
-export function toEditorValue(
-	item: QuestionManagementItem,
-): QuestionEditorValue {
+export function toEditorValue(item: QuestionDefinition): QuestionEditorValue {
 	return {
 		id: item.id,
 		label: item.question.label,
