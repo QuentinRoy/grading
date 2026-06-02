@@ -17,7 +17,7 @@ Related: #115, #99, #59, #51, #68, #110
 - [Finding 4: question-specific grading page cache boundaries need review](#finding-4-question-specific-grading-page-cache-boundaries-need-review)
 - [Finding 5: question definition persistence has been split](#finding-5-question-definition-persistence-has-been-split)
 - [Finding 6: assessment reads and writes have been split, but ADR 0002 relocation remains](#finding-6-assessment-reads-and-writes-have-been-split-but-adr-0002-relocation-remains)
-- [Finding 7: domain types are mixed with generated database types](#finding-7-domain-types-are-mixed-with-generated-database-types)
+- [Finding 7: clarify raw database types versus feature-facing types](#finding-7-clarify-raw-database-types-versus-feature-facing-types)
 - [Finding 8: question and rubric read-model assembly is duplicated](#finding-8-question-and-rubric-read-model-assembly-is-duplicated)
 - [Finding 9: progress and analytics duplicate completion semantics](#finding-9-progress-and-analytics-duplicate-completion-semantics)
 - [Finding 10: export submissions is a correctness-sensitive state machine that needs smaller seams](#finding-10-export-submissions-is-a-correctness-sensitive-state-machine-that-needs-smaller-seams)
@@ -377,32 +377,62 @@ However, if ADR 0002 relocation is the next planned step, prefer doing this spli
 
 The existing transaction-friendly API is the right direction. Preserve the rule that cache invalidation does not run inside a caller-owned transaction. The transaction owner should invalidate after commit.
 
-## Finding 7: domain types are mixed with generated database types
+## Finding 7: clarify raw database types versus feature-facing types
 
 ### Current behavior
 
-`src/db/types.ts` re-exports generated DB types and also defines domain/application types such as `Submission`, `Rubric`, `AssessmentRubricValue`, `Question`, and `Grid`.
+`src/db/types.ts` currently mixes different kinds of types:
+
+- generated-database-adjacent types;
+- persistence projections;
+- feature-facing read models;
+- UI/action/import/export contracts.
+
+That makes it hard to tell whether a type is a raw table row, a persistence-internal projection, a domain/read-model type, or a user-facing contract.
+
+### Decision direction
+
+Keep `src/db/generated/db.ts` private to the database infrastructure layer. Do not turn it into a general feature import surface, and do not add a thin facade that simply re-exports the same generated schema under another name.
+
+Feature modules should derive their public types from explicit read models and query mappers rather than exposing raw generated row shapes. This keeps internal columns such as `row_id`, nullable storage details, and join artifacts from becoming user-facing contracts.
 
 ### Why this matters
 
-Client code imports domain-looking types from `db/types`. This makes it look as if UI and domain code depend on the DB layer, even if the import is type-only.
+ADR 0002 still points toward feature-owned persistence, but that does not require UI, action, import/export, or route code to depend on generated database row types. Feature persistence can remain implementation detail: it may call DB helpers, perform Kysely queries through infrastructure-owned entry points, and map results into explicit feature-facing types before returning them.
 
-It also makes it harder to tell whether a type is a generated DB row type, persistence projection, domain model, UI view model, or import/export DTO.
+The important boundary is:
+
+```txt
+raw generated schema / row ids / storage nullability
+  -> persistence-internal code only
+
+explicit feature read models / DTOs / action states
+  -> feature, UI, route, import, export code
+```
 
 ### Recommendation
 
-This should be treated as part of ADR 0002 follow-up work, not as a low-priority cleanup. Start by creating new domain type modules that re-export the old types, then move definitions gradually.
+Use explicit feature-facing types and read models at module boundaries. Derive them from the query implementation when useful, but do not expose raw generated row types outside persistence-internal code.
 
-Candidate target modules:
+For example:
 
 ```txt
-src/db/generated/db.ts
-src/db/dbTypes.ts
-src/rubrics/rubricTypes.ts
-src/assessment/assessmentTypes.ts
-src/submissions/submissionTypes.ts
 src/questions/types.ts
+src/questions/questionDefinitions.ts
+src/questions/questionDefinitionMutations.ts
+
+src/assessment/assessmentTypes.ts
+src/assessment/assessmentReadModel.ts
+src/assessment/assessmentMutations.ts
 ```
+
+The persistence code may use generated types internally, but the exported API should return question definitions, assessment read models, submission summaries, or action results, not generated table rows. If a type contains `row_id`, it should normally be persistence-internal.
+
+### Migration approach
+
+Start by identifying imports from `src/db/types.ts` that are really feature-facing types. Move those type definitions to the relevant feature module or replace them with explicit read-model types returned by loaders.
+
+Keep generated database types and internal row/projection helpers inside `src/db`. Avoid creating a thin schema facade unless a concrete problem appears that cannot be solved with the direct infrastructure imports already available.
 
 ## Finding 8: question and rubric read-model assembly is duplicated
 
@@ -1058,6 +1088,13 @@ Related: #68.
 - Which cache-tag helpers should remain in `src/db`, and which feature commands should own their cache policy calls?
 - Should this be one PR for question persistence and one PR for assessment persistence?
 
+### Raw database types and feature-facing types
+
+- How strict should the private boundary around `src/db/generated/db.ts` be enforced?
+- Which persistence-internal helper types, if any, are allowed to leave `src/db`?
+- Should feature read-model types be explicit definitions, inferred from loader return types, or a mix of both?
+- How should tests guard against `row_id` leaking into UI/action/import/export contracts?
+
 ### Read models and cache boundaries
 
 - Should grading page loaders return UI-ready models, or should cached server sections assemble local models?
@@ -1098,6 +1135,9 @@ This investigation does not recommend:
 - microservices;
 - multiple packages;
 - treating the current `src/db` location of question and assessment persistence as the final architecture;
+- making `src/db/generated/db.ts` a general-purpose feature import surface;
+- adding a thin generated-schema facade without a concrete need;
+- exposing raw generated table rows as UI/action/import/export contracts;
 - a strict clean architecture hierarchy;
 - moving all code under `app/`;
 - extracting every duplicated pattern immediately;
