@@ -457,37 +457,36 @@ Export-specific code can transform the canonical grid into an export plan. Impor
 
 Do not force every consumer to share one giant type. The shared piece should be the stable source data and rubric assembly. Workflow-specific projections should remain workflow-specific.
 
-## Finding 9: progress and analytics duplicate completion semantics
+## Finding 9: assessment completion semantics are duplicated across projections
 
 ### Current behavior
 
-Progress/analytics logic appears in submission-question progress, submission-overview progress, global assessment progress, rubric overview analytics, and shared assessment summary helpers.
+Several pages compute related completion or summary metrics over assessment state:
 
-These modules compute related metrics:
+- completion grouped by submission;
+- completion grouped by question;
+- project-level assessment completion;
+- rubric overview analytics;
+- shared assessment summary helpers.
 
-- completed rubrics;
-- total rubrics;
-- completed questions;
-- total questions;
-- zero-rubric question behavior;
-- completion percentages;
-- class averages;
-- per-student/submission rows.
+These metrics are about assessment state. In the current app, assessment mostly means recorded grading values, but the term is broader than grading and may later encompass feedback or other evaluator-provided information. Submission, question, and project are grouping dimensions, not owners of the progress itself.
 
 ### Why this matters
 
-Completion semantics are business logic. If different pages compute them differently, the dashboard, assessment lists, and overview pages can disagree.
+Completion semantics are business logic. If different pages compute them differently, the dashboard, assessment list, submission overview, and question-by-question assessment pages can disagree.
 
-Some summary semantics are already centralized, which is good. The remaining issue is making sure DB progress loaders, dashboard summaries, and overview analytics share the same documented semantics.
+The naming should avoid implying that a submission “has progress”. A submission is the assessed artifact. Completion is derived from assessment records and grouped by submission, question, or project depending on the view.
 
 ### Candidate direction
 
-Create or document a grading progress model around:
+Create or document a shared assessment-completion model, then expose view-specific read models:
 
 ```txt
 src/assessment/assessmentSummary.ts
-src/db/submissionProgress.ts
-src/db/assessmentProgress.ts
+src/assessment/assessmentCompletion.ts
+src/assessment/loadCompletionBySubmission.ts
+src/assessment/loadCompletionByQuestion.ts
+src/assessment/loadProjectAssessmentCompletion.ts
 ```
 
 This should also be revisited during ADR 0002 follow-up because progress logic is feature logic, not database infrastructure.
