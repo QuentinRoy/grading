@@ -107,6 +107,8 @@ Investigations and active plans can guide work, but they do not override higher-
   - avoid nested ternaries and dense one-liners when explicit control flow is clearer;
   - delete dead code rather than preserving unused paths.
 
+- Prefer clear symbol names over terse abbreviations. Common technical acronyms and established domain terms are fine, for example `id`, `url`, `api`, `ui`, `db`, `props`, `projectId`, and `projectRowId`. Avoid unclear abbreviations such as `opts`, `cfg`, `ctx`, `svc`, `repo`, `res`, `req`, or `val` when `options`, `config`, `context`, `service`, `repository`, `response`, `request`, or `value` would be clearer. Do not rename existing symbols solely to expand abbreviations unless the abbreviation causes confusion or the code is already being changed.
+
 - After implementing a code change, perform a simplify pass using `.agents/skills/simplify/SKILL.md` over recently modified code:
   - preserve functionality exactly;
   - improve clarity, consistency, naming, control flow, and maintainability;
