@@ -1,9 +1,9 @@
 import "server-only";
 import { cacheLife } from "next/cache";
+import { CACHE_TAGS, cacheTags } from "#db/cacheTags.ts";
+import { db } from "#db/kysely.ts";
 import { loadSubmissions } from "#submissions/submissions.ts";
 import { loadQuestions } from "../questions/questions.ts";
-import { CACHE_TAGS, cacheTags } from "./cacheTags.ts";
-import { db } from "./kysely.ts";
 import {
 	buildRubricOverviewData,
 	type RubricOverviewAssessmentRecord,

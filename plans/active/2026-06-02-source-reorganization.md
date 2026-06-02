@@ -168,7 +168,20 @@ src/questions/types.ts
 
 Keep `src/db/generated/db.ts` private to DB infrastructure. Do not expose raw generated row types as question feature contracts.
 
-## Step 3: move assessment persistence and read models
+## Step 3: move assessment persistence and read models — Done
+
+Status: Completed 2026-06-02.
+
+Moved `assessments.ts`, `assessmentMutations.ts`, `assessmentsProgress.ts`,
+`submissionProgress.ts`, `rubricOverview.ts`, and `rubricOverviewBuilder.ts` (with the
+`assessments`, `submissionProgress`, and `rubricOverview` tests) from `src/db` into
+`src/assessment/`. Moved the `AssessmentRubricValue` and `GlobalAssessmentProgress`
+feature types out of `src/db/types.ts` into `src/assessment/types.ts`. Updated all
+consumer imports across `app/` and `src/`, including the `vi.doMock` paths in the
+relocated integration tests (`#db/kysely` and `#assessment/assessmentMutations` now
+that the sources resolve `db` from `#db/kysely.ts`). `Rubric` stays in
+`src/db/types.ts` for Step 4. Behavior unchanged; affected integration and unit tests
+green, types clean.
 
 Move:
 

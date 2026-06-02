@@ -6,14 +6,6 @@ import type { RubricType } from "./generated/db.ts";
 // broad generated table-shape re-export from here).
 export type { RubricType };
 
-type ProgressMetric = { completed: number; total: number };
-
-export type GlobalAssessmentProgress = {
-	submissions: ProgressMetric;
-	questions: ProgressMetric;
-	rubrics: ProgressMetric;
-};
-
 type RubricBase = {
 	id: string;
 	description?: string | undefined;
@@ -36,11 +28,3 @@ export type Rubric =
 				reversed: boolean;
 			}
 	  >;
-
-type AssessmentRubricValueBase = { rubricId: string; type: RubricType };
-export type AssessmentRubricValue =
-	| Simplify<AssessmentRubricValueBase & { type: "boolean"; passed: boolean }>
-	| Simplify<
-			AssessmentRubricValueBase & { type: "ordinal"; selectedLabel: string }
-	  >
-	| Simplify<AssessmentRubricValueBase & { type: "numerical"; score: number }>;

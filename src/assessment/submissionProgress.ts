@@ -4,8 +4,8 @@ import {
 	assessmentQuestionCacheTag,
 	CACHE_TAGS,
 	cacheTags,
-} from "./cacheTags.ts";
-import { db } from "./kysely.ts";
+} from "#db/cacheTags.ts";
+import { db } from "#db/kysely.ts";
 
 export type SubmissionProgressMetric = { completed: number; total: number };
 

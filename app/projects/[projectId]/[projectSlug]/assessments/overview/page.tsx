@@ -5,8 +5,8 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import type { ReactElement } from "react";
 import RubricAnalyticsTable from "#assessment/RubricAnalyticsTable.tsx";
+import { loadRubricOverviewData } from "#assessment/rubricOverview.ts";
 import StudentMatrix from "#assessment/StudentMatrix.tsx";
-import { loadRubricOverviewData } from "#db/rubricOverview.ts";
 import { canonicalProjectRedirect } from "#projects/canonicalProjectRedirect.ts";
 import { loadProjectByPublicId } from "#projects/projects.ts";
 

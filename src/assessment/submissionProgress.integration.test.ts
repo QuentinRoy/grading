@@ -1,8 +1,8 @@
 import type { Kysely } from "kysely";
 import { expect, test, vi } from "vitest";
+import type { DB } from "#db/generated/db.ts";
 import { buildTestId, createTestDb } from "#test/dbIntegration.ts";
 import { createProject } from "#test/projects.ts";
-import type { DB } from "./generated/db.ts";
 
 vi.mock("server-only", () => ({}));
 
@@ -163,7 +163,7 @@ async function loadProgressWithDb(
 	projectId: string,
 ) {
 	vi.resetModules();
-	vi.doMock("./kysely", () => ({ db }));
+	vi.doMock("#db/kysely", () => ({ db }));
 	vi.doMock("next/cache", () => ({
 		cacheTag: vi.fn(),
 		cacheLife: vi.fn(),
@@ -172,13 +172,13 @@ async function loadProgressWithDb(
 	const { loadSubmissionQuestionProgress } = await import(
 		"./submissionProgress.ts"
 	);
-	vi.doUnmock("./kysely");
+	vi.doUnmock("#db/kysely");
 	return loadSubmissionQuestionProgress(questionId, projectId);
 }
 
 async function loadOverviewProgressWithDb(db: Kysely<DB>, projectId: string) {
 	vi.resetModules();
-	vi.doMock("./kysely", () => ({ db }));
+	vi.doMock("#db/kysely", () => ({ db }));
 	vi.doMock("next/cache", () => ({
 		cacheTag: vi.fn(),
 		cacheLife: vi.fn(),
@@ -187,7 +187,7 @@ async function loadOverviewProgressWithDb(db: Kysely<DB>, projectId: string) {
 	const { loadSubmissionOverviewProgress } = await import(
 		"./submissionProgress.ts"
 	);
-	vi.doUnmock("./kysely");
+	vi.doUnmock("#db/kysely");
 	return loadSubmissionOverviewProgress(projectId);
 }
 

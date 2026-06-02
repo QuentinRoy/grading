@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
+import type { Grid } from "#questions/types.ts";
 import type { Submission } from "#submissions/types.ts";
 import {
 	buildRubricOverviewData,
 	type RubricOverviewAssessmentRecord,
 } from "./rubricOverviewBuilder.ts";
-import type { Grid } from "./types.ts";
 
 describe("buildRubricOverviewData", () => {
 	const submissions: Submission[] = [

@@ -3,7 +3,7 @@ import LinearProgress from "@mui/material/LinearProgress";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import type { ReactElement } from "react";
-import type { GlobalAssessmentProgress } from "#db/types.ts";
+import type { GlobalAssessmentProgress } from "./types.ts";
 
 type GlobalAssessmentSummaryProps = { progress: GlobalAssessmentProgress };
 

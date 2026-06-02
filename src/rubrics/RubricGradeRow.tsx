@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { type ReactElement } from "react";
-import type { AssessmentRubricValue } from "#db/types.ts";
+import type { AssessmentRubricValue } from "#assessment/types.ts";
 import BooleanGradeControl from "./BooleanGradeControl.tsx";
 import NumericalGradeControl from "./NumericalGradeControl.tsx";
 import OrdinalGradeControl from "./OrdinalGradeControl.tsx";

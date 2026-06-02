@@ -9,7 +9,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import type { ReactElement } from "react";
-import type { RubricOverviewRow } from "#db/rubricOverviewBuilder.ts";
+import type { RubricOverviewRow } from "#assessment/rubricOverviewBuilder.ts";
 import CompletionProgress from "./CompletionProgress.tsx";
 import QuestionDetailsTooltip from "./QuestionDetailsTooltip.tsx";
 import RubricDetailsTooltip from "./RubricDetailsTooltip.tsx";

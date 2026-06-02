@@ -1,8 +1,8 @@
 import "server-only";
 import { once } from "node:events";
 import { stringify } from "csv-stringify";
+import type { AssessmentRubricValue } from "#assessment/types.ts";
 import { db } from "#db/kysely.ts";
-import type { AssessmentRubricValue } from "#db/types.ts";
 import {
 	type AssessedRubric,
 	attachAssessment,

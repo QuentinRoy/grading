@@ -1,7 +1,7 @@
 import "server-only";
 import { cacheLife } from "next/cache";
-import { CACHE_TAGS, cacheTags } from "./cacheTags.ts";
-import { db } from "./kysely.ts";
+import { CACHE_TAGS, cacheTags } from "#db/cacheTags.ts";
+import { db } from "#db/kysely.ts";
 import type { GlobalAssessmentProgress } from "./types.ts";
 
 async function loadGlobalAssessmentProgressFromDb(

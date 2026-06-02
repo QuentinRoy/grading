@@ -1,7 +1,7 @@
 import "server-only";
+import { assessmentCacheTag, CACHE_TAGS, cacheTags } from "#db/cacheTags.ts";
+import { db } from "#db/kysely.ts";
 import { assertNever } from "#utils/utils.ts";
-import { assessmentCacheTag, CACHE_TAGS, cacheTags } from "./cacheTags.ts";
-import { db } from "./kysely.ts";
 import type { AssessmentRubricValue } from "./types.ts";
 
 // Returns typed rubric values for a submission/question assessment.

@@ -1,3 +1,5 @@
+import type { Rubric, RubricType } from "#db/types.ts";
+import type { Grid } from "#questions/types.ts";
 import {
 	attachAssessment,
 	getRubricMaxMarks,
@@ -5,12 +7,7 @@ import {
 } from "#rubrics/rubric.ts";
 import { getSubmissionLabel } from "#submissions/getSubmissionLabel.ts";
 import type { Submission } from "#submissions/types.ts";
-import type {
-	AssessmentRubricValue,
-	Grid,
-	Rubric,
-	RubricType,
-} from "./types.ts";
+import type { AssessmentRubricValue } from "./types.ts";
 
 type RubricPropertyDetails =
 	| { type: "boolean"; trueMarks: number; falseMarks: number }

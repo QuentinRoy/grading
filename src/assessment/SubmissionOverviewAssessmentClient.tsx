@@ -7,7 +7,6 @@ import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
-import type { AssessmentRubricValue } from "#db/types.ts";
 import { projectAssessmentSubmissionPath } from "#projects/projectPaths.ts";
 import { type AssessedRubric } from "#rubrics/rubric.ts";
 import { type SaveError, useSaveErrors } from "#shared/SaveErrorsProvider.tsx";
@@ -18,6 +17,7 @@ import { summarizeRubrics } from "./assessmentSummary.ts";
 import RubricGradeList from "./RubricGradeList.tsx";
 import SubmissionQuickJumpDialog from "./SubmissionQuickJumpDialog.tsx";
 import { saveAssessment } from "./saveAssessment.ts";
+import type { AssessmentRubricValue } from "./types.ts";
 import { useAssessmentSession } from "./useAssessmentSession.ts";
 
 type QuestionAssessmentSection = {

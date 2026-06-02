@@ -35,7 +35,7 @@ import {
 	useState,
 	useTransition,
 } from "react";
-import type { QuestionDefinition } from "#db/types.ts";
+import type { QuestionDefinition } from "./types.ts";
 
 type QuestionTableProps = {
 	questions: QuestionDefinition[];
