@@ -1,13 +1,11 @@
 import "server-only";
 import { once } from "node:events";
 import { stringify } from "csv-stringify";
+import type { AssessmentRubricValue } from "#assessments/types.ts";
 import { db } from "#db/kysely.ts";
-import type { AssessmentRubricValue, SubmissionSubmitter } from "#db/types.ts";
-import {
-	type AssessedRubric,
-	attachAssessment,
-	markRubric,
-} from "#rubrics/rubric.ts";
+import { attachAssessment, markRubric } from "#rubrics/rubric.ts";
+import type { AssessedRubric } from "#rubrics/types.ts";
+import type { SubmissionSubmitter } from "#submissions/types.ts";
 import { assertNever } from "#utils/utils.ts";
 import {
 	buildAssessmentKey,

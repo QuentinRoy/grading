@@ -1,12 +1,12 @@
-import { loadProjectByPublicId } from "#db/projects.ts";
-import { loadQuestionDefinitions } from "#db/questionDefinitions.ts";
 import { canonicalProjectRedirect } from "#projects/canonicalProjectRedirect.ts";
+import { loadProjectByPublicId } from "#projects/projects.ts";
 import {
 	deleteQuestionAction,
 	reorderQuestionsAction,
 	saveQuestionAction,
 } from "#questions/actions.ts";
 import QuestionsManagementClient from "#questions/QuestionsManagementClient.tsx";
+import { loadQuestionDefinitions } from "#questions/questionDefinitions.ts";
 
 type ProjectQuestionsPageProps = {
 	params: Promise<{ projectId: string; projectSlug: string }>;

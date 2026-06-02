@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
-import type { QuestionDefinition } from "#db/types.ts";
 import QuestionTable from "./QuestionTable.tsx";
+import type { QuestionDefinition } from "./types.ts";
 
 const sampleQuestions: QuestionDefinition[] = [
 	{

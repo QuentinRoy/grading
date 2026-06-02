@@ -4,7 +4,7 @@ import type {
 	AssessmentWriteDb,
 	SaveAssessmentParams,
 	SaveAssessmentResult,
-} from "#db/assessmentMutations.ts";
+} from "#assessments/assessmentMutations.ts";
 import type { DB } from "#db/generated/db.ts";
 import { buildTestId, createTestDb } from "#test/dbIntegration.ts";
 import { createProject } from "#test/projects.ts";
@@ -105,13 +105,13 @@ async function loadSaveAssessments(params: {
 	) => Promise<SaveAssessmentResult>;
 }): Promise<typeof import("./saveAssessments.ts").saveAssessments> {
 	vi.resetModules();
-	vi.doMock("../db/kysely", () => ({ db: params.db }));
+	vi.doMock("#db/kysely", () => ({ db: params.db }));
 
 	if (params.saveAssessmentMock) {
-		vi.doMock("../db/assessmentMutations", async () => {
+		vi.doMock("#assessments/assessmentMutations", async () => {
 			const actual = await vi.importActual<
-				typeof import("#db/assessmentMutations.ts")
-			>("../db/assessmentMutations");
+				typeof import("#assessments/assessmentMutations.ts")
+			>("#assessments/assessmentMutations");
 
 			return {
 				...actual,
@@ -124,13 +124,13 @@ async function loadSaveAssessments(params: {
 			};
 		});
 	} else {
-		vi.doUnmock("../db/assessmentMutations");
+		vi.doUnmock("#assessments/assessmentMutations");
 	}
 
 	const { saveAssessments } = await import("./saveAssessments.ts");
 
-	vi.doUnmock("../db/assessmentMutations");
-	vi.doUnmock("../db/kysely");
+	vi.doUnmock("#assessments/assessmentMutations");
+	vi.doUnmock("#db/kysely");
 
 	return saveAssessments;
 }
@@ -242,8 +242,8 @@ test("saveAssessments rolls back all writes if a later transactional write fails
 		db,
 		saveAssessmentMock: async (input, opts) => {
 			const actual = await vi.importActual<
-				typeof import("#db/assessmentMutations.ts")
-			>("../db/assessmentMutations");
+				typeof import("#assessments/assessmentMutations.ts")
+			>("#assessments/assessmentMutations");
 
 			callCount += 1;
 			if (callCount === 2) {

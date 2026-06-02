@@ -3,17 +3,17 @@ import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import { notFound } from "next/navigation";
-import SubmissionOverviewAssessmentClient from "#assessment/SubmissionOverviewAssessmentClient.tsx";
-import { loadAssessment } from "#db/assessments.ts";
-import { loadProjectByPublicId } from "#db/projects.ts";
-import { loadQuestions } from "#db/questions.ts";
-import { loadSubmissionOverviewProgress } from "#db/submissionProgress.ts";
-import { loadSubmissions } from "#db/submissions.ts";
+import { loadAssessment } from "#assessments/assessments.ts";
+import SubmissionOverviewAssessmentClient from "#assessments/SubmissionOverviewAssessmentClient.tsx";
+import { loadSubmissionOverviewProgress } from "#assessments/submissionProgress.ts";
 import { canonicalProjectRedirect } from "#projects/canonicalProjectRedirect.ts";
 import { projectAssessmentsPath } from "#projects/projectPaths.ts";
+import { loadProjectByPublicId } from "#projects/projects.ts";
+import { loadQuestions } from "#questions/questions.ts";
 import { attachAssessment } from "#rubrics/rubric.ts";
-import MuiNextLink from "#shared/MuiNextLink.tsx";
 import { getSubmissionLabel } from "#submissions/getSubmissionLabel.ts";
+import { loadSubmissions } from "#submissions/submissions.ts";
+import MuiNextLink from "#ui/MuiNextLink.tsx";
 
 type PageParams = {
 	projectId: string;

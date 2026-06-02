@@ -11,9 +11,9 @@ import {
 	Typography,
 } from "@mui/material";
 import { type ReactElement, useActionState, useState } from "react";
-import type { QuestionDefinition } from "#db/types.ts";
 import DeleteQuestionDialog from "./DeleteQuestionDialog.tsx";
 import { initialQuestionsActionState } from "./state.ts";
+import type { QuestionDefinition } from "./types.ts";
 
 type SelectedQuestionPaneProps = {
 	definition?: QuestionDefinition | undefined;

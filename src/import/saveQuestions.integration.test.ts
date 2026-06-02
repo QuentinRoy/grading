@@ -29,7 +29,7 @@ function makeQuestions(params: {
 test("saveQuestions allows the same question and rubric ids in different projects", async () => {
 	await using db = await createTestDb();
 	vi.resetModules();
-	using _kyselyMock = vi.doMock("../db/kysely", () => ({ db }));
+	using _kyselyMock = vi.doMock("#db/kysely", () => ({ db }));
 	const { saveQuestions } = await import("./saveQuestions.ts");
 
 	await using projectA = await createProject(db, "Import Project A");
@@ -74,7 +74,7 @@ test("saveQuestions allows the same question and rubric ids in different project
 test("saveQuestions updates only the target project rows", async () => {
 	await using db = await createTestDb();
 	vi.resetModules();
-	using _kyselyMock = vi.doMock("../db/kysely", () => ({ db }));
+	using _kyselyMock = vi.doMock("#db/kysely", () => ({ db }));
 	const { saveQuestions } = await import("./saveQuestions.ts");
 
 	await using projectA = await createProject(db, "Isolation Project A");
@@ -141,7 +141,7 @@ test("saveQuestions updates only the target project rows", async () => {
 test("saveQuestions still upserts duplicate ids within the same project", async () => {
 	await using db = await createTestDb();
 	vi.resetModules();
-	using _kyselyMock = vi.doMock("../db/kysely", () => ({ db }));
+	using _kyselyMock = vi.doMock("#db/kysely", () => ({ db }));
 	const { saveQuestions } = await import("./saveQuestions.ts");
 
 	await using project = await createProject(db, "Single Project Upsert");

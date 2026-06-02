@@ -14,8 +14,8 @@ import {
 } from "@mui/material";
 import { type ReactElement, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
-import type { QuestionDefinition } from "#db/types.ts";
 import type { QuestionsActionState } from "./state.ts";
+import type { QuestionDefinition } from "./types.ts";
 import {
 	buildDeleteConfirmationPhrase,
 	matchesDeleteConfirmation,

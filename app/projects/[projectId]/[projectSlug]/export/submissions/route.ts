@@ -1,5 +1,5 @@
-import { loadProjectByPublicId } from "#db/projects.ts";
 import { createCsvSubmissionExport } from "#export/submissionExport.ts";
+import { loadProjectByPublicId } from "#projects/projects.ts";
 import { parseExportOptions } from "./exportOptions.ts";
 
 type RouteParams = {

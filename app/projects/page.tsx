@@ -11,9 +11,9 @@ import {
 	Typography,
 } from "@mui/material";
 import { redirect } from "next/navigation";
-import { createProject, loadProjects } from "#db/projects.ts";
 import { projectDashboardPath } from "#projects/projectPaths.ts";
-import AppShell from "#shared/AppShell.tsx";
+import { createProject, loadProjects } from "#projects/projects.ts";
+import AppShell from "#ui/AppShell.tsx";
 
 function isNextRedirectError(error: unknown): boolean {
 	if (typeof error !== "object" || error == null || !("digest" in error)) {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { SubmissionSubmitter } from "#db/types.ts";
+import type { SubmissionSubmitter } from "#submissions/types.ts";
 import {
 	buildSubmissionExportHeaders,
 	buildSubmissionExportRecord,

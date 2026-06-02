@@ -34,7 +34,7 @@ function makeSubmissions(
 
 test("saveStudents keeps imported student ids and team names isolated per project", async () => {
 	await using db = await createTestDb();
-	vi.doMock("../db/kysely", () => ({ db }));
+	vi.doMock("#db/kysely", () => ({ db }));
 	const { saveStudents } = await import("./saveStudents.ts");
 
 	await using projectA = await createProject(db, "Project A");

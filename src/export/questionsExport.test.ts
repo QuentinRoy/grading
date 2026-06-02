@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Grid } from "#db/types.ts";
+import type { Grid } from "#questions/types.ts";
 import { exportQuestionsToYaml } from "./questionsExport.ts";
 
 describe("exportQuestionsToYaml", () => {

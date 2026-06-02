@@ -1,0 +1,53 @@
+import type { Selectable } from "kysely";
+import type {
+	Submission as DbSubmission,
+	Student,
+	SubmissionType,
+	Team,
+} from "#db/generated/db.ts";
+import type { Simplify } from "#utils/utils.ts";
+
+export type { SubmissionType };
+
+type SubmissionBase = { id: string; type: SubmissionType };
+
+type SubmissionDisplay = {
+	displayLabel?: string | undefined;
+	memberNames?: string[] | undefined;
+	searchKeys?: string[] | undefined;
+};
+
+// FIXME: SubmissionDisplay part doesn't seem like it belongs here
+// since it's mostly UI facing. Submission vs SubmissionSubmitter
+// is awkward (unclear what's what). Also we should strive
+// to derive from Kysely types (e.g. using Selectable) instead of
+// defining new ones.
+export type Submission =
+	| Simplify<
+			SubmissionDisplay &
+				SubmissionBase & {
+					type: "individual";
+					studentName: string;
+					teamName?: undefined;
+				}
+	  >
+	| Simplify<
+			SubmissionDisplay &
+				SubmissionBase & {
+					type: "team";
+					studentName?: undefined;
+					teamName: string;
+				}
+	  >;
+
+export type SubmissionSubmitter =
+	| Simplify<
+			SubmissionBase & {
+				type: "individual";
+				studentId: string;
+				teamName?: undefined;
+			}
+	  >
+	| Simplify<
+			SubmissionBase & { type: "team"; studentId?: undefined; teamName: string }
+	  >;

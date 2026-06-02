@@ -9,13 +9,13 @@ import {
 	useMemo,
 	useState,
 } from "react";
-import type { QuestionDefinition } from "#db/types.ts";
 import { reorderQuestionsAction, saveQuestionAction } from "./actions.ts";
 import QuestionForm from "./QuestionForm.tsx";
 import QuestionTable from "./QuestionTable.tsx";
 import SelectedQuestionPane from "./SelectedQuestionPane.tsx";
 import type { QuestionsActionState } from "./state.ts";
 import { initialQuestionsActionState } from "./state.ts";
+import type { QuestionDefinition } from "./types.ts";
 import { createEmptyQuestionEditorValue, toEditorValue } from "./types.ts";
 
 type QuestionsManagementClientProps = {
