@@ -124,7 +124,17 @@ src/submissions/types.ts
 
 Keep behavior unchanged. Update imports only.
 
-## Step 2: move question persistence
+## Step 2: move question persistence — Done
+
+Status: Completed 2026-06-02.
+
+Moved `src/db/questions.ts`, `src/db/questionDefinitions.ts`, and
+`src/db/questionDefinitionMutations.ts` (with their integration tests) into
+`src/questions/`. Moved the `Question`, `Grid`, and `QuestionDefinition` feature
+types out of `src/db/types.ts` into `src/questions/types.ts`. Updated all consumer
+imports across `app/` and `src/`, including the `vi.mock` path in
+`src/questions/actions.test.ts`. `src/db/generated/db.ts` stays private to DB
+infrastructure. Behavior unchanged; unit tests green.
 
 Move:
 

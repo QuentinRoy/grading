@@ -1,12 +1,12 @@
 import { type Kysely } from "kysely";
 import { expect, test, vi } from "vitest";
+import type { DB } from "#db/generated/db.ts";
 import { createTestDb } from "#test/dbIntegration.ts";
 import { createProject } from "#test/projects.ts";
 import {
 	createAssessedBooleanQuestionFixture,
 	createQuestion,
 } from "#test/questions.ts";
-import type { DB } from "./generated/db.ts";
 
 vi.mock("server-only", () => ({}));
 
@@ -18,7 +18,7 @@ vi.mock("next/cache", () => ({
 
 async function loadQuestionDefinitionsWithDb(db: Kysely<DB>) {
 	vi.resetModules();
-	using _kyselyMock = vi.doMock("./kysely", () => ({ db }));
+	using _kyselyMock = vi.doMock("#db/kysely", () => ({ db }));
 
 	return await import("./questionDefinitions.ts");
 }

@@ -4,7 +4,7 @@ import {
 	deleteQuestionDefinition,
 	reorderQuestions,
 	saveQuestionDefinition,
-} from "#db/questionDefinitionMutations.ts";
+} from "#questions/questionDefinitionMutations.ts";
 import { toQuestionsValidationError } from "./errors.ts";
 import {
 	matchesDeleteConfirmation,

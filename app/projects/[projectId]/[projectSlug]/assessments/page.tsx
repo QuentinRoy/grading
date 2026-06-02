@@ -9,7 +9,6 @@ import {
 	Typography,
 } from "@mui/material";
 import { cacheTag } from "next/cache";
-import { loadQuestions } from "#db/questions.ts";
 import { loadSubmissionOverviewProgress } from "#db/submissionProgress.ts";
 import { canonicalProjectRedirect } from "#projects/canonicalProjectRedirect.ts";
 import {
@@ -19,6 +18,7 @@ import {
 } from "#projects/projectPaths.ts";
 import { loadProjectByPublicId } from "#projects/projects.ts";
 import QuestionList from "#questions/QuestionList.tsx";
+import { loadQuestions } from "#questions/questions.ts";
 import { getSubmissionLabel } from "#submissions/getSubmissionLabel.ts";
 import { loadSubmissions } from "#submissions/submissions.ts";
 

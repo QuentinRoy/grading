@@ -6,7 +6,7 @@ const deleteQuestionDefinition = vi.fn();
 const saveQuestionDefinition = vi.fn();
 const reorderQuestions = vi.fn();
 
-vi.mock("#db/questionDefinitionMutations.ts", () => ({
+vi.mock("#questions/questionDefinitionMutations.ts", () => ({
 	deleteQuestionDefinition: (...args: unknown[]) =>
 		deleteQuestionDefinition(...args),
 	saveQuestionDefinition: (...args: unknown[]) =>

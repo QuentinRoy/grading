@@ -1,5 +1,5 @@
 import "server-only";
-import { db } from "./kysely.ts";
+import { db } from "#db/kysely.ts";
 import {
 	loadQuestionsFromDb,
 	resolveProjectRowId,

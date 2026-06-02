@@ -1,4 +1,4 @@
-import type { QuestionDefinition } from "#db/types.ts";
+import type { Rubric } from "#db/types.ts";
 
 export type QuestionEditorValue = {
 	id: string;
@@ -36,6 +36,19 @@ export type RubricEditorValue =
 			maxMarks: number;
 			reversed: boolean;
 	  };
+
+export type Question = { label?: string | undefined; rubrics: Rubric[] };
+
+export type Grid = { [id: string]: Question };
+
+// A Question plus the definition-level metadata an author edits in the
+// management UI (see CONTEXT.md: "Question Definition").
+export type QuestionDefinition = {
+	id: string;
+	position: number;
+	assessmentCount: number;
+	question: Question;
+};
 
 export function toEditorValue(item: QuestionDefinition): QuestionEditorValue {
 	return {
