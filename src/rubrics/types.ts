@@ -1,4 +1,4 @@
-import type { AssessmentRubricValue } from "#assessment/types.ts";
+import type { AssessmentRubricValue } from "#assessments/types.ts";
 import type { Simplify } from "#utils/utils.ts";
 
 export type RubricType = "boolean" | "numerical" | "ordinal";

@@ -9,7 +9,7 @@ import {
 	Typography,
 } from "@mui/material";
 import { cacheTag } from "next/cache";
-import { loadSubmissionOverviewProgress } from "#assessment/submissionProgress.ts";
+import { loadSubmissionOverviewProgress } from "#assessments/submissionProgress.ts";
 import { canonicalProjectRedirect } from "#projects/canonicalProjectRedirect.ts";
 import {
 	projectAssessmentSubmissionPath,

@@ -12,7 +12,7 @@ import type { ReactElement } from "react";
 import type {
 	RubricOverviewRow,
 	RubricOverviewStudentRow,
-} from "#assessment/rubricOverviewBuilder.ts";
+} from "#assessments/rubricOverviewBuilder.ts";
 import CompletionProgress from "./CompletionProgress.tsx";
 import RubricDetailsTooltip from "./RubricDetailsTooltip.tsx";
 

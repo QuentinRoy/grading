@@ -72,7 +72,7 @@ src/questions/
   schemas.ts
   actions.ts
 
-src/assessment/
+src/assessments/
   assessments.ts
   assessmentMutations.ts
   assessmentsProgress.ts
@@ -81,6 +81,10 @@ src/assessment/
   rubricOverviewBuilder.ts
   assessmentSummary.ts
 ```
+
+The assessment feature folder is named `src/assessments/` (plural) to stay
+consistent with the other feature folders (`src/projects/`, `src/submissions/`,
+`src/questions/`, `src/rubrics/`).
 
 The names above intentionally stay close to current names. Renaming files such as `submissionProgress.ts` to `assessmentCompletionBySubmission.ts` may be worthwhile later, but should be separate from this mechanical move unless needed for clarity.
 
@@ -175,31 +179,35 @@ Status: Completed 2026-06-02.
 Moved `assessments.ts`, `assessmentMutations.ts`, `assessmentsProgress.ts`,
 `submissionProgress.ts`, `rubricOverview.ts`, and `rubricOverviewBuilder.ts` (with the
 `assessments`, `submissionProgress`, and `rubricOverview` tests) from `src/db` into
-`src/assessment/`. Moved the `AssessmentRubricValue` and `GlobalAssessmentProgress`
-feature types out of `src/db/types.ts` into `src/assessment/types.ts`. Updated all
+`src/assessments/`. Moved the `AssessmentRubricValue` and `GlobalAssessmentProgress`
+feature types out of `src/db/types.ts` into `src/assessments/types.ts`. Updated all
 consumer imports across `app/` and `src/`, including the `vi.doMock` paths in the
-relocated integration tests (`#db/kysely` and `#assessment/assessmentMutations` now
+relocated integration tests (`#db/kysely` and `#assessments/assessmentMutations` now
 that the sources resolve `db` from `#db/kysely.ts`). `Rubric` stays in
 `src/db/types.ts` for Step 4. Behavior unchanged; affected integration and unit tests
 green, types clean.
 
+The folder was later renamed from `src/assessment/` to `src/assessments/` (plural)
+to match the other feature folders; all consumer imports were repointed from
+`#assessment/` to `#assessments/`.
+
 Move:
 
 ```txt
-src/db/assessments.ts -> src/assessment/assessments.ts
-src/db/assessmentMutations.ts -> src/assessment/assessmentMutations.ts
-src/db/assessmentsProgress.ts -> src/assessment/assessmentsProgress.ts
-src/db/submissionProgress.ts -> src/assessment/submissionProgress.ts
-src/db/rubricOverview.ts -> src/assessment/rubricOverview.ts
-src/db/rubricOverviewBuilder.ts -> src/assessment/rubricOverviewBuilder.ts
+src/db/assessments.ts -> src/assessments/assessments.ts
+src/db/assessmentMutations.ts -> src/assessments/assessmentMutations.ts
+src/db/assessmentsProgress.ts -> src/assessments/assessmentsProgress.ts
+src/db/submissionProgress.ts -> src/assessments/submissionProgress.ts
+src/db/rubricOverview.ts -> src/assessments/rubricOverview.ts
+src/db/rubricOverviewBuilder.ts -> src/assessments/rubricOverviewBuilder.ts
 ```
 
 Move tests with the files:
 
 ```txt
-src/db/assessments.integration.test.ts -> src/assessment/assessments.integration.test.ts
-src/db/submissionProgress.integration.test.ts -> src/assessment/submissionProgress.integration.test.ts
-src/db/rubricOverview.test.ts -> src/assessment/rubricOverview.test.ts
+src/db/assessments.integration.test.ts -> src/assessments/assessments.integration.test.ts
+src/db/submissionProgress.integration.test.ts -> src/assessments/submissionProgress.integration.test.ts
+src/db/rubricOverview.test.ts -> src/assessments/rubricOverview.test.ts
 ```
 
 Move feature-facing assessment types out of `src/db/types.ts`:
@@ -212,7 +220,7 @@ GlobalAssessmentProgress
 to:
 
 ```txt
-src/assessment/types.ts
+src/assessments/types.ts
 ```
 
 Keep terminology stable for now. Use `assessment` rather than introducing `grading` names while terminology investigations are still open.

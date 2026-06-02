@@ -1,7 +1,7 @@
 import "server-only";
 import { snakeCase } from "change-case";
-import { saveAssessment } from "#assessment/assessmentMutations.ts";
-import type { AssessmentRubricValue } from "#assessment/types.ts";
+import { saveAssessment } from "#assessments/assessmentMutations.ts";
+import type { AssessmentRubricValue } from "#assessments/types.ts";
 import { db } from "#db/kysely.ts";
 import type { RubricType } from "#rubrics/types.ts";
 import type { ImportedAssessmentRow } from "./types.ts";

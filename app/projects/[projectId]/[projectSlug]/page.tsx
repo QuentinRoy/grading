@@ -1,6 +1,6 @@
 import { Button, Container, Stack, Typography } from "@mui/material";
-import { loadGlobalAssessmentProgress } from "#assessment/assessmentsProgress.ts";
-import GlobalAssessmentSummary from "#assessment/GlobalAssessmentSummary.tsx";
+import { loadGlobalAssessmentProgress } from "#assessments/assessmentsProgress.ts";
+import GlobalAssessmentSummary from "#assessments/GlobalAssessmentSummary.tsx";
 import { canonicalProjectRedirect } from "#projects/canonicalProjectRedirect.ts";
 import { projectAssessmentsPath } from "#projects/projectPaths.ts";
 import { loadProjectByPublicId } from "#projects/projects.ts";
