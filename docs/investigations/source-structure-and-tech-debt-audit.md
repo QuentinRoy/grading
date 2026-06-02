@@ -21,7 +21,7 @@ Related: #115, #99, #59, #51, #68, #110
 - [Finding 8: question and rubric read-model assembly is duplicated](#finding-8-question-and-rubric-read-model-assembly-is-duplicated)
 - [Finding 9: progress and analytics duplicate completion semantics](#finding-9-progress-and-analytics-duplicate-completion-semantics)
 - [Finding 10: export submissions is a correctness-sensitive state machine that needs smaller seams](#finding-10-export-submissions-is-a-correctness-sensitive-state-machine-that-needs-smaller-seams)
-- [Finding 11: import flows should move toward parse-preview-confirm](#finding-11-import-flows-should-move-toward-parse-preview-confirm)
+- [Finding 11: import flows should expose parse, prepare, and write seams](#finding-11-import-flows-should-expose-parse-prepare-and-write-seams)
 - [Finding 12: app shell navigation mixes route parsing, navigation structure, local storage, and export behavior](#finding-12-app-shell-navigation-mixes-route-parsing-navigation-structure-local-storage-and-export-behavior)
 - [Finding 13: numeric rubric editing parses too eagerly](#finding-13-numeric-rubric-editing-parses-too-eagerly)
 - [Finding 14: grading clients duplicate stable workflow behavior](#finding-14-grading-clients-duplicate-stable-workflow-behavior)
@@ -58,7 +58,7 @@ Resolved or largely resolved since the first audit:
 The highest-value remaining work is now concentrated around current seams:
 
 1. submission overview assessment loading;
-2. assessment import preview and unmatched-submission policy;
+2. assessment import parse/prepare/write boundaries and unmatched-submission policy;
 3. ADR 0002 follow-up: move question and assessment persistence out of `src/db` soon;
 4. assessment mutation internals, if further seams are still useful before or during that move;
 5. question-specific grading page cache-boundary review;
@@ -521,38 +521,49 @@ src/export/submissionExport.ts
 - include options affect headers and rows consistently;
 - marks-only exports are not accidentally importable as assessment values unless explicitly supported.
 
-## Finding 11: import flows should move toward parse-preview-confirm
+## Finding 11: import flows should expose parse, prepare, and write seams
 
 ### Current behavior
 
-The import UI is a reusable textarea/drop form. The assessment import currently parses then writes in one server action.
+The import UI is a reusable textarea/drop form. The assessment import currently parses, prepares, and writes assessment values through one server-action flow.
 
-Assessment import already has useful preparation behavior: recognized columns, batch submission resolution, value parsing, error accumulation, and transactional writes. However, missing submissions are still skipped rather than surfaced to the user as a previewable warning or error.
+Assessment import already has useful preparation behavior: recognized columns, batch submission resolution, value parsing, error accumulation, and transactional writes. However, missing submissions are still skipped rather than surfaced as structured import preparation results.
 
 ### Why this matters
 
-Silent skips are dangerous for grading data. A user importing a CSV should know whether rows matched submissions and how many values will be written.
+Silent skips are dangerous for assessment data. The source-structure concern is not to design the preview UI here, but to expose clear import boundaries so the product can later decide how to present warnings, blocking errors, ignored columns, unmatched submissions, and overwrite behavior.
 
-### Candidate rewrite
+### Candidate source-structure rewrite
 
-Use a two-step workflow:
+Split assessment import into explicit stages:
 
 ```txt
-parse -> preview -> confirm write
+parse -> prepare/validate -> write
 ```
 
-For assessment imports, preview should include:
+Possible modules:
 
-- number of rows parsed;
+```txt
+src/import/parseAssessments.ts
+src/import/prepareAssessmentImport.ts
+src/import/assessmentImportResult.ts
+src/import/savePreparedAssessments.ts
+```
+
+The prepare stage should return a structured result that could support a future preview, but this investigation should not own the preview UI itself.
+
+The structured result should include enough data for callers to decide what to do with:
+
+- rows parsed;
 - recognized assessment columns;
 - ignored columns;
 - missing/unmatched submissions;
 - ambiguous submissions;
 - invalid assessment cells;
-- number of values to write;
-- whether values will overwrite existing assessments.
+- values to write;
+- possible overwrites.
 
-Policy question: should missing submissions warn, block, or be configurable?
+Policy question: should missing submissions warn, block, or be configurable? That policy and any preview UI should be handled by the import/product workflow investigation, not by this source-structure audit.
 
 ## Finding 12: app shell navigation mixes route parsing, navigation structure, local storage, and export behavior
 
@@ -774,8 +785,8 @@ src/
   import/
     parseAssessments.ts
     prepareAssessmentImport.ts
-    assessmentImportPreview.ts
-    saveAssessments.ts
+    assessmentImportResult.ts
+    savePreparedAssessments.ts
     AssessmentsImportForm.tsx
     BaseImportForm.tsx
     actionUtils.ts
@@ -832,20 +843,20 @@ Suggested deliverables:
 - replace per-question `loadAssessment` calls if a single query or small query set is clearer;
 - add integration tests for mixed rubric types and sparse assessments.
 
-### Priority 2: assessment import preview and unmatched-submission policy
+### Priority 2: assessment import parse/prepare/write boundaries
 
 Why second:
 
-- imports can change many grades at once;
+- imports can change many assessment values at once;
 - missing submissions are currently too easy to overlook;
-- preview is a significant UX and correctness improvement.
+- structured preparation results make later preview or confirmation flows possible without coupling this audit to UI work.
 
 Suggested deliverables:
 
-- define preview model first;
-- report unmatched submissions explicitly;
-- decide whether unmatched submissions warn, block, or are configurable;
-- separate parse/prepare from confirm/write.
+- split parse, prepare/validate, and write stages;
+- return structured unmatched-submission, ignored-column, invalid-cell, and overwrite information from preparation;
+- keep preview UI out of this source-structure scope;
+- keep transactional writes separate from parse/prepare logic.
 
 ### Priority 3: ADR 0002 relocation for question and assessment persistence
 
@@ -975,14 +986,14 @@ Scope:
 
 Related: #59, #115.
 
-### Candidate issue: design assessment import preview/confirmation flow
+### Candidate issue: split assessment import parse/prepare/write stages
 
 Scope:
 
-- parse-preview-confirm flow;
-- show ignored columns and unmatched submissions;
-- decide missing-submission policy;
-- preserve transactional writes.
+- split parse, prepare/validate, and write stages;
+- surface ignored columns and unmatched submissions as structured preparation results;
+- preserve transactional writes;
+- keep preview UI out of this issue unless a separate product/UI issue explicitly takes it on.
 
 Related: #110, #115.
 
@@ -1114,8 +1125,9 @@ Related: #68.
 
 ### Import behavior
 
+- Which import warnings should block writes, and which should remain non-blocking?
 - Should missing submissions block assessment import?
-- Should import preview be mandatory?
+- Should import preview be mandatory? This is a product/UI question, not a source-structure requirement.
 - Should import support marks-only CSV columns or only assessment-value columns?
 - Should imports overwrite existing assessments by default?
 
@@ -1137,6 +1149,7 @@ This investigation does not recommend:
 - making `src/db/generated/db.ts` a general-purpose feature import surface;
 - adding a thin generated-schema facade without a concrete need;
 - exposing raw generated table rows as UI/action/import/export contracts;
+- owning the import preview UI design;
 - a strict clean architecture hierarchy;
 - moving all code under `app/`;
 - extracting every duplicated pattern immediately;
