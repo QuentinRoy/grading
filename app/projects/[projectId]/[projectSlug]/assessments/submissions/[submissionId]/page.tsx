@@ -5,15 +5,15 @@ import Typography from "@mui/material/Typography";
 import { notFound } from "next/navigation";
 import SubmissionOverviewAssessmentClient from "#assessment/SubmissionOverviewAssessmentClient.tsx";
 import { loadAssessment } from "#db/assessments.ts";
-import { loadProjectByPublicId } from "#db/projects.ts";
 import { loadQuestions } from "#db/questions.ts";
 import { loadSubmissionOverviewProgress } from "#db/submissionProgress.ts";
-import { loadSubmissions } from "#db/submissions.ts";
 import { canonicalProjectRedirect } from "#projects/canonicalProjectRedirect.ts";
 import { projectAssessmentsPath } from "#projects/projectPaths.ts";
+import { loadProjectByPublicId } from "#projects/projects.ts";
 import { attachAssessment } from "#rubrics/rubric.ts";
 import MuiNextLink from "#shared/MuiNextLink.tsx";
 import { getSubmissionLabel } from "#submissions/getSubmissionLabel.ts";
+import { loadSubmissions } from "#submissions/submissions.ts";
 
 type PageParams = {
 	projectId: string;

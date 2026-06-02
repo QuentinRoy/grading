@@ -1,6 +1,6 @@
 import "server-only";
-import { CACHE_TAGS, cacheTags } from "./cacheTags.ts";
-import { db } from "./kysely.ts";
+import { CACHE_TAGS, cacheTags } from "#db/cacheTags.ts";
+import { db } from "#db/kysely.ts";
 import type { Submission } from "./types.ts";
 
 function normalizeSearchValue(value: string): string {

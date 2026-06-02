@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Submission } from "#db/types.ts";
+import type { Submission } from "#submissions/types.ts";
 import {
 	buildSubmissionSearchTargets,
 	createSubmissionSearch,

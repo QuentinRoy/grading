@@ -1,9 +1,9 @@
 import { Button, Container, Stack, Typography } from "@mui/material";
 import GlobalAssessmentSummary from "#assessment/GlobalAssessmentSummary.tsx";
 import { loadGlobalAssessmentProgress } from "#db/assessmentsProgress.ts";
-import { loadProjectByPublicId } from "#db/projects.ts";
 import { canonicalProjectRedirect } from "#projects/canonicalProjectRedirect.ts";
 import { projectAssessmentsPath } from "#projects/projectPaths.ts";
+import { loadProjectByPublicId } from "#projects/projects.ts";
 
 type ProjectDashboardPageProps = {
 	params: Promise<{ projectId: string; projectSlug: string }>;

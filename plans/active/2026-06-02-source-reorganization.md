@@ -84,7 +84,17 @@ src/assessment/
 
 The names above intentionally stay close to current names. Renaming files such as `submissionProgress.ts` to `assessmentCompletionBySubmission.ts` may be worthwhile later, but should be separate from this mechanical move unless needed for clarity.
 
-## Step 1: move project and submission persistence
+## Step 1: move project and submission persistence — Done
+
+Status: Completed 2026-06-02.
+
+Moved `src/db/projects.ts` -> `src/projects/projects.ts`, `src/db/submissions.ts` ->
+`src/submissions/submissions.ts` (with its integration test), and the `Submission` /
+`SubmissionSubmitter` / `SubmissionType` feature types out of `src/db/types.ts` into
+`src/submissions/types.ts`. Updated all consumer imports across `app/` and `src/`.
+`src/db/rubricOverview*.ts` still live under `src/db` (they move in Step 3) but now
+import submissions from their new feature-folder locations.
+
 
 Move:
 

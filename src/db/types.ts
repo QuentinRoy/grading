@@ -1,10 +1,10 @@
 import type { Simplify } from "#utils/utils.ts";
-import type { RubricType, SubmissionType } from "./generated/db.ts";
+import type { RubricType } from "./generated/db.ts";
 
 // Policy: keep schema-correlated types in this file derived from generated DB
 // types to prevent drift, while exposing only curated app-facing contracts (no
 // broad generated table-shape re-export from here).
-export type { RubricType, SubmissionType };
+export type { RubricType };
 
 type ProgressMetric = { completed: number; total: number };
 
@@ -13,44 +13,6 @@ export type GlobalAssessmentProgress = {
 	questions: ProgressMetric;
 	rubrics: ProgressMetric;
 };
-
-type SubmissionBase = { id: string; type: SubmissionType };
-
-type SubmissionDisplay = {
-	displayLabel?: string | undefined;
-	memberNames?: string[] | undefined;
-	searchKeys?: string[] | undefined;
-};
-
-export type Submission =
-	| Simplify<
-			SubmissionDisplay &
-				SubmissionBase & {
-					type: "individual";
-					studentName: string;
-					teamName?: undefined;
-				}
-	  >
-	| Simplify<
-			SubmissionDisplay &
-				SubmissionBase & {
-					type: "team";
-					studentName?: undefined;
-					teamName: string;
-				}
-	  >;
-
-export type SubmissionSubmitter =
-	| Simplify<
-			SubmissionBase & {
-				type: "individual";
-				studentId: string;
-				teamName?: undefined;
-			}
-	  >
-	| Simplify<
-			SubmissionBase & { type: "team"; studentId?: undefined; teamName: string }
-	  >;
 
 type RubricBase = {
 	id: string;

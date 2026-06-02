@@ -1,5 +1,6 @@
 import "server-only";
 import { cacheLife } from "next/cache";
+import { loadSubmissions } from "#submissions/submissions.ts";
 import { CACHE_TAGS, cacheTags } from "./cacheTags.ts";
 import { db } from "./kysely.ts";
 import { loadQuestions } from "./questions.ts";
@@ -7,7 +8,6 @@ import {
 	buildRubricOverviewData,
 	type RubricOverviewAssessmentRecord,
 } from "./rubricOverviewBuilder.ts";
-import { loadSubmissions } from "./submissions.ts";
 
 export async function loadRubricOverviewData(projectId: string) {
 	"use cache";

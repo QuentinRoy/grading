@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import type { ProjectSummary } from "#db/projects.ts";
+import type { ProjectSummary } from "#projects/projects.ts";
 import { assertNever } from "#utils/utils.ts";
 import {
 	projectAssessmentSubmissionPath,

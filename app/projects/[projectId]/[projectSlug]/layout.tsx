@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { loadProjectByPublicId } from "#db/projects.ts";
+import { loadProjectByPublicId } from "#projects/projects.ts";
 import AppShell from "#shared/AppShell.tsx";
 
 type ProjectScopedLayoutProps = {

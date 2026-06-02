@@ -4,12 +4,12 @@ import {
 	markRubric,
 } from "#rubrics/rubric.ts";
 import { getSubmissionLabel } from "#submissions/getSubmissionLabel.ts";
+import type { Submission } from "#submissions/types.ts";
 import type {
 	AssessmentRubricValue,
 	Grid,
 	Rubric,
 	RubricType,
-	Submission,
 } from "./types.ts";
 
 type RubricPropertyDetails =

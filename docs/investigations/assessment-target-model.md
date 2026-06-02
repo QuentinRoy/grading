@@ -6,7 +6,6 @@ This document captures current thinking about assessment targets, group terminol
 
 This document is intentionally not exhaustive or final. It contains observations, hypotheses, and candidate directions. Presence here does not imply adoption.
 
----
 
 ## Group terminology
 
@@ -52,8 +51,6 @@ Open questions:
 - Are there future cases where group and team become distinct?
 - Are imported Moodle groups the same concept as assessment groups?
 - Should group be a core persistence concept or a derived assessment target?
-
----
 
 ## Individual versus grouped assessment
 

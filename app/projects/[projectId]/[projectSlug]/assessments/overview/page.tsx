@@ -6,9 +6,9 @@ import Typography from "@mui/material/Typography";
 import type { ReactElement } from "react";
 import RubricAnalyticsTable from "#assessment/RubricAnalyticsTable.tsx";
 import StudentMatrix from "#assessment/StudentMatrix.tsx";
-import { loadProjectByPublicId } from "#db/projects.ts";
 import { loadRubricOverviewData } from "#db/rubricOverview.ts";
 import { canonicalProjectRedirect } from "#projects/canonicalProjectRedirect.ts";
+import { loadProjectByPublicId } from "#projects/projects.ts";
 
 function formatMarks(value: number | null): string {
 	if (value == null || Number.isNaN(value)) {

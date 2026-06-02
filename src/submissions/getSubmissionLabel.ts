@@ -1,4 +1,4 @@
-import type { Submission } from "#db/types.ts";
+import type { Submission } from "#submissions/types.ts";
 
 export function getSubmissionLabel(submission: Submission): string {
 	if (submission.displayLabel != null && submission.displayLabel.length > 0) {
