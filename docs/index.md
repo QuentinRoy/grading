@@ -65,6 +65,7 @@ Short records of durable architecture decisions.
 - [0003 Node subpath imports with mandatory `.ts` extensions](adr/0003-node-subpath-imports-and-ts-extensions.md)
 - [0004 Avoid barrel files](adr/0004-avoid-barrel-files.md)
 - [0005 Correct cosmetic project slugs client-side](adr/0005-client-side-cosmetic-slug-correction.md)
+- [0006 Prefer flat module structure](adr/0006-prefer-flat-module-structure.md)
 - Add new ADRs under `docs/adr/`.
 
 ## Designs

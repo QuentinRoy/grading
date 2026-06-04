@@ -38,6 +38,7 @@ Use this table to find the canonical guidance instead of copying rules into this
 - Commit titles and squash merge titles → `docs/guides/commit-message-conventions.md`.
 - TypeScript public/helper APIs and function parameter design → `docs/guides/typescript-api-design.md`.
 - Avoiding barrel/re-export facade files; import from the owning module → `docs/adr/0004-avoid-barrel-files.md`.
+- Keeping feature folders and `src/ui` flat; no technical category subfolders → `docs/adr/0006-prefer-flat-module-structure.md`.
 - Database migration conventions → `docs/reference/database-migrations.md`.
 - Testing conventions and test-command selection → `docs/reference/testing-conventions.md`.
 - Accepted architecture decisions → `docs/adr/`.
