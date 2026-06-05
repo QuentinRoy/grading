@@ -1,9 +1,5 @@
 import { type Kysely } from "kysely";
 import { beforeEach, expect, test, vi } from "vitest";
-import type {
-	SaveAssessmentParams,
-	SaveAssessmentResult,
-} from "#assessments/assessmentMutations.ts";
 import type { DB } from "#db/generated/db.ts";
 import { buildTestId, createTestDb } from "#test/dbIntegration.ts";
 import { createProject } from "#test/projects.ts";
@@ -25,10 +21,12 @@ async function createAssessmentFixture(
 	studentId: string;
 	submissionId: string;
 	rubricId: string;
+	numericalRubricId: string;
 }> {
 	const questionId = buildTestId("question");
 	const studentId = buildTestId("student");
 	const rubricId = buildTestId("rubric");
+	const numericalRubricId = buildTestId("rubric-numerical");
 
 	await db
 		.insertInto("student")
@@ -94,52 +92,51 @@ async function createAssessmentFixture(
 		.values({ rubricId: createdRubric.rowId, marks: 2, falseMarks: 0 })
 		.execute();
 
+	const numericalRubric = await db
+		.insertInto("rubric")
+		.values({
+			id: numericalRubricId,
+			projectId,
+			questionId: question.rowId,
+			type: "numerical",
+			position: 1,
+			label: "Score",
+		})
+		.returning("rowId")
+		.executeTakeFirstOrThrow();
+
+	await db
+		.insertInto("numericalRubric")
+		.values({
+			rubricId: numericalRubric.rowId,
+			minScore: 0,
+			maxScore: 10,
+			minMarks: 0,
+			maxMarks: 5,
+		})
+		.execute();
+
 	return {
 		questionId,
 		studentId,
 		submissionId: String(submission.id),
 		rubricId,
+		numericalRubricId,
 	};
 }
 
-async function loadSaveAssessments(params: {
-	db: Kysely<DB>;
-	saveAssessmentInDbMock?: (
-		db: Kysely<DB>,
-		input: SaveAssessmentParams,
-	) => Promise<SaveAssessmentResult>;
-}): Promise<typeof import("./saveAssessments.ts").saveAssessments> {
+// saveAssessments owns the global db + transaction + cache; this thin seam points the
+// global db at the test db so the wrapper's invalidation can be asserted.
+async function loadSaveAssessmentsWrapperWithDb(db: Kysely<DB>) {
 	vi.resetModules();
-	vi.doMock("#db/kysely", () => ({ db: params.db }));
+	using _kyselyMock = vi.doMock("#db/kysely", () => ({ db }));
 
-	if (params.saveAssessmentInDbMock) {
-		vi.doMock("#assessments/assessmentMutations", async () => {
-			const actual = await vi.importActual<
-				typeof import("#assessments/assessmentMutations.ts")
-			>("#assessments/assessmentMutations");
-
-			return {
-				...actual,
-				saveAssessmentInDb: (db: Kysely<DB>, input: SaveAssessmentParams) =>
-					params.saveAssessmentInDbMock?.(db, input) ??
-					Promise.resolve({ success: true }),
-			};
-		});
-	} else {
-		vi.doUnmock("#assessments/assessmentMutations");
-	}
-
-	const { saveAssessments } = await import("./saveAssessments.ts");
-
-	vi.doUnmock("#assessments/assessmentMutations");
-	vi.doUnmock("#db/kysely");
-
-	return saveAssessments;
+	return await import("./saveAssessments.ts");
 }
 
 test("saveAssessments does not persist valid rows when a later row fails validation", async () => {
 	await using db = await createTestDb();
-	const saveAssessments = await loadSaveAssessments({ db });
+	const { saveAssessments } = await loadSaveAssessmentsWrapperWithDb(db);
 
 	await using project = await createProject(db, "Atomic Import Project");
 	const projectPublicId = project.id;
@@ -173,7 +170,7 @@ test("saveAssessments does not persist valid rows when a later row fails validat
 
 test("saveAssessments rejects unknown columns before writing any assessment", async () => {
 	await using db = await createTestDb();
-	const saveAssessments = await loadSaveAssessments({ db });
+	const { saveAssessments } = await loadSaveAssessmentsWrapperWithDb(db);
 
 	await using project = await createProject(db, "Unknown Column Project");
 	const projectPublicId = project.id;
@@ -203,7 +200,7 @@ test("saveAssessments rejects unknown columns before writing any assessment", as
 
 test("saveAssessments skips rows with no matching submission mapping", async () => {
 	await using db = await createTestDb();
-	const saveAssessments = await loadSaveAssessments({ db });
+	const { saveAssessments } = await loadSaveAssessmentsWrapperWithDb(db);
 
 	await using project = await createProject(db, "Missing Submitter Project");
 	const projectPublicId = project.id;
@@ -239,26 +236,13 @@ test("saveAssessments rolls back all writes if a later transactional write fails
 	const projectPublicId = project.id;
 	const fixture = await createAssessmentFixture(db, project.rowId);
 
-	let callCount = 0;
-	const saveAssessments = await loadSaveAssessments({
-		db,
-		saveAssessmentInDbMock: async (db, input) => {
-			const actual = await vi.importActual<
-				typeof import("#assessments/assessmentMutations.ts")
-			>("#assessments/assessmentMutations");
+	const { saveAssessments } = await loadSaveAssessmentsWrapperWithDb(db);
 
-			callCount += 1;
-			if (callCount === 2) {
-				return {
-					success: false,
-					error: "Forced failure for rollback verification.",
-				};
-			}
-
-			return actual.saveAssessmentInDb(db, input);
-		},
-	});
-
+	// The first row writes a valid boolean assessment; the second row carries a
+	// numerical score outside the rubric range. saveAssessments parses both rows
+	// before the transaction, so the out-of-range score only fails inside
+	// saveAssessmentInDb — after the first write has already happened in the same
+	// transaction. A genuine in-transaction failure, no primitive mock required.
 	const rows: ImportedAssessmentRow[] = [
 		{
 			submission_type: "individual",
@@ -268,12 +252,12 @@ test("saveAssessments rolls back all writes if a later transactional write fails
 		{
 			submission_type: "individual",
 			submitter: fixture.studentId,
-			[`${fixture.questionId}:${fixture.rubricId}`]: "false",
+			[`${fixture.questionId}:${fixture.numericalRubricId}`]: "999",
 		},
 	];
 
 	await expect(saveAssessments(rows, projectPublicId)).rejects.toThrow(
-		"Forced failure for rollback verification.",
+		"Enter a score of at most 10.",
 	);
 
 	const persistedAssessments = await db
@@ -287,7 +271,7 @@ test("saveAssessments rolls back all writes if a later transactional write fails
 
 test("saveAssessments links assessments only to the target project even when the same student id exists in another project", async () => {
 	await using db = await createTestDb();
-	const saveAssessments = await loadSaveAssessments({ db });
+	const { saveAssessments } = await loadSaveAssessmentsWrapperWithDb(db);
 
 	await using projectA = await createProject(db, "Cross-Project Isolation A");
 	await using projectB = await createProject(db, "Cross-Project Isolation B");
@@ -397,7 +381,7 @@ test("saveAssessments links assessments only to the target project even when the
 
 test("saveAssessments invalidates the assessment tags after the import commits", async () => {
 	await using db = await createTestDb();
-	const saveAssessments = await loadSaveAssessments({ db });
+	const { saveAssessments } = await loadSaveAssessmentsWrapperWithDb(db);
 	const { revalidateTag } = await import("next/cache");
 
 	await using project = await createProject(db, "Import Invalidation Project");
@@ -421,7 +405,7 @@ test("saveAssessments invalidates the assessment tags after the import commits",
 
 test("saveAssessments does not invalidate when the import fails", async () => {
 	await using db = await createTestDb();
-	const saveAssessments = await loadSaveAssessments({ db });
+	const { saveAssessments } = await loadSaveAssessmentsWrapperWithDb(db);
 	const { revalidateTag } = await import("next/cache");
 
 	await using project = await createProject(db, "Import Failure Project");
