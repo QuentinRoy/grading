@@ -1,12 +1,10 @@
 import { type Kysely } from "kysely";
+import { revalidateTag } from "next/cache";
 import { beforeEach, expect, test, vi } from "vitest";
-import type {
-	SaveAssessmentParams,
-	SaveAssessmentResult,
-} from "#assessments/assessmentMutations.ts";
 import type { DB } from "#db/generated/db.ts";
 import { buildTestId, createTestDb } from "#test/dbIntegration.ts";
 import { createProject } from "#test/projects.ts";
+import { saveAssessments, saveAssessmentsInDb } from "./saveAssessments.ts";
 import type { ImportedAssessmentRow } from "./types.ts";
 
 vi.mock("server-only", () => ({}));
@@ -25,10 +23,12 @@ async function createAssessmentFixture(
 	studentId: string;
 	submissionId: string;
 	rubricId: string;
+	numericalRubricId: string;
 }> {
 	const questionId = buildTestId("question");
 	const studentId = buildTestId("student");
 	const rubricId = buildTestId("rubric");
+	const numericalRubricId = buildTestId("rubric-numerical");
 
 	await db
 		.insertInto("student")
@@ -94,53 +94,41 @@ async function createAssessmentFixture(
 		.values({ rubricId: createdRubric.rowId, marks: 2, falseMarks: 0 })
 		.execute();
 
+	const numericalRubric = await db
+		.insertInto("rubric")
+		.values({
+			id: numericalRubricId,
+			projectId,
+			questionId: question.rowId,
+			type: "numerical",
+			position: 1,
+			label: "Score",
+		})
+		.returning("rowId")
+		.executeTakeFirstOrThrow();
+
+	await db
+		.insertInto("numericalRubric")
+		.values({
+			rubricId: numericalRubric.rowId,
+			minScore: 0,
+			maxScore: 10,
+			minMarks: 0,
+			maxMarks: 5,
+		})
+		.execute();
+
 	return {
 		questionId,
 		studentId,
 		submissionId: String(submission.id),
 		rubricId,
+		numericalRubricId,
 	};
-}
-
-async function loadSaveAssessments(params: {
-	db: Kysely<DB>;
-	saveAssessmentInDbMock?: (
-		db: Kysely<DB>,
-		input: SaveAssessmentParams,
-	) => Promise<SaveAssessmentResult>;
-}): Promise<typeof import("./saveAssessments.ts").saveAssessments> {
-	vi.resetModules();
-	vi.doMock("#db/kysely", () => ({ db: params.db }));
-
-	if (params.saveAssessmentInDbMock) {
-		vi.doMock("#assessments/assessmentMutations", async () => {
-			const actual = await vi.importActual<
-				typeof import("#assessments/assessmentMutations.ts")
-			>("#assessments/assessmentMutations");
-
-			return {
-				...actual,
-				saveAssessmentInDb: (db: Kysely<DB>, input: SaveAssessmentParams) =>
-					params.saveAssessmentInDbMock?.(db, input) ??
-					Promise.resolve({ success: true }),
-			};
-		});
-	} else {
-		vi.doUnmock("#assessments/assessmentMutations");
-	}
-
-	const { saveAssessments } = await import("./saveAssessments.ts");
-
-	vi.doUnmock("#assessments/assessmentMutations");
-	vi.doUnmock("#db/kysely");
-
-	return saveAssessments;
 }
 
 test("saveAssessments does not persist valid rows when a later row fails validation", async () => {
 	await using db = await createTestDb();
-	const saveAssessments = await loadSaveAssessments({ db });
-
 	await using project = await createProject(db, "Atomic Import Project");
 	const projectPublicId = project.id;
 	const fixture = await createAssessmentFixture(db, project.rowId);
@@ -158,9 +146,9 @@ test("saveAssessments does not persist valid rows when a later row fails validat
 		},
 	];
 
-	await expect(saveAssessments(rows, projectPublicId)).rejects.toThrow(
-		"Assessment import errors:",
-	);
+	await expect(
+		saveAssessmentsInDb(db, { rows, projectId: projectPublicId }),
+	).rejects.toThrow("Assessment import errors:");
 
 	const persistedAssessments = await db
 		.selectFrom("assessment")
@@ -173,8 +161,6 @@ test("saveAssessments does not persist valid rows when a later row fails validat
 
 test("saveAssessments rejects unknown columns before writing any assessment", async () => {
 	await using db = await createTestDb();
-	const saveAssessments = await loadSaveAssessments({ db });
-
 	await using project = await createProject(db, "Unknown Column Project");
 	const projectPublicId = project.id;
 	const fixture = await createAssessmentFixture(db, project.rowId);
@@ -188,9 +174,9 @@ test("saveAssessments rejects unknown columns before writing any assessment", as
 		},
 	];
 
-	await expect(saveAssessments(rows, projectPublicId)).rejects.toThrow(
-		'Unrecognized column: "unknown_column"',
-	);
+	await expect(
+		saveAssessmentsInDb(db, { rows, projectId: projectPublicId }),
+	).rejects.toThrow('Unrecognized column: "unknown_column"');
 
 	const persistedAssessments = await db
 		.selectFrom("assessment")
@@ -203,8 +189,6 @@ test("saveAssessments rejects unknown columns before writing any assessment", as
 
 test("saveAssessments skips rows with no matching submission mapping", async () => {
 	await using db = await createTestDb();
-	const saveAssessments = await loadSaveAssessments({ db });
-
 	await using project = await createProject(db, "Missing Submitter Project");
 	const projectPublicId = project.id;
 	const fixture = await createAssessmentFixture(db, project.rowId);
@@ -217,9 +201,9 @@ test("saveAssessments skips rows with no matching submission mapping", async () 
 		},
 	];
 
-	await expect(saveAssessments(rows, projectPublicId)).resolves.toEqual({
-		assessmentCount: 0,
-	});
+	await expect(
+		saveAssessmentsInDb(db, { rows, projectId: projectPublicId }),
+	).resolves.toEqual({ assessmentCount: 0 });
 
 	const persistedAssessments = await db
 		.selectFrom("assessment")
@@ -239,26 +223,11 @@ test("saveAssessments rolls back all writes if a later transactional write fails
 	const projectPublicId = project.id;
 	const fixture = await createAssessmentFixture(db, project.rowId);
 
-	let callCount = 0;
-	const saveAssessments = await loadSaveAssessments({
-		db,
-		saveAssessmentInDbMock: async (db, input) => {
-			const actual = await vi.importActual<
-				typeof import("#assessments/assessmentMutations.ts")
-			>("#assessments/assessmentMutations");
-
-			callCount += 1;
-			if (callCount === 2) {
-				return {
-					success: false,
-					error: "Forced failure for rollback verification.",
-				};
-			}
-
-			return actual.saveAssessmentInDb(db, input);
-		},
-	});
-
+	// The first row writes a valid boolean assessment; the second row carries a
+	// numerical score outside the rubric range. saveAssessments parses both rows
+	// before the transaction, so the out-of-range score only fails inside
+	// saveAssessmentInDb — after the first write has already happened in the same
+	// transaction. A genuine in-transaction failure, no primitive mock required.
 	const rows: ImportedAssessmentRow[] = [
 		{
 			submission_type: "individual",
@@ -268,13 +237,13 @@ test("saveAssessments rolls back all writes if a later transactional write fails
 		{
 			submission_type: "individual",
 			submitter: fixture.studentId,
-			[`${fixture.questionId}:${fixture.rubricId}`]: "false",
+			[`${fixture.questionId}:${fixture.numericalRubricId}`]: "999",
 		},
 	];
 
-	await expect(saveAssessments(rows, projectPublicId)).rejects.toThrow(
-		"Forced failure for rollback verification.",
-	);
+	await expect(
+		saveAssessments({ rows, projectId: projectPublicId }, { db }),
+	).rejects.toThrow("Enter a score of at most 10.");
 
 	const persistedAssessments = await db
 		.selectFrom("assessment")
@@ -287,8 +256,6 @@ test("saveAssessments rolls back all writes if a later transactional write fails
 
 test("saveAssessments links assessments only to the target project even when the same student id exists in another project", async () => {
 	await using db = await createTestDb();
-	const saveAssessments = await loadSaveAssessments({ db });
-
 	await using projectA = await createProject(db, "Cross-Project Isolation A");
 	await using projectB = await createProject(db, "Cross-Project Isolation B");
 	const projectBPublicId = projectB.id;
@@ -374,7 +341,7 @@ test("saveAssessments links assessments only to the target project even when the
 		},
 	];
 
-	await saveAssessments(rows, projectBPublicId);
+	await saveAssessmentsInDb(db, { rows, projectId: projectBPublicId });
 
 	// Project A must have zero assessments
 	const projectAAssessments = await db
@@ -397,9 +364,6 @@ test("saveAssessments links assessments only to the target project even when the
 
 test("saveAssessments invalidates the assessment tags after the import commits", async () => {
 	await using db = await createTestDb();
-	const saveAssessments = await loadSaveAssessments({ db });
-	const { revalidateTag } = await import("next/cache");
-
 	await using project = await createProject(db, "Import Invalidation Project");
 	const fixture = await createAssessmentFixture(db, project.rowId);
 
@@ -411,7 +375,7 @@ test("saveAssessments invalidates the assessment tags after the import commits",
 		},
 	];
 
-	await saveAssessments(rows, project.id);
+	await saveAssessments({ rows, projectId: project.id }, { db });
 
 	expect(vi.mocked(revalidateTag).mock.calls).toEqual([
 		["assessments", "max"],
@@ -421,9 +385,6 @@ test("saveAssessments invalidates the assessment tags after the import commits",
 
 test("saveAssessments does not invalidate when the import fails", async () => {
 	await using db = await createTestDb();
-	const saveAssessments = await loadSaveAssessments({ db });
-	const { revalidateTag } = await import("next/cache");
-
 	await using project = await createProject(db, "Import Failure Project");
 	const fixture = await createAssessmentFixture(db, project.rowId);
 
@@ -435,9 +396,9 @@ test("saveAssessments does not invalidate when the import fails", async () => {
 		},
 	];
 
-	await expect(saveAssessments(rows, project.id)).rejects.toThrow(
-		"Assessment import errors:",
-	);
+	await expect(
+		saveAssessments({ rows, projectId: project.id }, { db }),
+	).rejects.toThrow("Assessment import errors:");
 
 	expect(revalidateTag).not.toHaveBeenCalled();
 });
