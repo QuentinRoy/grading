@@ -1,7 +1,7 @@
 # Project Reliability Audit and Test Tracker
 
 Status: Active
-Last Updated: 2026-06-10 (assessment import prepare seam landed; R-001 evidence refreshed, R-009 groundwork)
+Last Updated: 2026-06-10 (assessment import prepare seam landed; R-001 Verified, R-009 groundwork)
 Primary Goal: Prevent data loss/corruption (especially assessments) while progressively hardening correctness and UX safety.
 Cadence: Update at least once per week and after every reliability-related merge.
 
@@ -63,15 +63,15 @@ Note: Tier still dominates score. A Tier 0 item is always prioritized above Tier
 
 ## 3. Audit Dashboard
 
-Current snapshot (2026-05-18):
-- Tier 0: 1 open, 0 in progress, 2 verified
+Current snapshot (2026-06-10):
+- Tier 0: 1 open, 0 in progress, 2 mitigated, 3 verified
 - Tier 1: 6 open, 0 in progress, 0 verified
 - Tier 2: 4 open, 0 in progress, 0 verified
 
 Overall issue status:
 - Total tracked risks: 16
-- Verified: 2/16
-- Remaining: 14/16
+- Verified: 3/16
+- Remaining: 13/16
 
 Current sprint focus:
 - Sprint label: Reliability Sprint A (proposed)
@@ -92,7 +92,7 @@ Immediate execution recommendation:
 
 | ID | Tier | Score | Area | Risk | Evidence | Status | Issue # | Owner | Target | Test Evidence | Next Action |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| R-001 | Tier 0 | 100 | Import / Assessments | Assessment import can persist partial writes before reporting failure. Violates all-or-nothing policy. | src/import/prepareAssessmentImport.ts (pure plan with Blocking Diagnostics), src/import/assessmentImportContext.ts, src/import/saveAssessments.ts (single transaction: load context → prepare → write) | Mitigated | [#17](https://github.com/QuentinRoy/grading/issues/17) | Unassigned | Sprint A | `src/import/prepareAssessmentImport.test.ts`: pure-plan unit coverage for unmatched/ambiguous submissions, invalid values, unknown columns, ignored columns, overwrites; `src/import/saveAssessments.integration.test.ts`: `saveAssessments does not persist valid rows when a later row fails validation`, `saveAssessments rejects unknown columns before writing any assessment`, `saveAssessments blocks the import when a row has no matching submission` (2026-06-10 behavior change: unmatched submissions now block instead of being silently skipped), `saveAssessments rolls back all writes if a later transactional write fails`, `saveAssessments returns imported and overwritten counts`; local verification: `pnpm run check --fix`, `pnpm run check-types`, `pnpm run test:integration` | Run CI `test-integration` with external Postgres service and promote to Verified once green in PR checks. |
+| R-001 | Tier 0 | 100 | Import / Assessments | Assessment import can persist partial writes before reporting failure. Violates all-or-nothing policy. | src/import/prepareAssessmentImport.ts (pure plan with Blocking Diagnostics), src/import/assessmentImportContext.ts, src/import/saveAssessments.ts (single transaction: load context → prepare → write) | Verified | [#17](https://github.com/QuentinRoy/grading/issues/17) | Unassigned | Sprint A | `src/import/prepareAssessmentImport.test.ts`: pure-plan unit coverage for unmatched/ambiguous submissions, invalid values, unknown columns, ignored columns, overwrites; `src/import/saveAssessments.integration.test.ts`: `saveAssessments does not persist valid rows when a later row fails validation`, `saveAssessments rejects unknown columns before writing any assessment`, `saveAssessments blocks the import when a row has no matching submission` (2026-06-10 behavior change: unmatched submissions now block instead of being silently skipped), `saveAssessments rolls back all writes if a later transactional write fails`, `saveAssessments returns imported and overwritten counts`; local verification: `pnpm run check --fix`, `pnpm run check-types`, `pnpm run test:integration`; CI: `test-integration` is a required branch-protection check on `main` (R-016 audit) and runs this suite on every PR — green on `main` as of 2026-06-10, with PR #146 carrying the current test names | None — monitor via the required `test-integration` check; keep evidence in sync if the import suite moves. |
 | R-002 | Tier 0 | 80 | Data integrity constraints | Strong DB triggers/checks exist but are under-tested in integration suites. | src/db/migrations/20260513000000_init.ts, src/db/migrations/20260514000001_enforce_numerical_score_bounds.ts, src/db/migrations/20260514000002_enforce_ordinal_label_valid.ts | Mitigated | [#18](https://github.com/QuentinRoy/grading/issues/18) | Unassigned | Sprint A | `src/db/constraints.integration.test.ts`: `ordinal rubric assessments accept valid labels and roll back failed transactional writes`, `numerical rubric assessments enforce score bounds and roll back failed transactional writes`, `submission owner/type check rejects invalid rows and rolls back transactional writes`, `rubric subtype triggers reject mismatched subtype rows and roll back transactional writes`; local verification: `pnpm run check --fix`, `pnpm run check-types`, `pnpm run test:integration` (21 tests passing) | Run CI `test-integration` in PR checks and promote to Verified once green. |
 | R-003 | Tier 0 | 75 | Questions/rubrics mutation | saveManagedQuestion contains complex delete/reinsert/reconcile logic with limited direct integration coverage; high chance of subtle data breakage. | src/db/questions.ts | Mitigated | [#19](https://github.com/QuentinRoy/grading/issues/19) | Unassigned | Sprint A | `src/db/questions.integration.test.ts`: `saveManagedQuestion renames question id while preserving linked assessments`, `saveManagedQuestion replaces rubric subtype data when rubric type changes`, `saveManagedQuestion removes stale rubrics that are no longer referenced`, `saveManagedQuestion replaces ordinal rubric values using the provided label set`, `deleteManagedQuestion reports impact and cascades linked assessments`; implementation fix: `src/db/questions.ts` `getQuestionDeleteImpact` now counts `assessment.id` to avoid ambiguous-column failures under joins; local verification: `pnpm run check --fix`, `pnpm run check-types`, `pnpm run test:integration` (26 tests passing) | Run CI `test-integration` in PR checks and promote to Verified once green. |
 | R-004 | Tier 0 | 64 | Concurrency | Last-write-wins semantics are desired but currently not proven under concurrent writes/import overlap. | src/db/assessments.ts, src/import/saveStudents.ts, src/import/saveQuestions.ts | Open | [#20](https://github.com/QuentinRoy/grading/issues/20) | Unassigned | Sprint B | Pending | Add race tests for concurrent writes to same rubric/submission/question and overlapping imports. |
@@ -272,7 +272,7 @@ Tier 2 issue is Done when:
 - 2026-05-18: Audited GitHub `main` branch protection via GitHub API and confirmed strict required status checks enforce `build`, `test-integration`, `test-storybook`, `test-unit`, `check`, and `check-types` before merge.
 - 2026-05-18: Implemented R-002 constraint hardening integration suite (`src/db/constraints.integration.test.ts`) covering ordinal label validity, numerical score bounds, submission participant/type check, and rubric subtype mismatch with transactional rollback assertions; local reliability checks pass (`check --fix`, `check-types`, full `test:integration` with 21 passing tests).
 - 2026-05-18: Implemented R-003 mutation hardening integration suite (`src/db/questions.integration.test.ts`) covering question rename with linked assessments, rubric type transitions, stale rubric cleanup, ordinal value replacement semantics, and delete impact/cascade behavior. Fixed `getQuestionDeleteImpact` to count `assessment.id` explicitly and avoid ambiguous-column failures in joined queries. Local reliability checks pass (`check --fix`, `check-types`, full `test:integration` with 26 passing tests).
-- 2026-06-10: Restructured the assessment import around parse → load context → prepare → write seams (`docs/design/2026-06-10-import-parse-prepare-write-seams.md`, PR 1 of the seams plan). New pure `prepareAssessmentImport` builds an Import Plan with Blocking Diagnostics, Ignored Columns, and overwrite detection; unmatched submissions now block the import instead of being silently skipped (behavior change). Success path reports overwrite counts. Unit suite covers the plan; integration suite stays green with the flipped unmatched-submission test.
+- 2026-06-10: Restructured the assessment import around parse → load context → prepare → write seams (`docs/design/2026-06-10-import-parse-prepare-write-seams.md`, PR 1 of the seams plan). New pure `prepareAssessmentImport` builds an Import Plan with Blocking Diagnostics, Ignored Columns, and overwrite detection; unmatched submissions now block the import instead of being silently skipped (behavior change). Success path reports overwrite counts. Unit suite covers the plan; integration suite stays green with the flipped unmatched-submission test. R-001 promoted to Verified (required `test-integration` check green in CI).
 
 ## 10. Change Log
 
@@ -290,6 +290,7 @@ Tier 2 issue is Done when:
 - 2026-05-18: Implemented R-002 mitigation by adding `src/db/constraints.integration.test.ts` with transactional rollback assertions for DB trigger/check enforcement (ordinal labels, numerical score bounds, submission type/participant ownership, and rubric subtype integrity). Local verification: `pnpm run check --fix`, `pnpm run check-types`, `pnpm run test:integration` (21/21 passing).
 - 2026-05-18: Implemented R-003 mitigation by adding `src/db/questions.integration.test.ts` with mutation-path coverage for `saveManagedQuestion`/`deleteManagedQuestion` (rename, type transition, stale cleanup, ordinal replacement, and delete cascade). Fixed joined count ambiguity in `getQuestionDeleteImpact` (`assessment.id`). Local verification: `pnpm run check --fix`, `pnpm run check-types`, `pnpm run test:integration` (26/26 passing).
 - 2026-06-10: Assessment import prepare seam (seams plan PR 1): refreshed R-001 evidence (restructured modules + flipped unmatched-submission test), recorded R-009 Ignored Column groundwork, and marked the saveAssessments pure-phase refactor candidate done.
+- 2026-06-10: Promoted R-001 to Verified. The promotion gate (CI `test-integration` green in PR checks) has been met since `test-integration` became a required branch-protection check on `main` (R-016 audit, 2026-05-18); CI on `main` is green and runs the R-001 suite on every PR. Dashboard counts updated (Tier 0: 3 verified; overall 3/16).
 
 ## 11. Issue Entry Template (for future additions)
 
