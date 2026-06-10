@@ -2,7 +2,7 @@
 
 Status: Current investigation
 Date: 2026-05-25
-Last updated: 2026-06-04
+Last updated: 2026-06-10
 Related: #115, #99, #59, #51, #68, #110
 
 ## Table of contents
@@ -52,18 +52,18 @@ Resolved or largely resolved since the first audit:
 5. question definition reads and mutations have been split;
 6. assessment reads and assessment writes have been split, with a transaction-friendly write API;
 7. the ADR 0002 source reorganization has landed: feature-owned persistence, read models, and feature-facing types now live in `src/projects`, `src/submissions`, `src/questions`, `src/assessments`, and `src/rubrics`; `src/db/types.ts` was deleted; `src/db` is database infrastructure only; and the historical `src/shared` bucket was renamed to a flat `src/ui` (see `plans/completed/2026-06-02-source-reorganization.md`).
+8. submission overview assessment loading is consolidated: `loadSubmissionAssessments` (#145) returns every question's rubric values for a submission in one query, replacing the per-question `loadAssessment` calls on the submission overview page; assessment reads are also now scoped by Project ID and `assessmentCacheTag` supports a nested submission/question scope.
 
 With ownership now matching ADR 0002, the highest-value remaining work is the local seam cleanup that was previously gated on the reorganization:
 
-1. submission overview assessment loading;
-2. assessment import parse/prepare/write boundaries and unmatched-submission policy;
-3. assessment mutation internals, if further seams are still useful before or during relocation;
-4. question-specific grading page cache-boundary review;
-5. question/rubric read-model reuse;
-6. submission export internals;
-7. assessment completion and overview semantics;
-8. app shell decomposition;
-9. numeric rubric editing.
+1. assessment import parse/prepare/write boundaries and unmatched-submission policy;
+2. assessment mutation internals, if further seams are still useful before or during relocation;
+3. question-specific grading page cache-boundary review;
+4. question/rubric read-model reuse;
+5. submission export internals;
+6. assessment completion and overview semantics;
+7. app shell decomposition;
+8. numeric rubric editing.
 
 The recurring problem is still mixed responsibility, but the concrete instances have changed. The question and assessment splits deliberately deferred ADR 0002 compliance so that the files could first be split by responsibility inside `src/db`; that relocation has since landed, so future splitting now happens in the owning feature folder rather than under `src/db`. The remaining seams below are about local responsibility boundaries inside those owners, not ownership.
 
@@ -75,7 +75,7 @@ This table is the single source of truth for each finding's status. The per-find
 |---|---|---|
 | 1. Project route context and slug handling | Resolved | ADR 0005, #141 |
 | 2. Project-scoped pages repeat route resolution | Resolved | ADR 0005 |
-| 3. Submission overview assessment loading too fragmented | Open | Priority 1 |
+| 3. Submission overview assessment loading too fragmented | Resolved | #145; Priority 1 |
 | 4. Question-specific grading page cache boundaries | Open (review) | Priority 5, #59 |
 | 5. Question definition persistence split and relocated | Resolved | ADR 0002, #137 |
 | 6. Assessment reads and writes split and relocated | Resolved | ADR 0002, #137; follow-up Priority 4 |
@@ -366,13 +366,19 @@ Resolved by ADR 0005. No broader project route-context rewrite is needed.
 
 ## Finding 3: submission overview assessment loading is too fragmented
 
-### Current behavior
+### Current status
 
-The submission overview page loads project context, submissions, the question grid, submission overview progress, then one assessment load per question. The page maps questions to `loadAssessment(submissionId, questionId)` calls and attaches each result to the corresponding rubrics.
+Status in the [status table](#status-at-a-glance).
 
-### Why this matters
+`loadSubmissionAssessments` (#145) returns every question's rubric values for a submission in one query, keyed by Question ID. The submission overview page now loads project context, submissions, the question grid, submission overview progress, and this single assessments map in parallel via `Promise.all`, then attaches each question's values to its rubrics. The original behavior and candidate rewrite below are kept for context.
 
-The page is naturally a submission-level read model: it needs all questions and all rubric assessment values for one submission. Loading each question assessment separately is conceptually backwards for this route.
+### Original behavior
+
+The submission overview page loaded project context, submissions, the question grid, submission overview progress, then one assessment load per question. The page mapped questions to `loadAssessment(submissionId, questionId)` calls and attached each result to the corresponding rubrics.
+
+### Why this mattered
+
+The page is naturally a submission-level read model: it needs all questions and all rubric assessment values for one submission. Loading each question assessment separately was conceptually backwards for this route.
 
 Potential costs:
 
@@ -382,27 +388,20 @@ Potential costs:
 - harder tests for the full submission overview state;
 - slower navigation between submissions.
 
-### Candidate rewrite
+### Implemented direction
 
-Add a submission overview loader:
+`src/assessments/assessments.ts` now exposes:
 
-```ts
-loadSubmissionAssessmentOverview({
-  projectId,
-  submissionId,
-})
-```
+- `loadQuestionAssessment` (renamed from `loadAssessment`): a single submission/question's rubric values, scoped by Project ID;
+- `loadSubmissionAssessments`: every question's rubric values for a submission, scoped by Project ID, returned as a `Record<questionId, AssessmentRubricValue[]>`.
 
-Return a UI-ready model containing the current submission, all submissions for navigation, progress by submission, and assessed questions/rubrics. Internally, this should load all assessment values for the submission in one query or one small query set.
+Both share row-loading and rubric-value mapping helpers. `assessmentCacheTag` (in `src/db/cacheTags.ts`) now takes an optional `{ submissionId, questionId }` scope, and `saveAssessment` invalidates the question, submission, and coarse `assessments:all` tags.
 
-### Tests to add
+### Tests added
 
 - submission with no assessments;
-- submission with sparse question completion;
 - mixed rubric types;
-- zero-rubric questions;
-- project isolation with duplicate question/rubric ids across projects;
-- ordering matches question/rubric ordering.
+- project isolation: a mismatched Project ID returns no data.
 
 ## Finding 4: question-specific grading page cache boundaries need review
 
@@ -957,23 +956,19 @@ The immediate value is to make ownership match ADR 0002 so that future splitting
 
 This is the single actionable list for the open findings. It carries the sequencing the [status table](#status-at-a-glance) does not, and each entry's `Related` line is where it can be split out from #115 into a smaller implementation issue if that is useful. When an item is actively picked up, create a dated `plans/active/` plan for it (as the resolved findings already did) rather than tracking execution detail here.
 
-### Priority 1: submission overview assessment read model
+### Priority 1: submission overview assessment read model — Done
 
-Why first:
+Completed 2026-06-10 in #145.
 
-- likely improves performance;
-- simplifies a core grading page;
-- establishes read-model pattern for grading pages;
-- still clearly current after route-context cleanup.
+Delivered:
 
-Suggested deliverables:
+- added `loadSubmissionAssessments`, returning every question's rubric values for a submission in one query, keyed by Question ID;
+- replaced the per-question `loadAssessment` calls on the submission overview page with a single `loadSubmissionAssessments` call, loaded in parallel with project, submissions, question grid, and progress via `Promise.all`;
+- scoped both `loadQuestionAssessment` (renamed from `loadAssessment`) and `loadSubmissionAssessments` by Project ID;
+- extended `assessmentCacheTag` to a nested submission/question scope and had `saveAssessment` invalidate all three levels;
+- added integration tests for mixed rubric types and project isolation.
 
-- add `loadSubmissionAssessmentOverview` or equivalent;
-- replace per-question `loadAssessment` calls if a single query or small query set is clearer;
-- add integration tests for mixed rubric types and sparse assessments;
-- clarify cache tags for the consolidated loader.
-
-Related: #59, #115.
+Related: #59, #115, #145.
 
 ### Priority 2: assessment import parse/prepare/write boundaries
 
