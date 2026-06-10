@@ -4,14 +4,45 @@ import { revalidateTag } from "next/cache";
 import { CACHE_TAGS } from "#db/cacheTags.ts";
 import type { DB } from "#db/generated/db.ts";
 import { db as defaultDb } from "#db/kysely.ts";
+import {
+	prepareQuestionImport,
+	type QuestionImportBlockingDiagnostic,
+	type QuestionImportPlan,
+} from "./prepareQuestionImport.ts";
+import { loadQuestionImportContextFromDb } from "./questionImportContext.ts";
 import type { ImportedQuestions } from "./types.ts";
 
-// `db` may be the global client or a caller-supplied transaction; the import saver
-// opens the transaction and invalidates cache after it commits.
-export async function saveQuestionsInDb(
+function formatBlockingDiagnostic(
+	diagnostic: QuestionImportBlockingDiagnostic,
+): string {
+	switch (diagnostic.type) {
+		case "rubric-type-change-blocked": {
+			return `Rubric "${diagnostic.rubricId}" of question "${diagnostic.questionId}" has ${diagnostic.assessmentCount} linked assessments and cannot change type on import. Edit it in question management instead.`;
+		}
+		case "rubric-question-mismatch": {
+			return `Rubric "${diagnostic.rubricId}" already belongs to question "${diagnostic.existingQuestionId}" and cannot be moved to question "${diagnostic.importQuestionId}" on import.`;
+		}
+	}
+}
+
+function questionImportBlockedError(
+	blockingDiagnostics: QuestionImportBlockingDiagnostic[],
+): Error {
+	const lines = blockingDiagnostics.map(formatBlockingDiagnostic);
+
+	return new Error(
+		`Question import errors:\n${lines.join("\n")}\nNothing was imported. Fix the listed issues and retry.`,
+	);
+}
+
+// `db` may be the global client or a caller-supplied transaction. Executes a
+// plan's writes; never opens a transaction and never invalidates cache.
+export async function saveQuestionImportPlanInDb(
 	db: Kysely<DB>,
-	{ questions, projectId }: { questions: ImportedQuestions; projectId: string },
+	{ plan, projectId }: { plan: QuestionImportPlan; projectId: string },
 ): Promise<{ questionCount: number; rubricCount: number }> {
+	const questions: ImportedQuestions = plan.writes;
+
 	const questionsById = questions.map((question, position) => ({
 		id: question.id,
 		label: question.label ?? null,
@@ -70,9 +101,6 @@ export async function saveQuestionsInDb(
 
 	const questionIds = questionsById.map((question) => question.id);
 	const rubricIds = rubricSources.map((rubric) => rubric.id);
-	const rubricTypeById = new Map(
-		rubricSources.map((rubric) => [rubric.id, rubric.type]),
-	);
 
 	const projectRow = await db
 		.selectFrom("project")
@@ -81,25 +109,12 @@ export async function saveQuestionsInDb(
 		.executeTakeFirstOrThrow();
 	const projectRowId = projectRow.rowId;
 
-	const existingRubrics =
-		rubricIds.length === 0
-			? []
-			: await db
-					.selectFrom("rubric")
-					.select(["id", "type"])
-					.where("rubric.projectId", "=", projectRowId)
-					.where("id", "in", rubricIds)
-					.execute();
-
-	const rubricsToRecreate = existingRubrics.flatMap((rubric) => {
-		const nextType = rubricTypeById.get(rubric.id);
-
-		if (nextType == null || nextType === rubric.type) {
-			return [];
-		}
-
-		return [rubric.id];
-	});
+	// Rubrics whose type changed (no linked assessments, per the prepared plan)
+	// are deleted and recreated so subtype tables (boolean/numerical/ordinal
+	// rubric) never hold stale rows for the previous type.
+	const rubricsToRecreate = plan.rubricTypeChanges.map(
+		(change) => change.rubricId,
+	);
 
 	if (rubricsToRecreate.length > 0) {
 		await db
@@ -367,13 +382,38 @@ export async function saveQuestionsInDb(
 	return { questionCount: questionIds.length, rubricCount: rubricIds.length };
 }
 
+// Wrapper: owns the global db, the transaction boundary, and cache invalidation.
+// `db` defaults to the global client; tests pass a test database. Never pass a
+// transaction — the wrapper opens its own.
 export async function saveQuestions(
 	{ questions, projectId }: { questions: ImportedQuestions; projectId: string },
 	{ db = defaultDb }: { db?: Kysely<DB> } = {},
-): Promise<{ questionCount: number; rubricCount: number }> {
-	const result = await db
-		.transaction()
-		.execute((tx) => saveQuestionsInDb(tx, { questions, projectId }));
+): Promise<{
+	questionCount: number;
+	rubricCount: number;
+	typeChangedRubricCount: number;
+}> {
+	const result = await db.transaction().execute(async (tx) => {
+		const context = await loadQuestionImportContextFromDb(tx, {
+			questions,
+			projectId,
+		});
+		const plan = prepareQuestionImport({ questions, context });
+
+		if (plan.blockingDiagnostics.length > 0) {
+			throw questionImportBlockedError(plan.blockingDiagnostics);
+		}
+
+		const writeResult = await saveQuestionImportPlanInDb(tx, {
+			plan,
+			projectId,
+		});
+
+		return {
+			...writeResult,
+			typeChangedRubricCount: plan.rubricTypeChanges.length,
+		};
+	});
 
 	// The transaction owner invalidates after commit. Safe only because this saver
 	// always runs from questionsImportAction (request scope); revalidateTag throws
