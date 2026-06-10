@@ -45,12 +45,12 @@ Refactor while green:
 
 Same method. Cycles:
 
-- [ ] Tracer bullet: `prepareQuestionImport` plans question/rubric upserts from parsed questions and a hand-built context.
-- [ ] Rubric type change with linked assessments → Blocking Diagnostic naming rubric + assessment count, pointing to the question management UI (behavior change: was silent delete + recreate).
-- [ ] Rubric type change without linked assessments → proceeds, reported in the plan.
-- [ ] Unknown question reference for a rubric → Blocking Diagnostic.
-- [ ] Integration cutover: wrapper composes the stages in one transaction; existing `saveQuestions.integration.test.ts` stays green except tests that asserted the destructive recreation, which flip first (RED) to the blocking behavior. Advances R-011 #25.
-- [ ] Refactor while green: context loader + write primitive extraction; simplify pass; tracker update.
+- [x] Tracer bullet: `prepareQuestionImport` plans question/rubric upserts from parsed questions and a hand-built context.
+- [x] Rubric type change with linked assessments → Blocking Diagnostic naming rubric + assessment count, pointing to the question management UI (behavior change: was silent delete + recreate).
+- [x] Rubric type change without linked assessments → proceeds, reported in the plan.
+- [x] Rubric id reused under a different question → Blocking Diagnostic (`rubric-question-mismatch`).
+- [x] Integration cutover: wrapper composes the stages in one transaction; existing `saveQuestions.integration.test.ts` stays green (renamed `saveQuestionsInDb` calls to the `saveQuestions` wrapper) plus new tests for the type-change blocking behavior. Advances R-011 #25.
+- [x] Refactor while green: context loader (`questionImportContext.ts`) + write primitive (`saveQuestionImportPlanInDb`) extraction; simplify pass; tracker update.
 
 ## PR 3 — Students
 

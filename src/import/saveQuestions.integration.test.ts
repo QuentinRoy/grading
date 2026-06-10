@@ -4,7 +4,11 @@ import { beforeEach, expect, test, vi } from "vitest";
 import type { DB } from "#db/generated/db.ts";
 import { createTestDb } from "#test/dbIntegration.ts";
 import { createProject } from "#test/projects.ts";
-import { saveQuestions, saveQuestionsInDb } from "./saveQuestions.ts";
+import {
+	createAssessedBooleanQuestionFixture,
+	createBooleanQuestionFixture,
+} from "#test/questions.ts";
+import { saveQuestions } from "./saveQuestions.ts";
 import type { ImportedQuestions } from "./types.ts";
 
 vi.mock("server-only", () => ({}));
@@ -36,29 +40,43 @@ function makeQuestions(params: {
 	];
 }
 
-test("saveQuestionsInDb allows the same question and rubric ids in different projects", async () => {
+test("saveQuestions allows the same question and rubric ids in different projects", async () => {
 	await using db = await createTestDb();
 	await using projectA = await createProject(db, "Import Project A");
 	await using projectB = await createProject(db, "Import Project B");
 
-	const resultA = await saveQuestionsInDb(db, {
-		questions: makeQuestions({
-			questionLabel: "Question A",
-			rubricLabel: "Rubric A",
-		}),
-		projectId: projectA.id,
-	});
+	const resultA = await saveQuestions(
+		{
+			questions: makeQuestions({
+				questionLabel: "Question A",
+				rubricLabel: "Rubric A",
+			}),
+			projectId: projectA.id,
+		},
+		{ db },
+	);
 
-	const resultB = await saveQuestionsInDb(db, {
-		questions: makeQuestions({
-			questionLabel: "Question B",
-			rubricLabel: "Rubric B",
-		}),
-		projectId: projectB.id,
-	});
+	const resultB = await saveQuestions(
+		{
+			questions: makeQuestions({
+				questionLabel: "Question B",
+				rubricLabel: "Rubric B",
+			}),
+			projectId: projectB.id,
+		},
+		{ db },
+	);
 
-	expect(resultA).toEqual({ questionCount: 1, rubricCount: 1 });
-	expect(resultB).toEqual({ questionCount: 1, rubricCount: 1 });
+	expect(resultA).toEqual({
+		questionCount: 1,
+		rubricCount: 1,
+		typeChangedRubricCount: 0,
+	});
+	expect(resultB).toEqual({
+		questionCount: 1,
+		rubricCount: 1,
+		typeChangedRubricCount: 0,
+	});
 
 	const questions = await db
 		.selectFrom("question")
@@ -83,34 +101,43 @@ test("saveQuestionsInDb allows the same question and rubric ids in different pro
 	expect(rubrics[1]?.label).toBe("Rubric B");
 });
 
-test("saveQuestionsInDb updates only the target project rows", async () => {
+test("saveQuestions updates only the target project rows", async () => {
 	await using db = await createTestDb();
 	await using projectA = await createProject(db, "Isolation Project A");
 	await using projectB = await createProject(db, "Isolation Project B");
 
-	await saveQuestionsInDb(db, {
-		questions: makeQuestions({
-			questionLabel: "A initial",
-			rubricLabel: "A rubric initial",
-		}),
-		projectId: projectA.id,
-	});
+	await saveQuestions(
+		{
+			questions: makeQuestions({
+				questionLabel: "A initial",
+				rubricLabel: "A rubric initial",
+			}),
+			projectId: projectA.id,
+		},
+		{ db },
+	);
 
-	await saveQuestionsInDb(db, {
-		questions: makeQuestions({
-			questionLabel: "B initial",
-			rubricLabel: "B rubric initial",
-		}),
-		projectId: projectB.id,
-	});
+	await saveQuestions(
+		{
+			questions: makeQuestions({
+				questionLabel: "B initial",
+				rubricLabel: "B rubric initial",
+			}),
+			projectId: projectB.id,
+		},
+		{ db },
+	);
 
-	await saveQuestionsInDb(db, {
-		questions: makeQuestions({
-			questionLabel: "A updated",
-			rubricLabel: "A rubric updated",
-		}),
-		projectId: projectA.id,
-	});
+	await saveQuestions(
+		{
+			questions: makeQuestions({
+				questionLabel: "A updated",
+				rubricLabel: "A rubric updated",
+			}),
+			projectId: projectA.id,
+		},
+		{ db },
+	);
 
 	const questionA = await db
 		.selectFrom("question")
@@ -146,26 +173,32 @@ test("saveQuestionsInDb updates only the target project rows", async () => {
 	expect(rubricB.label).toBe("B rubric initial");
 });
 
-test("saveQuestionsInDb still upserts duplicate ids within the same project", async () => {
+test("saveQuestions still upserts duplicate ids within the same project", async () => {
 	await using db = await createTestDb();
 	await using project = await createProject(db, "Single Project Upsert");
 	const projectRowId = project.rowId;
 
-	await saveQuestionsInDb(db, {
-		questions: makeQuestions({
-			questionLabel: "Before",
-			rubricLabel: "Rubric before",
-		}),
-		projectId: project.id,
-	});
+	await saveQuestions(
+		{
+			questions: makeQuestions({
+				questionLabel: "Before",
+				rubricLabel: "Rubric before",
+			}),
+			projectId: project.id,
+		},
+		{ db },
+	);
 
-	await saveQuestionsInDb(db, {
-		questions: makeQuestions({
-			questionLabel: "After",
-			rubricLabel: "Rubric after",
-		}),
-		projectId: project.id,
-	});
+	await saveQuestions(
+		{
+			questions: makeQuestions({
+				questionLabel: "After",
+				rubricLabel: "Rubric after",
+			}),
+			projectId: project.id,
+		},
+		{ db },
+	);
 
 	const questions = await db
 		.selectFrom("question")
@@ -185,6 +218,132 @@ test("saveQuestionsInDb still upserts duplicate ids within the same project", as
 	expect(rubrics).toHaveLength(1);
 	expect(questions[0]?.label).toBe("After");
 	expect(rubrics[0]?.label).toBe("Rubric after");
+});
+
+test("saveQuestions blocks a rubric type change when the rubric has linked assessments", async () => {
+	await using db = await createTestDb();
+	await using project = await createProject(db, "Type Change Blocked Project");
+	const fixture = await createAssessedBooleanQuestionFixture(db, project.rowId);
+
+	const questions: ImportedQuestions = [
+		{
+			id: fixture.questionId,
+			label: "Boolean question",
+			rubrics: [
+				{
+					id: fixture.rubricId,
+					type: "ordinal",
+					label: "Correct",
+					marks: { good: 1, bad: 0 },
+				},
+			],
+		},
+	];
+
+	await expect(
+		saveQuestions({ questions, projectId: project.id }, { db }),
+	).rejects.toThrow(
+		`Rubric "${fixture.rubricId}" of question "${fixture.questionId}" has 1 linked assessments and cannot change type on import.`,
+	);
+
+	const rubric = await db
+		.selectFrom("rubric")
+		.select("type")
+		.where("projectId", "=", project.rowId)
+		.where("id", "=", fixture.rubricId)
+		.executeTakeFirstOrThrow();
+
+	expect(rubric.type).toBe("boolean");
+	expect(revalidateTag).not.toHaveBeenCalled();
+});
+
+test("saveQuestions allows a rubric type change when the rubric has no linked assessments", async () => {
+	await using db = await createTestDb();
+	await using project = await createProject(db, "Type Change Allowed Project");
+	const fixture = await createBooleanQuestionFixture(db, project.rowId);
+
+	const questions: ImportedQuestions = [
+		{
+			id: fixture.questionId,
+			label: "Boolean question",
+			rubrics: [
+				{
+					id: fixture.rubricId,
+					type: "ordinal",
+					label: "Correct",
+					marks: { good: 1, bad: 0 },
+				},
+			],
+		},
+	];
+
+	const result = await saveQuestions(
+		{ questions, projectId: project.id },
+		{ db },
+	);
+
+	expect(result).toEqual({
+		questionCount: 1,
+		rubricCount: 1,
+		typeChangedRubricCount: 1,
+	});
+
+	const rubric = await db
+		.selectFrom("rubric")
+		.select("type")
+		.where("projectId", "=", project.rowId)
+		.where("id", "=", fixture.rubricId)
+		.executeTakeFirstOrThrow();
+
+	expect(rubric.type).toBe("ordinal");
+
+	const ordinalRubricValues = await db
+		.selectFrom("ordinalRubric")
+		.innerJoin(
+			"ordinalRubricValue",
+			"ordinalRubricValue.ordinalRubricId",
+			"ordinalRubric.id",
+		)
+		.innerJoin("rubric", "rubric.rowId", "ordinalRubric.rubricId")
+		.select(["ordinalRubricValue.label", "ordinalRubricValue.marks"])
+		.where("rubric.id", "=", fixture.rubricId)
+		.execute();
+
+	expect(ordinalRubricValues.map((value) => value.label).sort()).toEqual([
+		"bad",
+		"good",
+	]);
+});
+
+test("saveQuestions blocks an imported rubric id that already belongs to another question", async () => {
+	await using db = await createTestDb();
+	await using project = await createProject(db, "Rubric Mismatch Project");
+	const fixture = await createBooleanQuestionFixture(db, project.rowId);
+
+	const questions: ImportedQuestions = [
+		{
+			id: "another-question",
+			label: "Another question",
+			rubrics: [
+				{ id: fixture.rubricId, type: "boolean", label: "Correct", marks: 2 },
+			],
+		},
+	];
+
+	await expect(
+		saveQuestions({ questions, projectId: project.id }, { db }),
+	).rejects.toThrow(
+		`Rubric "${fixture.rubricId}" already belongs to question "${fixture.questionId}" and cannot be moved to question "another-question" on import.`,
+	);
+
+	const rubric = await db
+		.selectFrom("rubric")
+		.select("questionId")
+		.where("projectId", "=", project.rowId)
+		.where("id", "=", fixture.rubricId)
+		.executeTakeFirstOrThrow();
+
+	expect(rubric.questionId).toBe(fixture.questionRowId);
 });
 
 test("saveQuestions wrapper invalidates question and assessment tags after the import commits", async () => {
