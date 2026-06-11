@@ -1,6 +1,6 @@
 # Submission export internals
 
-Status: active
+Status: PR 1 merged (#151); PR 2 implemented in working tree, pending commit/PR
 Date: 2026-06-11
 Source: `docs/investigations/source-structure-and-tech-debt-audit.md` Priority 4 (Findings 8, 10, 18; #32)
 
@@ -23,27 +23,29 @@ Source: `docs/investigations/source-structure-and-tech-debt-audit.md` Priority 4
 7. Dated filenames standardize on `YYYY-MM-DD` via a shared helper in `src/export/`.
 8. Test scope: pure grouping unit tests plus one DB integration test through the ADR 0007 seam. The marks-only-importability test is import-side and deferred.
 
-## PR 1 — enforce Ordinal Marks Minimum at write boundaries
+## PR 1 — enforce Ordinal Marks Minimum at write boundaries (merged, #151)
 
 TDD cycles (each RED → GREEN):
 
-1. `questionDefinitionSchema` rejects an ordinal rubric with 0 mark entries, error on the marks path → add a ≥2 refine in `src/questions/schemas.ts` (same message as `src/import/schemas.ts`: "Ordinal rubric must have at least 2 mark entries").
-2. Rejects exactly 1 entry.
-3. Accepts 2 entries; the editor surfaces the field error through the existing `errors.ts` plumbing (touch only if the path mapping needs it).
+1. ✅ `questionDefinitionSchema` rejects an ordinal rubric with 0 mark entries, error on the marks path → add a ≥2 refine in `src/questions/schemas.ts` (same message as `src/import/schemas.ts`: "Ordinal rubric must have at least 2 mark entries").
+2. ✅ Rejects exactly 1 entry.
+3. ✅ Accepts 2 entries; the editor surfaces the field error through the existing `errors.ts` plumbing (touch only if the path mapping needs it).
 
-Checks: `pnpm run check --fix`, `pnpm run check-types`, schema unit tests, question mutation integration tests.
+Checks: `pnpm run check --fix`, `pnpm run check-types`, schema unit tests, question mutation integration tests — all done.
 
 ## PR 2 — export internals (merges after PR 1)
 
 Order matters: pin behavior first, then refactor under green.
 
-1. **Characterization tracer**: new `src/export/submissionExport.integration.test.ts` against the test database — seed project, questions with mixed rubric types, several submissions including one with no assessments and sparse values; snapshot the CSV from `createCsvSubmissionExport`. Pins query ordering and end-to-end behavior.
-2. **`toRubric`** in `src/questions/questions.ts`: throws on missing `booleanRubric` or missing `numericalRubric` (today both silently return a boolean shape) — true Rubric Subtype Invariant violations. An ordinal rubric with zero mark values maps to `{ type: "ordinal", marks: {} }`, not the boolean fallback; only a missing `ordinal_rubric` row throws. Requires the question-row query to report ordinal-rubric presence independently of whether it has any values (today's inner join on `ordinal_rubric_value` conflates "no `ordinal_rubric` row" with "zero values"). Valid mappings pinned, including the empty-marks case.
-3. **Plan derivation** (refactor under green): delete `loadQuestionPlan`; derive `ExportQuestionPlan[]` from `loadQuestionRowsFromDb(db, …)` + `toRubric`.
-4. **`groupSubmissionRows`** in new pure `src/export/submissionExportGrouping.ts` (no `server-only`), unit cycles: single-submission tracer → boundary detection between submissions → last flush → boolean/ordinal/numerical value classification and sparse values → input-order preservation. Then replace the `rows()` closure with the transform.
-5. **ADR 0007 alignment** (refactor under green): `assertSubmissionInvariantsFromDb(db, { projectId })` and `streamSubmissionExportRowsFromDb(db, { projectId })` primitives; `createSubmissionExport` / `createCsvSubmissionExport` gain the trailing `{ db = defaultDb } = {}` seam used by the integration test.
-6. **`buildDatedFilename`** unit-first in `src/export/`; both export routes adopt `YYYY-MM-DD` (submissions route changes from `YYYYMMDD`).
-7. Simplify pass over modified code, `pnpm run check --fix`, `pnpm run check-types`, targeted unit + integration tests.
+Status: all 7 steps implemented in the working tree (uncommitted). Type checks and targeted tests (`pnpm test src/export/ src/questions/questions.test.ts`, 29 tests) pass. `pnpm run check` only fails on an unrelated pre-existing `.claude/settings.local.json` formatting issue. Remaining: commit and open the PR.
+
+1. ✅ **Characterization tracer**: new `src/export/submissionExport.integration.test.ts` against the test database — seed project, questions with mixed rubric types, several submissions including one with no assessments and sparse values; snapshot the CSV from `createCsvSubmissionExport`. Pins query ordering and end-to-end behavior.
+2. ✅ **`toRubric`** in `src/questions/questions.ts`: throws on missing `booleanRubric` or missing `numericalRubric` (today both silently return a boolean shape) — true Rubric Subtype Invariant violations. An ordinal rubric with zero mark values maps to `{ type: "ordinal", marks: {} }`, not the boolean fallback; only a missing `ordinal_rubric` row throws. Requires the question-row query to report ordinal-rubric presence independently of whether it has any values (today's inner join on `ordinal_rubric_value` conflates "no `ordinal_rubric` row" with "zero values"). Valid mappings pinned, including the empty-marks case.
+3. ✅ **Plan derivation** (refactor under green): delete `loadQuestionPlan`; derive `ExportQuestionPlan[]` from `loadQuestionRowsFromDb(db, …)` + `toRubric`.
+4. ✅ **`groupSubmissionRows`** in new pure `src/export/submissionExportGrouping.ts` (no `server-only`), unit cycles: single-submission tracer → boundary detection between submissions → last flush → boolean/ordinal/numerical value classification and sparse values → input-order preservation. Then replace the `rows()` closure with the transform.
+5. ✅ **ADR 0007 alignment** (refactor under green): `assertSubmissionInvariantsFromDb(db, { projectId })` and `streamSubmissionExportRowsFromDb(db, { projectId })` primitives; `createSubmissionExport` / `createCsvSubmissionExport` gain the trailing `{ db = defaultDb } = {}` seam used by the integration test.
+6. ✅ **`buildDatedFilename`** unit-first in `src/export/`; both export routes adopt `YYYY-MM-DD` (submissions route changes from `YYYYMMDD`).
+7. ✅ Simplify pass over modified code, `pnpm run check --fix`, `pnpm run check-types`, targeted unit + integration tests.
 
 ## Non-goals
 
