@@ -1,34 +1,36 @@
 # Investigation: Read-Write Separation and Schema-Change Resilience
 
-Status: Current investigation, proposed direction
+Status: Largely implemented; remaining scope tracked as R-007/R-008 in `plans/active/reliability-hardening.md`
 Date: 2026-05-18
-Last reviewed: 2026-05-26
+Last reviewed: 2026-06-11
 Owner: Unassigned
-Related: #115, #117, #51, `plans/active/reliability-hardening.md`
+Related: #115 (closed), #117 (closed), #51 (closed), `plans/active/reliability-hardening.md`
 
 ## 0. Current Status and Ownership
 
-This document remains useful, but it should be treated as an investigation and proposed direction rather than an active execution plan or final architecture decision.
+This investigation's proposed direction was accepted and has been substantially implemented, mainly through ADR 0007 (`docs/adr/0007-db-primitives-take-a-handle-wrappers-own-transactions-and-cache.md`) and a series of completed extraction plans, rather than through a single dedicated design doc under this title.
 
-It explores an implementation strategy for separating write-side command/persistence paths from read-side projection/reporting paths. It does not own the broader source-structure audit, terminology decisions, product workflow decisions, or final caching/loading strategy.
+Implemented:
 
-Document ownership boundaries:
+- **Phase A (stable contracts)**: ADR 0007's `...FromDb`/`...InDb` primitive plus app-level-wrapper pattern is now the standard persistence/read contract, applied across `src/questions/`, `src/assessments/`, `src/submissions/`, `src/import/`, and `src/export/`.
+- **Phase B (write-side extraction)**: `plans/completed/2026-05-29-split-questions-db-module.md`, `plans/completed/2026-06-01-split-assessments-db-module.md`, and `plans/completed/2026-06-10-import-parse-prepare-write-seams.md` extracted question/rubric, assessment, and import write paths into focused modules with explicit transaction boundaries.
+- **Phase C, export (read projections)**: `plans/completed/2026-06-11-submission-export-internals.md` extracted the pure `src/export/submissionExportGrouping.ts` projection module and added `streamSubmissionExportRowsFromDb` / `assertSubmissionInvariantsFromDb` primitives plus a characterization integration test. R-006 in the reliability tracker is now Verified on this evidence.
+- **Source reorganization**: `plans/completed/2026-06-02-source-reorganization.md` moved the original `src/db/questions.ts` and `src/db/assessments.ts` hotspots into `src/questions/` and `src/assessments/` (see §5 for current paths).
+- The orchestrating roadmap issue #117, the source-structure umbrella #115, and the identifier-naming issue #51 are all closed.
 
-- #115 and `docs/investigations/source-structure-and-tech-debt-audit.md` own the broader source-structure and technical-debt audit.
-- #117 owns the DX sequencing roadmap.
-- #51 owns database identifier naming conventions.
-- `plans/active/reliability-hardening.md` owns reliability risks, priority, and test evidence.
-- This investigation owns the proposed read/write separation direction and its schema-change-resilience rationale.
+Remaining (Phase C for progress/overview reads, Phase D hardening):
 
-If this becomes the next implementation track, create a smaller active plan under `plans/active/`, for example:
+- `src/assessments/submissionProgress.ts`, `src/assessments/assessmentsProgress.ts`, `src/assessments/rubricOverview.ts`, and `src/assessments/rubricOverviewBuilder.ts` have adopted the ADR 0007 primitive/wrapper shape but have not had a dedicated read-projection extraction or test-hardening pass.
+- This remaining scope is tracked as **R-007** (progress metrics) and **R-008** (rubric overview analytics) in `plans/active/reliability-hardening.md`, which now reference this investigation for the proposed projection-module direction.
 
-```txt
-plans/active/split-assessment-save-path.md
-plans/active/extract-question-write-path.md
-plans/active/extract-progress-read-projections.md
-```
+This document is retained as background and rationale for the accepted direction and for the remaining R-007/R-008 work. It no longer represents an undecided proposal.
 
-If the approach is accepted as architecture, extract the chosen parts into `docs/design/` or an ADR.
+Document ownership boundaries (historical, still accurate):
+
+- #115 and `docs/investigations/source-structure-and-tech-debt-audit.md` owned the broader source-structure and technical-debt audit (closed).
+- #117 owned the DX sequencing roadmap (closed).
+- #51 owned database identifier naming conventions (closed).
+- `plans/active/reliability-hardening.md` owns reliability risks, priority, and test evidence, including the remaining R-007/R-008 scope from this investigation.
 
 ## 1. Problem Statement
 
@@ -142,19 +144,21 @@ Boundary:
 
 ## 5. Current Coupling Hotspots
 
-Write-heavy hotspots:
+Note: paths below reflect the post-reorganization layout (`plans/completed/2026-06-02-source-reorganization.md`); the original `src/db/questions.ts` and `src/db/assessments.ts` no longer exist.
+
+Write-heavy hotspots (extracted, see §0):
 
 - `src/import/saveQuestions.ts`
-- `src/db/questions.ts`
-- `src/db/assessments.ts`
+- `src/questions/questionDefinitionMutations.ts` (formerly `src/db/questions.ts`)
+- `src/assessments/assessmentMutations.ts` (formerly part of `src/db/assessments.ts`)
 - `src/import/saveAssessments.ts`
 
 Read/projection-heavy hotspots:
 
-- `src/export/submissionExport.ts`
-- `src/db/submissionProgress.ts`
-- `src/db/assessmentsProgress.ts`
-- `src/db/rubricOverview.ts`
+- `src/export/submissionExport.ts`, `src/export/submissionExportGrouping.ts` (extracted, see §0)
+- `src/assessments/submissionProgress.ts` (formerly `src/db/submissionProgress.ts`) — remaining, R-007
+- `src/assessments/assessmentsProgress.ts` (formerly `src/db/assessmentsProgress.ts`) — remaining, R-007
+- `src/assessments/rubricOverview.ts` / `rubricOverviewBuilder.ts` (formerly `src/db/rubricOverview.ts`) — remaining, R-008
 
 Cross-cutting schema boundary:
 
@@ -271,30 +275,30 @@ Preferred sequence, aligned with #117:
 
 This investigation can be considered resolved when one of the following happens:
 
-- the approach is accepted and extracted into a design doc or ADR;
-- a smaller active implementation plan is created for the first concrete extraction;
-- the approach is rejected or superseded by another source-structure decision.
+- ✅ the approach is accepted and extracted into a design doc or ADR — done via ADR 0007;
+- ✅ a smaller active implementation plan is created for the first concrete extraction — done via the completed plans listed in §0;
+- the approach is rejected or superseded by another source-structure decision — n/a, accepted.
 
 If implemented, the underlying refactor track would be complete when:
 
-- write paths are isolated behind stable command/write functions or repository contracts;
-- read/reporting paths are isolated behind projection/read-model functions;
-- app-level code no longer depends on storage key shape details in the targeted areas;
-- reliability tracker issues that overlap this refactor have updated status/evidence;
-- schema-change implementation effort measurably shrinks in a subsequent migration.
+- ✅ write paths are isolated behind stable command/write functions or repository contracts (questions, assessments, import);
+- ⏳ read/reporting paths are isolated behind projection/read-model functions — done for export; **not yet done** for progress (R-007) and rubric overview (R-008);
+- ✅ app-level code no longer depends on storage key shape details in the targeted write areas;
+- ⏳ reliability tracker issues that overlap this refactor have updated status/evidence — R-003, R-005, R-006, R-011 updated/Verified; R-007/R-008 remain Open and now carry the projection-extraction direction from this investigation;
+- not yet assessed: schema-change implementation effort in a subsequent migration.
+
+This investigation remains open only for the R-007/R-008 scope; once those land (or are explicitly deferred with rationale), this document can be archived or moved to `docs/design/` as a closed-out reference.
 
 ## 11. Follow-Up Tracking Updates Required When Execution Starts
 
-Update:
+Status of original follow-ups:
 
-- #117, to show this investigation has moved from proposed direction to execution.
-- #115, if source-structure acceptance criteria are affected.
-- #51, if identifier naming or row-id/business-id boundaries are affected.
-- `plans/active/reliability-hardening.md`, when a tracked risk gets evidence or reduced risk.
+- ✅ #117 — closed; the roadmap explicitly tracked moving this investigation out of `plans/active/` and reconciling it with #115/#51.
+- ✅ #115 — closed (source-structure umbrella).
+- ✅ #51 — closed (identifier naming).
+- ✅ `plans/active/reliability-hardening.md` — R-006 promoted to Verified with evidence from the 2026-06-11 export internals refactor; R-003, R-005, R-011 already Verified; R-007 and R-008 updated with current paths and a pointer back to this investigation for the remaining projection-extraction direction.
 
-Suggested tracker actions:
+Remaining tracker actions (now owned by `plans/active/reliability-hardening.md`, not this document):
 
-- Create a smaller `plans/active/...` file for the first concrete extraction.
-- Mark overlap risks as In Progress with references to extraction PRs.
-- Add test evidence links as each phase lands.
-- Re-score R-003, R-005, R-006, R-007, and R-011 after relevant extraction work lands.
+- Create a smaller `plans/active/...` plan for the R-007/R-008 projection extraction when that work starts.
+- Re-score R-007 and R-008 after that extraction lands.
