@@ -114,6 +114,16 @@ _Avoid_: silent zero-marks fallback, tolerant read-side defaults
 An ordinal **Rubric Definition** must define at least two mark entries, enforced identically at every write boundary (editor and import). An ordinal rubric is a choice between labels; fewer than two is not an authorable state.
 _Avoid_: empty ordinal marks as a draft state, per-boundary minimums that disagree
 
+### Assessment
+
+**Assessment**:
+The recorded evaluation of a **Rubric** for a submission — rubrics are what get assessed. A question or submission is _fully assessed_ when **Assessment Completion** holds for it. The question-level grouping record in persistence is a container, not a second kind of assessment.
+_Avoid_: treating "assessment" and "rubric assessment" as distinct domain concepts
+
+**Assessment Completion**:
+Assessments are what get completed; submissions, questions, and projects are grouping dimensions, never owners of completion. The assessment of a **Question** for a submission is complete when every **Rubric** of that question has a recorded assessment value. A question with no rubrics has a complete assessment — nothing remains to assess. Completion is vacuously true without exception: aggregates over an empty grouping (no submissions, no questions) are complete, not zero. Whether to show completion for an empty project is a presentation concern, not a completion exception. One rule, applied identically across every grouping and on every surface (server projections and client summaries).
+_Avoid_: question completion, submission progress, "a submission has progress", per-view completion rules, treating zero-rubric questions as incomplete, empty-grouping special cases
+
 ## Flagged Ambiguities
 
 - project id: previously overloaded in discussion and code. Resolution: Project ID means public identifier by default. Project Row ID must be named explicitly and is DB-internal only.
