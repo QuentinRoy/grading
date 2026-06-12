@@ -67,6 +67,8 @@ Short records of durable architecture decisions.
 - [0004 Avoid barrel files](adr/0004-avoid-barrel-files.md)
 - [0005 Correct cosmetic project slugs client-side](adr/0005-client-side-cosmetic-slug-correction.md)
 - [0006 Prefer flat module structure](adr/0006-prefer-flat-module-structure.md)
+- [0007 DB primitives take a handle; wrappers own transactions and cache](adr/0007-db-primitives-take-a-handle-wrappers-own-transactions-and-cache.md)
+- [0008 Cache tags, lifetimes, and invalidation](adr/0008-cache-tags-lifetimes-and-invalidation.md)
 - Add new ADRs under `docs/adr/`.
 
 ## Designs
@@ -90,6 +92,7 @@ Procedural how-to documentation for humans.
 
 - [Commit message conventions](guides/commit-message-conventions.md)
 - [Issue and PR conventions](guides/issue-and-pr-conventions.md)
+- [Next.js caching in this repository](guides/nextjs-caching.md)
 - [Running integration tests](guides/running-integration-tests.md)
 - [TypeScript API design](guides/typescript-api-design.md)
 - Add new guides under `docs/guides/`.
