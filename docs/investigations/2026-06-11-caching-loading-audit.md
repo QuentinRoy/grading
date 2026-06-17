@@ -22,7 +22,7 @@ Two findings added after a second audit pass change the picture for the #59 symp
 
 Recommended priority order:
 
-1. Verify nested cache-tag and cache-life propagation semantics empirically, and instrument the grading loop, before relying on any tag-level reasoning (Findings 17–19, Phase 0).
+1. Never depend on nested cache-tag propagation: it is undocumented and may be inconsistent, so every `"use cache"` scope registers the full tag closure (decided, not verified — Finding 17, ADR 0008 rule 3). Instrument the grading loop to baseline the #59 symptom and confirm Findings 18–19 (Phase 0).
 2. Centralize cache-tag factories and decide whether each tag is real, especially `questions:${questionId}`.
 3. Document the mutation-to-tag invalidation map for all writes that affect project, question, submission, assessment, progress, overview, and import surfaces.
 4. Decide a per-tag-class freshness policy: read-your-writes (`updateTag`) for the assessment being edited, stale-while-revalidate (`revalidateTag`) for derived progress projections (Finding 19).
@@ -47,7 +47,7 @@ Recommended priority order:
 - the client router cache, refreshed by `updateTag`/`revalidateTag` from server actions;
 - link prefetching, which under `cacheComponents` can only prefetch the cached/static parts of a target route.
 
-Two propagation behaviors matter and are not equally documented. Cache-life propagation is documented: an inner cached function with a short `cacheLife` propagates that lifetime outward, and Next errors at prerender time when the outer scope has no explicit `cacheLife`. Cache-tag propagation from inner cached functions to enclosing `"use cache"` scopes is not clearly documented and community guidance conflicts. Several page sections register fewer tags than the data they render and are correct only if propagation exists (Finding 17). This must be verified empirically before tag-level reasoning is trusted.
+Two propagation behaviors matter and are not equally documented. Cache-life propagation is documented: an inner cached function with a short `cacheLife` propagates that lifetime outward, and Next errors at prerender time when the outer scope has no explicit `cacheLife`. Cache-tag propagation from inner cached functions to enclosing `"use cache"` scopes is not clearly documented and community guidance conflicts. Several page sections register fewer tags than the data they render and would be correct only if propagation exists (Finding 17). Because tag propagation is undocumented and may be inconsistent, we never depend on it: every scope registers the full tag closure (ADR 0008 rule 3), so those under-registered sections are staleness bugs to fix, not behavior to verify.
 
 ### Project route loading
 
@@ -664,7 +664,7 @@ For #59 implementation PRs, test the parts that are stable and cheap:
 
 Do not overfit tests to Next.js internals. Add end-to-end/cache-runtime tests only if a real regression appears or if the framework provides a stable test seam.
 
-### Finding 17: nested tag propagation semantics are unverified and load-bearing
+### Finding 17: never depend on nested tag propagation
 
 #### Current behavior
 
@@ -678,11 +678,11 @@ Cache-life propagation is documented by Next.js. Tag propagation from nested cac
 
 #### Why this matters
 
-If tags propagate, the page-level registrations are partially redundant and the under-registration above is harmless. If they do not, the cases above are live staleness bugs: a question import or reorder leaves cached grading sections stale until their implicit lifetime expires. Every other tag-level finding in this document assumes one of these two worlds without saying which.
+Whether or not tag propagation happens to work, it is undocumented and may be inconsistent across versions and code paths, so depending on it risks silent staleness — a question import or reorder leaving cached grading sections stale until their implicit lifetime expires. The under-registered sections above are therefore bugs.
 
-#### Recommendation
+#### Decision (2026-06-17)
 
-Settle this empirically before Phase 1: a minimal two-level `"use cache"` fixture plus `revalidateTag`/`updateTag`, observed with `NEXT_PRIVATE_DEBUG_CACHE=1`. Then pick a rule and record it in ADR form or in `cacheTags.ts`: either page sections must register the full closure of tags for what they render (propagation not relied upon), or sections register only section-specific tags and propagation is the documented mechanism. Do not leave it mixed.
+Never depend on nested tag propagation. Every `"use cache"` scope registers the full closure of tags for everything it renders (ADR 0008 rule 3, now unconditional). Do not verify propagation empirically: a positive result is unsafe to rely on because the behavior is undocumented and may change. Fix the under-registered sections above as part of Phase 1 (PR2). Cache-life propagation is documented; handle it with explicit `cacheLife` per ADR 0008 rule 4.
 
 ### Finding 18: the two grading pages have opposite rendering topologies, which matches the #59 symptom
 
@@ -731,17 +731,17 @@ Whichever option is chosen, the acceptance test is behavioral: after saving a ru
 
 ### Phase 0: establish ground truth
 
-Goal: stop reasoning about cache behavior from assumptions.
+Goal: lock the tag-registration rule and baseline the grading loop, so later phases build on facts.
 
 Work:
 
-1. Verify nested tag and lifetime propagation with a minimal fixture and `NEXT_PRIVATE_DEBUG_CACHE=1` (Finding 17); record the result and the chosen tag-registration rule.
+1. The tag-registration rule is decided, not verified (2026-06-17): never depend on nested tag propagation — it is undocumented and may be inconsistent — so every `"use cache"` scope registers the full tag closure (Finding 17, ADR 0008 rule 3). No propagation fixture. Cache-life propagation is documented; handle it with explicit `cacheLife` (ADR 0008 rule 4).
 2. Instrument the grading loop: log cache hits/misses and query counts while simulating save-then-navigate across submissions on both grading pages.
 3. Confirm or refute Findings 18 and 19 against the instrumented loop.
 
 Acceptance criteria:
 
-- The propagation rule is documented and every later phase can cite it.
+- The tag-registration rule (full closure, no propagation dependence) is recorded in ADR 0008 and citable by every later phase.
 - There is a baseline measurement of the grading loop that later phases must improve, not regress.
 
 ### Phase 1: make cache behavior auditable
@@ -848,7 +848,7 @@ Acceptance criteria:
 
 ## Suggested implementation PR order
 
-1. `cache: verify propagation semantics and instrument grading loop`
+1. `cache: instrument grading loop and baseline #59` (tag-registration rule decided — never depend on propagation — not verified)
 2. `cache: centralize tag factories`
 3. `cache: document invalidation map`
 4. `cache: define per-tag-class freshness policy (updateTag vs revalidateTag)`
@@ -862,7 +862,7 @@ Acceptance criteria:
 12. `ui: improve grading loading boundaries`
 13. `assessments: measure rubric overview scale`
 
-This order keeps correctness before performance refactors. Ground truth (propagation semantics and a measured grading loop) comes first because every tag-level decision depends on it; tag and invalidation clarity comes next because it reduces the risk of every later caching change.
+This order keeps correctness before performance refactors. The tag-registration rule is already decided (never depend on propagation — Finding 17); the remaining ground truth (a measured grading loop) comes first; tag and invalidation clarity comes next because it reduces the risk of every later caching change.
 
 ## Non-goals
 
@@ -872,4 +872,4 @@ This order keeps correctness before performance refactors. Ground truth (propaga
 - Do not make route loaders monolithic just to remove repeated function calls.
 - Do not move to project-scoped tags before centralizing tag helpers.
 - Do not optimize rubric overview before measuring realistic scale.
-- Do not add end-to-end cache-runtime tests unless there is a stable test seam or a real regression to guard — with the exception of the one-off propagation fixture in Phase 0, which is throwaway diagnostic work, not a maintained test.
+- Do not add end-to-end cache-runtime tests unless there is a stable test seam or a real regression to guard — with the exception of one-off Phase 0 grading-loop instrumentation, which is throwaway diagnostic work, not a maintained test.

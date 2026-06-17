@@ -13,7 +13,7 @@ Cache invalidation is correctness-sensitive, and the failure mode is silent: a t
 Two Next.js behaviors make discipline non-optional under `cacheComponents`:
 
 - Cache lifetimes propagate from inner cached functions to enclosing `"use cache"` scopes, and Next errors at prerender when a short-lived inner cache is nested in an outer scope with no explicit `cacheLife`. An omitted lifetime is therefore not neutral; it is an implicit dependency on whatever is composed inside.
-- Tag propagation from inner cached functions to enclosing scopes is not clearly documented and community guidance conflicts. Correctness must not depend on it in either direction.
+- Tag propagation from inner cached functions to enclosing scopes is undocumented and community guidance conflicts, so its behavior may be inconsistent across versions and code paths. Correctness must never depend on it in either direction — a positive observation in one case does not make it dependable.
 
 Finally, the invalidation primitive is a freshness policy, not plumbing. `updateTag` expires immediately and blocks the next read on fresh data (read-your-own-writes). `revalidateTag` serves stale data while refreshing in the background. Using read-your-writes semantics for derived projections (completion, progress) makes the grading loop block on recomputation after every save, which is a direct contributor to the loading symptom in #59.
 
@@ -23,7 +23,7 @@ Finally, the invalidation primitive is a freshness policy, not plumbing. `update
 
 2. Every accepted tag scope has a named helper. The vocabulary is closed: adding a tag means adding a helper, an entry in the invalidation map (rule 7), and at least one invalidating mutation. A tag with no invalidating mutation is forbidden unless the map documents an explicit lifetime-only policy for it.
 
-3. A `"use cache"` scope registers the full closure of tags for everything it renders, including data obtained through nested cached loaders. Do not rely on nested tag propagation, and do not treat it as forbidden either — the rule makes correctness independent of it. If empirical verification (audit Phase 0) later shows propagation is reliable and documented, this rule may be relaxed by a follow-up ADR, not ad hoc.
+3. A `"use cache"` scope registers the full closure of tags for everything it renders, including data obtained through nested cached loaders. **Never depend on nested tag propagation.** It is undocumented and may be inconsistent across versions and code paths, so even where it appears to work it is unsafe to rely on; correctness must be independent of it. This rule is not subject to empirical relaxation — observing that propagation works in one case does not make undocumented behavior dependable.
 
 4. Every `"use cache"` scope declares an explicit `cacheLife`, chosen from a named policy class. The classes, not the exact numbers, are the contract:
 
@@ -51,5 +51,5 @@ Finally, the invalidation primitive is a freshness policy, not plumbing. `update
 ## Consequences
 
 - A new cached read costs three small artifacts: a helper-based tag set, an explicit lifetime class, and a map entry. This is intentional friction; it is the cheap end of the cost curve compared with debugging staleness.
-- Page-level sections become more verbose (full tag closure) until propagation semantics are verified. That verbosity is the price of not depending on undocumented behavior.
+- Page-level sections are more verbose (full tag closure). That verbosity is the permanent price of not depending on undocumented behavior; verifying propagation would not remove it, because undocumented behavior stays undependable even when it happens to work.
 - The `updateTag`/`revalidateTag` split means progress indicators may be one navigation stale immediately after a save. This is accepted: the grading loop must not block on derived data (#59).

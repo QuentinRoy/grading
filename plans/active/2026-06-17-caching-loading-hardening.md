@@ -14,7 +14,7 @@ Integration steps, in order:
 
 1. Merge PR #154 (investigation + ADR 0008 + guide + this plan).
 2. Sub-issues are filed under #59 — one per PR below (#155–#167).
-3. Run PR1 (Phase 0). Its propagation result may amend ADR 0008 rule 3 (full-closure vs section-specific registration).
+3. Run PR1 (Phase 0) to baseline the grading loop. The tag-registration rule is already decided — never depend on propagation (ADR 0008 rule 3).
 4. Accept ADR 0008 (amended if needed) before any Phase 1 code lands, because Phase 1 enforces its rules.
 
 ## Tracking
@@ -99,12 +99,12 @@ The investigation carried a *candidate* map; this is the *current* map traced fr
 - **Dead tag** `questions:{q}`: 3 registrations, 0 invalidations. Decide its fate (Phase 1).
 - **Coarse `assessments` over-coupling**: 4 project-wide readers register it; every `saveAssessment` busts it read-your-writes (Finding 19).
 - **Missing `cacheLife`**: 4 readers (Finding 3).
-- **Under-registration vs unverified propagation**: the assessments index registers only `assessments` yet renders question order (`reorderQuestions` busts only `questions`); the two grading sections register narrower than they render. Correct only if tag propagation holds — unknown until Phase 0 (Finding 17).
-- **Project tag never registered by grading sections**: `QuestionHeaderSection` and `SubmissionRubricSection` compose `loadProjectByPublicId` but register no `projects`/`projects:{id}` tag, so a project rename is stale in those sections unless the layout's tag propagates inward (Finding 17).
+- **Under-registration (must register full closure)**: the assessments index registers only `assessments` yet renders question order (`reorderQuestions` busts only `questions`); the two grading sections register narrower than they render. Since we never depend on tag propagation (Decision 1 / ADR 0008 rule 3), these are staleness bugs to fix in PR2 (Finding 17).
+- **Project tag never registered by grading sections**: `QuestionHeaderSection` and `SubmissionRubricSection` compose `loadProjectByPublicId` but register no `projects`/`projects:{id}` tag; since propagation is never relied upon, register the project tag explicitly in PR2 (Finding 17).
 
 ## Decisions to lock (grill before/while executing)
 
-1. **Tag-registration rule** — output of Phase 0. Either every `"use cache"` scope registers the full tag closure (propagation not relied upon — ADR 0008 rule 3 as written), or sections register only section-specific tags and propagation is the documented mechanism. Do not start Phase 1 until this is recorded.
+1. **Tag-registration rule — decided (2026-06-17), not verified.** Never depend on nested tag propagation: it is undocumented and may be inconsistent, so every `"use cache"` scope registers the full tag closure (ADR 0008 rule 3, now unconditional). No propagation fixture; a positive empirical result would be unsafe to rely on. PR2 applies this rule.
 2. **`questions:{questionId}` fate** — make it first-class (add a `questionCacheTag(id)` helper, register it, and invalidate it on save/delete/reorder/import), or delete it and rely on coarse `questions` until finer granularity is measured-necessary. No third "leave the raw string" option.
 3. **Progress freshness policy** (Finding 19) — pick from: stop registering coarse `assessments` on completion reads (granular + `assessments:all` only); switch progress projections to `revalidateTag` (stale-while-revalidate); move progress under Suspense; or client-optimistic progress. Acceptance is behavioral (below), not which option.
 4. **Coarse cross-project tags** stay for now (ADR 0008 rule 8); project-scoped tags are a later all-at-once migration, not part of this plan.
@@ -114,24 +114,25 @@ The investigation carried a *candidate* map; this is the *current* map traced fr
 
 Order preserves the investigation's "suggested implementation PR order". Each PR is independently shippable; correctness precedes performance. Per-step status and sub-issue links live in the Tracking table above.
 
-### Phase 0 — establish ground truth (gates everything)
+### Phase 0 — baseline the grading loop
 
-- **PR1 `cache: verify propagation semantics and instrument grading loop`** (Finding 17).
-  - Throwaway two-level `"use cache"` fixture + `updateTag`/`revalidateTag`, observed under `NEXT_PRIVATE_DEBUG_CACHE=1`, to settle whether tags and lifetimes propagate from inner cached functions to enclosing scopes.
+The tag-registration rule is already decided (Decision 1 / ADR 0008 rule 3: full closure, never depend on propagation), so there is no propagation fixture and Phase 0 no longer gates the correctness phases — it baselines the #59 symptom for the performance phases (PR10–PR12).
+
+- **PR1 `cache: instrument the grading loop and baseline #59`** (Findings 18, 19).
   - Instrument the grade→navigate loop (cache hits/misses, query counts) across submissions on both grading pages; capture a baseline.
   - Confirm or refute Findings 18 and 19 against the measurement.
-  - **Acceptance**: propagation rule recorded (in ADR 0008 or `cacheTags.ts`) and citable by later phases; a baseline grading-loop measurement later phases must not regress. The fixture is diagnostic and is removed, not maintained (investigation Non-goals).
+  - **Acceptance**: a baseline grading-loop measurement later phases must not regress; F18/F19 confirmed or refuted. Any throwaway instrumentation is removed, not maintained.
   - **Depends on**: nothing.
 
 ### Phase 1 — make cache behavior auditable
 
-- **PR2 `cache: centralize tag factories`** (Finding 1). Make `src/db/cacheTags.ts` the only tag-string producer; add named helpers for every accepted scope; replace the ad-hoc strings in `app/.../assessments/page.tsx` and `app/.../questions/[questionId]/page.tsx`. Resolve Decision 2 here. Helpers compose only `cacheTags.ts`. **Acceptance**: no page-level or feature-module template literal builds a cache tag (grep-clean); tests assert helper output; the dead `questions:{q}` string is removed or made first-class per Decision 2. **Depends on**: PR1 (registration rule).
+- **PR2 `cache: centralize tag factories`** (Finding 1). Make `src/db/cacheTags.ts` the only tag-string producer; add named helpers for every accepted scope; replace the ad-hoc strings in `app/.../assessments/page.tsx` and `app/.../questions/[questionId]/page.tsx`. Apply Decision 1 (every scope registers the full tag closure — fix the under-registered sections) and resolve Decision 2 here. Helpers compose only `cacheTags.ts`. **Acceptance**: no page-level or feature-module template literal builds a cache tag (grep-clean); every `"use cache"` scope registers the full closure for what it renders; tests assert helper output; the dead `questions:{q}` string is removed or made first-class per Decision 2. **Depends on**: nothing (the registration rule is decided).
 - **PR3 `cache: document invalidation map`** (Finding 2). Promote the map above to `docs/reference/cache-invalidation-map.md`; wire ADR 0008 rule 7 (reviewers reject a caching change with a missing map entry). Fix the contradicted comment at `loadAssessmentCompletion.ts:17`. **Depends on**: PR2.
 - **PR4 `cache: define per-tag-class freshness policy (updateTag vs revalidateTag)`** (Findings 11, 19). Introduce semantic invalidation helpers (`invalidateAssessmentSave`, `invalidateAssessmentImport`, `invalidateQuestionDefinitionSave`, …) that pick the primitive per tag class; wrappers/import actions call exactly one after commit. Encodes Decision 3. **Depends on**: PR2, PR3.
 
 ### Phase 2 — make cache lifetime deliberate
 
-- **PR5 `cache: clarify core cache lifetimes`** (Finding 3). Add explicit `cacheLife` to the four readers that omit it (or document the omission); apply the policy classes from ADR 0008 rule 4 (`definitions`/`roster`/`values`/`projection`/`directory`). **Depends on**: PR1 (lifetime propagation).
+- **PR5 `cache: clarify core cache lifetimes`** (Finding 3). Add explicit `cacheLife` to the four readers that omit it (or document the omission); apply the policy classes from ADR 0008 rule 4 (`definitions`/`roster`/`values`/`projection`/`directory`). **Depends on**: nothing (cache-life propagation is documented; no fixture needed).
 
 ### Phase 3 — share canonical cached sources
 
@@ -165,5 +166,5 @@ Order preserves the investigation's "suggested implementation PR order". Each PR
 - No monolithic route loaders introduced purely to remove repeated calls.
 - No project-scoped tags before tag helpers are centralized.
 - No rubric-overview refactor before measurement.
-- No maintained end-to-end cache-runtime tests (the Phase 0 fixture is throwaway).
+- No maintained end-to-end cache-runtime tests (any Phase 0 grading-loop instrumentation is throwaway).
 - The navigation-drawer export-options state stays out of scope (Finding 15: not a caching hotspot); touch it only if export options grow.
