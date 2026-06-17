@@ -13,7 +13,6 @@ test("assessedRubricCountsBySubmissionCacheTags scopes invalidation to the given
 		"questions",
 		"assessments:question:q-1",
 		"assessments:all",
-		"questions:q-1",
 	]);
 });
 

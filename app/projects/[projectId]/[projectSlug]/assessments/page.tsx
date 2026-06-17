@@ -9,8 +9,14 @@ import {
 	Stack,
 	Typography,
 } from "@mui/material";
-import { cacheTag } from "next/cache";
 import { loadAssessmentCompletionBySubmission } from "#assessments/loadAssessmentCompletion.ts";
+import {
+	assessmentAggregateCacheTag,
+	cacheTags,
+	projectCacheTag,
+	questionListCacheTag,
+	submissionListCacheTag,
+} from "#db/cacheTags.ts";
 import {
 	projectAssessmentSubmissionPath,
 	projectAssessmentSubmissionQuestionPath,
@@ -40,7 +46,12 @@ async function ProjectAssessmentPageContent({
 	projectId: string;
 }) {
 	"use cache";
-	cacheTag("assessments");
+	cacheTags(
+		projectCacheTag(projectId),
+		questionListCacheTag(),
+		submissionListCacheTag(),
+		assessmentAggregateCacheTag(),
+	);
 
 	const project = await loadProjectByPublicId(projectId, { required: true });
 

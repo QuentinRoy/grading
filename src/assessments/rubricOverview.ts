@@ -1,6 +1,11 @@
 import "server-only";
 import { cacheLife } from "next/cache";
-import { CACHE_TAGS, cacheTags } from "#db/cacheTags.ts";
+import {
+	assessmentAggregateCacheTag,
+	cacheTags,
+	questionListCacheTag,
+	submissionListCacheTag,
+} from "#db/cacheTags.ts";
 import { db } from "#db/kysely.ts";
 import { loadSubmissions } from "#submissions/submissions.ts";
 import { loadQuestionGrid } from "../questions/questions.ts";
@@ -9,9 +14,9 @@ import { buildRubricOverviewData } from "./rubricOverviewBuilder.ts";
 export async function loadRubricOverviewData(projectId: string) {
 	"use cache";
 	cacheTags(
-		CACHE_TAGS.questions,
-		CACHE_TAGS.submissions,
-		CACHE_TAGS.assessments,
+		questionListCacheTag(),
+		submissionListCacheTag(),
+		assessmentAggregateCacheTag(),
 	);
 	cacheLife({ revalidate: 60 });
 
