@@ -1,12 +1,12 @@
 import "server-only";
 import type { Kysely } from "kysely";
-import { CACHE_TAGS, cacheTags } from "#db/cacheTags.ts";
+import { cacheTags, submissionListCacheTag } from "#db/cacheTags.ts";
 import type { DB } from "#db/generated/db.ts";
 import { db as defaultDb } from "#db/kysely.ts";
 import type { Submission } from "./types.ts";
 
 export function submissionsCacheTags(): string[] {
-	return [CACHE_TAGS.submissions];
+	return [submissionListCacheTag()];
 }
 
 function normalizeSearchValue(value: string): string {

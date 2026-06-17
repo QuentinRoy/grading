@@ -2,7 +2,10 @@ import "server-only";
 import type { Kysely } from "kysely";
 import { revalidateTag } from "next/cache";
 import { saveAssessmentInDb } from "#assessments/assessmentMutations.ts";
-import { CACHE_TAGS } from "#db/cacheTags.ts";
+import {
+	assessmentAggregateCacheTag,
+	assessmentImportCacheTag,
+} from "#db/cacheTags.ts";
 import type { DB } from "#db/generated/db.ts";
 import { db as defaultDb } from "#db/kysely.ts";
 import { loadAssessmentImportContextFromDb } from "./assessmentImportContext.ts";
@@ -86,8 +89,8 @@ export async function saveAssessments(
 	// The transaction owner invalidates after commit. Safe only because this saver
 	// always runs from assessmentsImportAction (request scope); revalidateTag throws
 	// outside a request.
-	revalidateTag(CACHE_TAGS.assessments, "max");
-	revalidateTag(CACHE_TAGS.assessmentsAll, "max");
+	revalidateTag(assessmentAggregateCacheTag(), "max");
+	revalidateTag(assessmentImportCacheTag(), "max");
 
 	return result;
 }

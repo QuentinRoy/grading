@@ -1,8 +1,10 @@
 import "server-only";
 import { type Kysely, sql } from "kysely";
 import {
-	assessmentQuestionCacheTag,
-	CACHE_TAGS,
+	assessmentAggregateCacheTag,
+	assessmentImportCacheTag,
+	assessmentProgressForQuestionCacheTag,
+	questionListCacheTag,
 	updateTags,
 } from "#db/cacheTags.ts";
 import type { DB } from "#db/generated/db.ts";
@@ -437,13 +439,13 @@ export async function saveQuestionDefinition(
 		.execute((tx) => saveQuestionDefinitionInDb(tx, { input, projectId }));
 
 	updateTags(
-		CACHE_TAGS.questions,
-		CACHE_TAGS.assessments,
-		CACHE_TAGS.assessmentsAll,
-		assessmentQuestionCacheTag(id),
+		questionListCacheTag(),
+		assessmentAggregateCacheTag(),
+		assessmentImportCacheTag(),
+		assessmentProgressForQuestionCacheTag(id),
 	);
 	if (originalId !== id) {
-		updateTags(assessmentQuestionCacheTag(originalId));
+		updateTags(assessmentProgressForQuestionCacheTag(originalId));
 	}
 
 	return { id };
@@ -480,10 +482,10 @@ export async function deleteQuestionDefinition(
 	});
 
 	updateTags(
-		CACHE_TAGS.questions,
-		CACHE_TAGS.assessments,
-		CACHE_TAGS.assessmentsAll,
-		assessmentQuestionCacheTag(questionId),
+		questionListCacheTag(),
+		assessmentAggregateCacheTag(),
+		assessmentImportCacheTag(),
+		assessmentProgressForQuestionCacheTag(questionId),
 	);
 
 	return result;
@@ -549,5 +551,5 @@ export async function reorderQuestions(
 		.transaction()
 		.execute((tx) => reorderQuestionsInDb(tx, { updates, projectId }));
 
-	updateTags(CACHE_TAGS.questions);
+	updateTags(questionListCacheTag());
 }

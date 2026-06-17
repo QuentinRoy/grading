@@ -1,7 +1,11 @@
 import "server-only";
 import { customAlphabet } from "nanoid";
 import { cacheLife, revalidateTag } from "next/cache";
-import { CACHE_TAGS, cacheTags, projectCacheTag } from "#db/cacheTags.ts";
+import {
+	cacheTags,
+	projectCacheTag,
+	projectListCacheTag,
+} from "#db/cacheTags.ts";
 import type { Project } from "#db/generated/db.ts";
 import { db } from "#db/kysely.ts";
 
@@ -39,7 +43,7 @@ function toProjectSummary(row: ProjectRow): ProjectSummary {
 
 export async function loadProjects(): Promise<ProjectSummary[]> {
 	"use cache";
-	cacheTags(CACHE_TAGS.projects);
+	cacheTags(projectListCacheTag());
 	cacheLife({ revalidate: 60 });
 
 	const rows = await db
@@ -55,7 +59,7 @@ async function loadProjectCached(
 	publicId: string,
 ): Promise<ProjectSummary | undefined> {
 	"use cache";
-	cacheTags(CACHE_TAGS.projects, projectCacheTag(publicId));
+	cacheTags(projectListCacheTag(), projectCacheTag(publicId));
 	cacheLife({ revalidate: 60 });
 
 	const row = await db
@@ -126,7 +130,7 @@ export async function createProject(input: {
 		throw new Error("Unable to create a unique project id.");
 	}
 
-	revalidateTag("projects", "max");
+	revalidateTag(projectListCacheTag(), "max");
 	revalidateTag(projectCacheTag(inserted.id), "max");
 
 	return toProjectSummary(inserted);

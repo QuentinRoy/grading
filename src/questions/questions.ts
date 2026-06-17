@@ -1,7 +1,7 @@
 import "server-only";
 import type { Kysely } from "kysely";
 import { cacheLife } from "next/cache";
-import { CACHE_TAGS, cacheTags } from "#db/cacheTags.ts";
+import { cacheTags, questionListCacheTag } from "#db/cacheTags.ts";
 import type { DB } from "#db/generated/db.ts";
 import { db as defaultDb } from "#db/kysely.ts";
 import type { Rubric, RubricType } from "#rubrics/types.ts";
@@ -257,7 +257,7 @@ export async function loadQuestionRowsFromDb(
 }
 
 export function questionCacheTags(): string[] {
-	return [CACHE_TAGS.questions];
+	return [questionListCacheTag()];
 }
 
 export async function loadQuestionRows(

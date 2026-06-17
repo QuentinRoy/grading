@@ -1,6 +1,11 @@
 import { updateTag } from "next/cache";
 import { beforeEach, expect, test, vi } from "vitest";
-import { CACHE_TAGS } from "#db/cacheTags.ts";
+import {
+	assessmentAggregateCacheTag,
+	assessmentImportCacheTag,
+	assessmentProgressForQuestionCacheTag,
+	questionListCacheTag,
+} from "#db/cacheTags.ts";
 import { buildTestId, createTestDb } from "#test/dbIntegration.ts";
 import { createProject } from "#test/projects.ts";
 import {
@@ -521,10 +526,10 @@ test("saveQuestionDefinition wrapper invalidates question and assessment tags af
 
 	const tags = vi.mocked(updateTag).mock.calls.map((call) => call[0]);
 	expect(tags).toEqual([
-		CACHE_TAGS.questions,
-		CACHE_TAGS.assessments,
-		CACHE_TAGS.assessmentsAll,
-		`assessments:question:${questionId}`,
+		questionListCacheTag(),
+		assessmentAggregateCacheTag(),
+		assessmentImportCacheTag(),
+		assessmentProgressForQuestionCacheTag(questionId),
 	]);
 });
 
@@ -554,10 +559,10 @@ test("deleteQuestionDefinition wrapper invalidates question and assessment tags"
 
 	const tags = vi.mocked(updateTag).mock.calls.map((call) => call[0]);
 	expect(tags).toEqual([
-		CACHE_TAGS.questions,
-		CACHE_TAGS.assessments,
-		CACHE_TAGS.assessmentsAll,
-		`assessments:question:${question.id}`,
+		questionListCacheTag(),
+		assessmentAggregateCacheTag(),
+		assessmentImportCacheTag(),
+		assessmentProgressForQuestionCacheTag(question.id),
 	]);
 });
 
@@ -579,5 +584,5 @@ test("reorderQuestions wrapper invalidates the questions tag after commit", asyn
 	);
 
 	const tags = vi.mocked(updateTag).mock.calls.map((call) => call[0]);
-	expect(tags).toEqual([CACHE_TAGS.questions]);
+	expect(tags).toEqual([questionListCacheTag()]);
 });

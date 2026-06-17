@@ -1,6 +1,11 @@
 import "server-only";
 import type { Kysely } from "kysely";
-import { assessmentCacheTag, CACHE_TAGS, cacheTags } from "#db/cacheTags.ts";
+import {
+	assessmentForSubmissionCacheTag,
+	assessmentForSubmissionQuestionCacheTag,
+	assessmentImportCacheTag,
+	cacheTags,
+} from "#db/cacheTags.ts";
 import type { DB } from "#db/generated/db.ts";
 import { db as defaultDb } from "#db/kysely.ts";
 import { assertNever, nonNull } from "#utils/utils.ts";
@@ -14,11 +19,12 @@ export function loadAssessmentCacheTags({
 	questionId?: string | undefined;
 }) {
 	// The granular (or submission-scoped) tag refreshes on individual saves;
-	// "assessments:all" refreshes on bulk imports, which only bust the coarse tag.
-	return [
-		assessmentCacheTag({ submissionId, questionId }),
-		CACHE_TAGS.assessmentsAll,
-	];
+	// the import tag refreshes on bulk imports.
+	const scopeTag =
+		questionId == null
+			? assessmentForSubmissionCacheTag(submissionId)
+			: assessmentForSubmissionQuestionCacheTag({ submissionId, questionId });
+	return [scopeTag, assessmentImportCacheTag()];
 }
 
 // Returns the typed rubric values for a single submission/question assessment.

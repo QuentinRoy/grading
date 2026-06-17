@@ -2,9 +2,12 @@ import "server-only";
 import type { Kysely } from "kysely";
 import { cacheLife } from "next/cache";
 import {
-	assessmentQuestionCacheTag,
-	CACHE_TAGS,
+	assessmentAggregateCacheTag,
+	assessmentImportCacheTag,
+	assessmentProgressForQuestionCacheTag,
 	cacheTags,
+	questionListCacheTag,
+	submissionListCacheTag,
 } from "#db/cacheTags.ts";
 import type { DB } from "#db/generated/db.ts";
 import { db as defaultDb } from "#db/kysely.ts";
@@ -15,27 +18,35 @@ import {
 } from "./assessmentCompletion.ts";
 import type { AssessmentCompletionSummary } from "./types.ts";
 
-// A question-scoped tag so that saving a rubric for question Q only invalidates
-// the completion cache for Q, not for every other question. "assessments:all" is
-// busted only by bulk imports, not by individual saves.
+// Question-scoped progress: saving a rubric for question Q busts
+// `assessments:question:Q` (and the coarse aggregate), so progress for Q
+// refreshes without busting other questions; the import tag covers bulk imports,
+// and the list tags cover roster and definition changes.
 export function assessedRubricCountsBySubmissionCacheTags(
 	questionId: string,
 ): string[] {
 	return [
-		CACHE_TAGS.submissions,
-		CACHE_TAGS.questions,
-		assessmentQuestionCacheTag(questionId),
-		CACHE_TAGS.assessmentsAll,
-		`questions:${questionId}`,
+		submissionListCacheTag(),
+		questionListCacheTag(),
+		assessmentProgressForQuestionCacheTag(questionId),
+		assessmentImportCacheTag(),
 	];
 }
 
 export function assessmentCompletionBySubmissionCacheTags(): string[] {
-	return [CACHE_TAGS.submissions, CACHE_TAGS.questions, CACHE_TAGS.assessments];
+	return [
+		submissionListCacheTag(),
+		questionListCacheTag(),
+		assessmentAggregateCacheTag(),
+	];
 }
 
 export function assessmentCompletionSummaryCacheTags(): string[] {
-	return [CACHE_TAGS.submissions, CACHE_TAGS.questions, CACHE_TAGS.assessments];
+	return [
+		submissionListCacheTag(),
+		questionListCacheTag(),
+		assessmentAggregateCacheTag(),
+	];
 }
 
 // `db` may be the global client or a caller-supplied transaction.

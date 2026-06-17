@@ -23,8 +23,8 @@ Umbrella: #59. Each PR below is a native GitHub sub-issue of #59 (#155–#167), 
 
 | Step | Issue | Status |
 | --- | --- | --- |
-| PR1 | #155 | Not started |
-| PR2 | #156 | Not started |
+| PR1 | #155 | Deferred → before Phase 5 |
+| PR2 | #156 | Done — #168 |
 | PR3 | #157 | Not started |
 | PR4 | #158 | Not started |
 | PR5 | #159 | Not started |
@@ -114,15 +114,16 @@ The investigation carried a *candidate* map; this is the *current* map traced fr
 
 Order preserves the investigation's "suggested implementation PR order". Each PR is independently shippable; correctness precedes performance. Per-step status and sub-issue links live in the Tracking table above.
 
-### Phase 0 — baseline the grading loop
+### Phase 0 — baseline the grading loop (deferred: run before Phase 5)
 
-The tag-registration rule is already decided (Decision 1 / ADR 0008 rule 3: full closure, never depend on propagation), so there is no propagation fixture and Phase 0 no longer gates the correctness phases — it baselines the #59 symptom for the performance phases (PR10–PR12).
+The tag-registration rule is already decided (Decision 1 / ADR 0008 rule 3: full closure, never depend on propagation), so there is no propagation fixture and Phase 0 no longer gates the correctness phases. PR1 is therefore **deferred and run immediately before Phase 5 (PR10/PR11)**, not at the front: the baseline only feeds the performance phases, and measuring just before them keeps it fresh — a baseline taken ahead of PR2–PR9 would go stale. It keeps the "Phase 0" label only so phase numbering stays stable.
 
 - **PR1 `cache: instrument the grading loop and baseline #59`** (Findings 18, 19).
   - Instrument the grade→navigate loop (cache hits/misses, query counts) across submissions on both grading pages; capture a baseline.
   - Confirm or refute Findings 18 and 19 against the measurement.
   - **Acceptance**: a baseline grading-loop measurement later phases must not regress; F18/F19 confirmed or refuted. Any throwaway instrumentation is removed, not maintained.
-  - **Depends on**: nothing.
+  - **Depends on**: nothing technically.
+  - **Sequence**: run immediately before PR10/PR11 (Phase 5), so the baseline reflects the state the performance work starts from.
 
 ### Phase 1 — make cache behavior auditable
 
@@ -146,7 +147,7 @@ The tag-registration rule is already decided (Decision 1 / ADR 0008 rule 3: full
 
 ### Phase 5 — improve perceived loading for grading navigation
 
-- **PR10 `assessments: decouple progress freshness from interactive saves`** (Finding 19). Apply Decision 3. **Acceptance (behavioral)**: after saving a rubric and clicking "next submission," navigation does not block on recomputing project-wide completion. **Depends on**: PR4, PR8.
+- **PR10 `assessments: decouple progress freshness from interactive saves`** (Finding 19). Apply Decision 3. **Acceptance (behavioral)**: after saving a rubric and clicking "next submission," navigation does not block on recomputing project-wide completion. **Depends on**: PR1 (baseline), PR4, PR8.
 - **PR11 `ui: restructure submission overview into cached sections with prefetch`** (Finding 18). Extract cacheable parts of the overview body into `"use cache"` sections mirroring the question page; give submission-to-submission navigation explicit prefetch. **Depends on**: PR1, PR6, PR8.
 - **PR12 `ui: improve grading loading boundaries`** (Finding 14). Add targeted Suspense/skeletons that preserve question/submission context, only where data boundaries justify it. **Acceptance**: the grading user keeps question/submission context during navigation; loading UI matches the data boundaries chosen in earlier phases; no generic skeleton hides the whole workflow. **Depends on**: PR11.
 

@@ -1,36 +1,62 @@
 import { cacheTag, updateTag } from "next/cache";
 
-export const CACHE_TAGS = {
-	projects: "projects",
-	questions: "questions",
-	submissions: "submissions",
-	assessments: "assessments",
-	assessmentsAll: "assessments:all",
-} as const;
+// This module is the only place that builds cache-tag strings (ADR 0008 rule 1).
+// Every accepted scope has a named helper; the vocabulary is closed, so adding a
+// tag means adding a helper here, a mutation-to-tag map entry, and at least one
+// invalidating mutation (ADR 0008 rule 2). Never depend on nested tag
+// propagation: a `"use cache"` scope registers the full closure of these tags for
+// everything it renders (ADR 0008 rule 3).
 
-export function projectCacheTag(projectPublicId: string): string {
-	return `${CACHE_TAGS.projects}:${projectPublicId}`;
+// Coarse list tags — one per entity collection.
+export function projectListCacheTag(): string {
+	return "projects";
 }
 
-// Tags nest from coarse to granular so a write can bust the exact scope it
-// touched: every assessment, one submission, or one submission/question pair.
-// Omitting submissionId is the only way to get the coarse tag, so questionId
-// cannot be passed without it.
-type AssessmentCacheScope =
-	| { submissionId: string; questionId?: string | undefined }
-	| { submissionId?: undefined; questionId?: undefined };
-
-export function assessmentCacheTag(scope: AssessmentCacheScope = {}): string {
-	if (scope.submissionId == null) {
-		return CACHE_TAGS.assessments;
-	}
-	if (scope.questionId == null) {
-		return `${CACHE_TAGS.assessments}:${scope.submissionId}`;
-	}
-	return `${CACHE_TAGS.assessments}:${scope.submissionId}:${scope.questionId}`;
+export function questionListCacheTag(): string {
+	return "questions";
 }
 
-export function assessmentQuestionCacheTag(questionId: string): string {
+export function submissionListCacheTag(): string {
+	return "submissions";
+}
+
+// A single project's data, keyed by its public Project ID.
+export function projectCacheTag(projectId: string): string {
+	return `projects:${projectId}`;
+}
+
+// The coarse assessment aggregate: every assessment in scope. Individual saves
+// bust this, and project-wide assessment reads register it.
+export function assessmentAggregateCacheTag(): string {
+	return "assessments";
+}
+
+// The bulk-import aggregate. Imports bust this alongside the coarse aggregate;
+// individual saves do not.
+export function assessmentImportCacheTag(): string {
+	return "assessments:all";
+}
+
+// One submission's assessments across all questions.
+export function assessmentForSubmissionCacheTag(submissionId: string): string {
+	return `assessments:${submissionId}`;
+}
+
+// One exact submission/question assessment pair.
+export function assessmentForSubmissionQuestionCacheTag({
+	submissionId,
+	questionId,
+}: {
+	submissionId: string;
+	questionId: string;
+}): string {
+	return `assessments:${submissionId}:${questionId}`;
+}
+
+// One question's assessment progress across submissions.
+export function assessmentProgressForQuestionCacheTag(
+	questionId: string,
+): string {
 	return `assessments:question:${questionId}`;
 }
 

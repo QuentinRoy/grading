@@ -1,9 +1,10 @@
 import "server-only";
 import type { Kysely } from "kysely";
 import {
-	assessmentCacheTag,
-	assessmentQuestionCacheTag,
-	CACHE_TAGS,
+	assessmentAggregateCacheTag,
+	assessmentForSubmissionCacheTag,
+	assessmentForSubmissionQuestionCacheTag,
+	assessmentProgressForQuestionCacheTag,
 	updateTags,
 } from "#db/cacheTags.ts";
 import type { DB } from "#db/generated/db.ts";
@@ -295,10 +296,10 @@ export async function saveAssessment(
 	const { submissionId, questionId } = params;
 	if (result.success) {
 		updateTags(
-			assessmentCacheTag({ submissionId, questionId }),
-			assessmentCacheTag({ submissionId }),
-			assessmentCacheTag(),
-			assessmentQuestionCacheTag(questionId),
+			assessmentForSubmissionQuestionCacheTag({ submissionId, questionId }),
+			assessmentForSubmissionCacheTag(submissionId),
+			assessmentAggregateCacheTag(),
+			assessmentProgressForQuestionCacheTag(questionId),
 		);
 	}
 

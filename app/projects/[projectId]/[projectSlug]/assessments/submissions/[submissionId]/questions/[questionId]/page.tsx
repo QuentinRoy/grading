@@ -2,11 +2,19 @@ import Box from "@mui/material/Box";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
-import { cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 import { loadQuestionAssessment } from "#assessments/assessments.ts";
 import { loadAssessedRubricCountsBySubmission } from "#assessments/loadAssessmentCompletion.ts";
 import SubmissionAssessmentClient from "#assessments/SubmissionAssessmentClient.tsx";
+import {
+	assessmentForSubmissionQuestionCacheTag,
+	assessmentImportCacheTag,
+	assessmentProgressForQuestionCacheTag,
+	cacheTags,
+	projectCacheTag,
+	questionListCacheTag,
+	submissionListCacheTag,
+} from "#db/cacheTags.ts";
 import { projectAssessmentsPath } from "#projects/projectPaths.ts";
 import { loadProjectByPublicId } from "#projects/projects.ts";
 import { loadQuestion } from "#questions/questions.ts";
@@ -55,7 +63,7 @@ async function QuestionHeaderSection({
 	questionId: string;
 }) {
 	"use cache";
-	cacheTag("questions", `questions:${questionId}`);
+	cacheTags(projectCacheTag(projectId), questionListCacheTag());
 
 	const project = await loadProjectByPublicId(projectId, { required: true });
 
@@ -100,10 +108,14 @@ async function SubmissionRubricSection({
 	projectId: string;
 }) {
 	"use cache";
-	cacheTag(`assessments:${submissionId}:${questionId}`);
-	cacheTag(`assessments:question:${questionId}`);
-	cacheTag(`questions:${questionId}`);
-	cacheTag("submissions");
+	cacheTags(
+		projectCacheTag(projectId),
+		questionListCacheTag(),
+		submissionListCacheTag(),
+		assessmentForSubmissionQuestionCacheTag({ submissionId, questionId }),
+		assessmentProgressForQuestionCacheTag(questionId),
+		assessmentImportCacheTag(),
+	);
 
 	const project = await loadProjectByPublicId(projectId, { required: true });
 
