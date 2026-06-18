@@ -260,35 +260,45 @@ export function questionCacheTags(): string[] {
 	return [questionListCacheTag()];
 }
 
-export async function loadQuestionRows(
-	{ projectId }: { projectId: string },
-	{ db = defaultDb }: { db?: Kysely<DB> } = {},
-): Promise<QuestionRow[]> {
-	"use cache";
-	cacheTags(...questionCacheTags());
-	cacheLife("definitions");
-
-	return loadQuestionRowsFromDb(db, { projectId });
-}
-
-export async function loadQuestionGrid(
-	{ projectId }: { projectId: string },
-	{ db = defaultDb }: { db?: Kysely<DB> } = {},
-): Promise<Grid> {
-	"use cache";
-	cacheTags(...questionCacheTags());
-	cacheLife("definitions");
-
-	// Compose the primitive, not the cached `loadQuestionRows`, so the seam never
-	// passes a handle into a `"use cache"` function (see ADR 0007 rule 6).
-	const rows = await loadQuestionRowsFromDb(db, { projectId });
-
+export function toQuestionGrid(rows: QuestionRow[]): Grid {
 	return Object.fromEntries(
 		rows.map((row) => [
 			row.id,
 			{ label: row.label ?? undefined, rubrics: row.rubrics.map(toRubric) },
 		]),
 	);
+}
+
+// Canonical cached source for project question rows. No `db` param so the cache
+// key contains only domain arguments (ADR 0008 rule 5).
+async function loadQuestionRowsCached({
+	projectId,
+}: {
+	projectId: string;
+}): Promise<QuestionRow[]> {
+	"use cache";
+	cacheTags(...questionCacheTags());
+	cacheLife("definitions");
+	return loadQuestionRowsFromDb(defaultDb, { projectId });
+}
+
+// Dispatches outside the cached function so the cached inner scope never
+// declares a `db` handle (ADR 0007 rules 13–14). Passing `{ db }` bypasses
+// the cache; callers that need a specific handle (tests, transactions) use this
+// seam.
+export async function loadQuestionRows(
+	{ projectId }: { projectId: string },
+	{ db = defaultDb }: { db?: Kysely<DB> } = {},
+): Promise<QuestionRow[]> {
+	if (db !== defaultDb) return loadQuestionRowsFromDb(db, { projectId });
+	return loadQuestionRowsCached({ projectId });
+}
+
+export async function loadQuestionGrid(
+	{ projectId }: { projectId: string },
+	{ db = defaultDb }: { db?: Kysely<DB> } = {},
+): Promise<Grid> {
+	return toQuestionGrid(await loadQuestionRows({ projectId }, { db }));
 }
 
 export async function loadQuestion({
@@ -298,12 +308,12 @@ export async function loadQuestion({
 	projectId: string;
 	questionId: string;
 }): Promise<Question | undefined> {
-	const rows = await loadQuestionRows({ projectId });
+	// Intentionally loads the whole project question set: warms the shared row cache
+	// for grading navigation, which typically visits multiple questions. Add a
+	// per-question primitive only if measurement shows the broad load is costly
+	// (caching plan Decision 5).
+	const rows = await loadQuestionRowsCached({ projectId });
 	const row = rows.find((item) => item.id === questionId);
-
-	if (row == null) {
-		return undefined;
-	}
-
+	if (row == null) return undefined;
 	return { label: row.label ?? undefined, rubrics: row.rubrics.map(toRubric) };
 }
