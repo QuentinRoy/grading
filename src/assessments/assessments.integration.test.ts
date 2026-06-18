@@ -14,7 +14,11 @@ import {
 
 vi.mock("server-only", () => ({}));
 
-vi.mock("next/cache", () => ({ cacheTag: vi.fn(), cacheLife: vi.fn(), updateTag: vi.fn() }));
+vi.mock("next/cache", () => ({
+	cacheTag: vi.fn(),
+	cacheLife: vi.fn(),
+	updateTag: vi.fn(),
+}));
 
 test("loadQuestionAssessmentFromDb returns an empty list when no assessment exists", async () => {
 	await using db = await createTestDb();
