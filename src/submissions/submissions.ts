@@ -1,5 +1,6 @@
 import "server-only";
 import type { Kysely } from "kysely";
+import { cacheLife } from "next/cache";
 import { cacheTags, submissionListCacheTag } from "#db/cacheTags.ts";
 import type { DB } from "#db/generated/db.ts";
 import { db as defaultDb } from "#db/kysely.ts";
@@ -100,6 +101,7 @@ export async function loadSubmissions(
 ): Promise<Submission[]> {
 	"use cache";
 	cacheTags(...submissionsCacheTags());
+	cacheLife("roster");
 
 	const { submissions, teamMembersBySubmissionId } =
 		await loadSubmissionsFromDb(db, { projectId });

@@ -1,5 +1,6 @@
 import "server-only";
 import type { Kysely } from "kysely";
+import { cacheLife } from "next/cache";
 import {
 	assessmentForSubmissionCacheTag,
 	assessmentForSubmissionQuestionCacheTag,
@@ -38,6 +39,7 @@ export async function loadQuestionAssessment(
 ): Promise<AssessmentRubricValue[]> {
 	"use cache";
 	cacheTags(...loadAssessmentCacheTags({ submissionId, questionId }));
+	cacheLife("values");
 	return loadQuestionAssessmentFromDb(db, {
 		submissionId,
 		projectId,
@@ -54,6 +56,7 @@ export async function loadSubmissionAssessments(
 ): Promise<Record<string, AssessmentRubricValue[]>> {
 	"use cache";
 	cacheTags(...loadAssessmentCacheTags({ submissionId }));
+	cacheLife("values");
 	return loadSubmissionAssessmentsFromDb(db, { submissionId, projectId });
 }
 

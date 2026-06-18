@@ -135,7 +135,7 @@ export async function loadAssessmentCompletionBySubmission(
 ): Promise<Record<string, CompletionMetric>> {
 	"use cache";
 	cacheTags(...assessmentCompletionBySubmissionCacheTags());
-	cacheLife({ revalidate: 60 });
+	cacheLife("projection");
 
 	return loadAssessmentCompletionBySubmissionFromDb(db, { projectId });
 }
@@ -208,7 +208,7 @@ export async function loadAssessedRubricCountsBySubmission(
 ): Promise<Record<string, CompletionMetric>> {
 	"use cache";
 	cacheTags(...assessedRubricCountsBySubmissionCacheTags(questionId));
-	cacheLife({ revalidate: 60 });
+	cacheLife("projection");
 
 	return loadAssessedRubricCountsBySubmissionFromDb(db, {
 		questionId,
@@ -270,7 +270,7 @@ export async function loadAssessmentCompletionSummary(
 ): Promise<AssessmentCompletionSummary> {
 	"use cache";
 	cacheTags(...assessmentCompletionSummaryCacheTags());
-	cacheLife({ revalidate: 60 });
+	cacheLife("projection");
 
 	return loadAssessmentCompletionSummaryFromDb(db, { projectId });
 }
