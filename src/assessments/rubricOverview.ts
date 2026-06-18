@@ -18,7 +18,7 @@ export async function loadRubricOverviewData(projectId: string) {
 		submissionListCacheTag(),
 		assessmentAggregateCacheTag(),
 	);
-	cacheLife({ revalidate: 60 });
+	cacheLife("projection");
 
 	const assessmentQuery = db
 		.selectFrom("rubricAssessment")

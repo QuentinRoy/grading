@@ -266,7 +266,7 @@ export async function loadQuestionRows(
 ): Promise<QuestionRow[]> {
 	"use cache";
 	cacheTags(...questionCacheTags());
-	cacheLife({ revalidate: 60 * 60 });
+	cacheLife("definitions");
 
 	return loadQuestionRowsFromDb(db, { projectId });
 }
@@ -277,6 +277,7 @@ export async function loadQuestionGrid(
 ): Promise<Grid> {
 	"use cache";
 	cacheTags(...questionCacheTags());
+	cacheLife("definitions");
 
 	// Compose the primitive, not the cached `loadQuestionRows`, so the seam never
 	// passes a handle into a `"use cache"` function (see ADR 0007 rule 6).

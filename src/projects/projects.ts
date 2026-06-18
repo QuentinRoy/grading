@@ -45,7 +45,7 @@ function toProjectSummary(row: ProjectRow): ProjectSummary {
 export async function loadProjects(): Promise<ProjectSummary[]> {
 	"use cache";
 	cacheTags(projectListCacheTag());
-	cacheLife({ revalidate: 60 });
+	cacheLife("directory");
 
 	const rows = await db
 		.selectFrom("project")
@@ -61,7 +61,7 @@ async function loadProjectCached(
 ): Promise<ProjectSummary | undefined> {
 	"use cache";
 	cacheTags(projectListCacheTag(), projectCacheTag(publicId));
-	cacheLife({ revalidate: 60 });
+	cacheLife("directory");
 
 	const row = await db
 		.selectFrom("project")
