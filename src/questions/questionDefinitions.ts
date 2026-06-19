@@ -1,9 +1,17 @@
 import "server-only";
 import type { Kysely } from "kysely";
+import { cacheLife } from "next/cache";
+import {
+	assessmentAggregateCacheTag,
+	cacheTags,
+	questionListCacheTag,
+} from "#db/cacheTags.ts";
 import type { DB } from "#db/generated/db.ts";
 import { db as defaultDb } from "#db/kysely.ts";
 import {
+	loadQuestionRows,
 	loadQuestionRowsFromDb,
+	type QuestionRow,
 	resolveProjectRowId,
 	toRubric,
 } from "./questions.ts";
@@ -48,29 +56,31 @@ export type QuestionDefinitionInput = {
 };
 
 // `db` may be the global client or a caller-supplied transaction.
-export async function loadQuestionDefinitionsFromDb(
+export async function loadAssessmentCountsByQuestionFromDb(
 	db: Kysely<DB>,
 	{ projectId }: { projectId: string },
-): Promise<QuestionDefinition[]> {
-	const [rows, counts] = await Promise.all([
-		loadQuestionRowsFromDb(db, { projectId }),
-		db
-			.selectFrom("assessment")
-			.innerJoin("question", "question.rowId", "assessment.questionId")
-			.innerJoin("project", "project.rowId", "assessment.projectId")
-			.where("project.id", "=", projectId)
-			.select(({ fn }) => [
-				"question.id as questionId",
-				fn.count<number>("assessment.id").as("assessmentCount"),
-			])
-			.groupBy("question.id")
-			.execute(),
-	]);
+): Promise<Map<string, number>> {
+	const counts = await db
+		.selectFrom("assessment")
+		.innerJoin("question", "question.rowId", "assessment.questionId")
+		.innerJoin("project", "project.rowId", "assessment.projectId")
+		.where("project.id", "=", projectId)
+		.select(({ fn }) => [
+			"question.id as questionId",
+			fn.count<number>("assessment.id").as("assessmentCount"),
+		])
+		.groupBy("question.id")
+		.execute();
 
-	const assessmentCountByQuestionId = new Map(
+	return new Map(
 		counts.map((count) => [count.questionId, Number(count.assessmentCount)]),
 	);
+}
 
+function toQuestionDefinitions(
+	rows: QuestionRow[],
+	assessmentCountByQuestionId: Map<string, number>,
+): QuestionDefinition[] {
 	return rows.map((row, position) => ({
 		id: row.id,
 		position,
@@ -82,11 +92,48 @@ export async function loadQuestionDefinitionsFromDb(
 	}));
 }
 
+// `db` may be the global client or a caller-supplied transaction.
+export async function loadQuestionDefinitionsFromDb(
+	db: Kysely<DB>,
+	{ projectId }: { projectId: string },
+): Promise<QuestionDefinition[]> {
+	const [rows, assessmentCountByQuestionId] = await Promise.all([
+		loadQuestionRowsFromDb(db, { projectId }),
+		loadAssessmentCountsByQuestionFromDb(db, { projectId }),
+	]);
+
+	return toQuestionDefinitions(rows, assessmentCountByQuestionId);
+}
+
+export function questionDefinitionCacheTags(): string[] {
+	return [questionListCacheTag(), assessmentAggregateCacheTag()];
+}
+
+// Canonical cached source for the questions-management read (Finding 4). Shares
+// `loadQuestionRows`' cache entry for row data (PR6); the assessment-count query
+// is composed inside this scope. Counts derive from the coarse `assessments`
+// aggregate, busted by every save, so this scope uses the `projection` lifetime
+// class rather than `definitions` even though most of what it renders is
+// question/rubric structure (ADR 0008 rule 4).
+//
+// `options` is forwarded to `loadQuestionRows` unchanged (ADR 0007 rule 14): never
+// resolve a default here before forwarding, so an omitted `db` stays `undefined`
+// and the nested call shares `loadQuestionRows`' own no-argument cache entry.
 export async function loadQuestionDefinitions(
 	{ projectId }: { projectId: string },
-	{ db = defaultDb }: { db?: Kysely<DB> } = {},
+	options?: { db?: Kysely<DB> },
 ): Promise<QuestionDefinition[]> {
-	return loadQuestionDefinitionsFromDb(db, { projectId });
+	"use cache";
+	cacheTags(...questionDefinitionCacheTags());
+	cacheLife("projection");
+	const [rows, assessmentCountByQuestionId] = await Promise.all([
+		loadQuestionRows({ projectId }, options),
+		loadAssessmentCountsByQuestionFromDb(options?.db ?? defaultDb, {
+			projectId,
+		}),
+	]);
+
+	return toQuestionDefinitions(rows, assessmentCountByQuestionId);
 }
 
 // `db` may be the global client or a caller-supplied transaction.
