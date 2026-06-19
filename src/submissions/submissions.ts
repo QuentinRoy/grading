@@ -95,6 +95,8 @@ export async function loadSubmissionsFromDb(
 	return { submissions, teamMembersBySubmissionId };
 }
 
+// `db` is a test seam only (ADR 0007 rules 13–14): never pass a handle at runtime —
+// Kysely instances are not serializable and Next.js throws on the cache key.
 export async function loadSubmissions(
 	{ projectId }: { projectId?: string } = {},
 	{ db = defaultDb }: { db?: Kysely<DB> } = {},

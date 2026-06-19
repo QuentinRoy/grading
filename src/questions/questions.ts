@@ -260,29 +260,7 @@ export function questionCacheTags(): string[] {
 	return [questionListCacheTag()];
 }
 
-export async function loadQuestionRows(
-	{ projectId }: { projectId: string },
-	{ db = defaultDb }: { db?: Kysely<DB> } = {},
-): Promise<QuestionRow[]> {
-	"use cache";
-	cacheTags(...questionCacheTags());
-	cacheLife("definitions");
-
-	return loadQuestionRowsFromDb(db, { projectId });
-}
-
-export async function loadQuestionGrid(
-	{ projectId }: { projectId: string },
-	{ db = defaultDb }: { db?: Kysely<DB> } = {},
-): Promise<Grid> {
-	"use cache";
-	cacheTags(...questionCacheTags());
-	cacheLife("definitions");
-
-	// Compose the primitive, not the cached `loadQuestionRows`, so the seam never
-	// passes a handle into a `"use cache"` function (see ADR 0007 rule 6).
-	const rows = await loadQuestionRowsFromDb(db, { projectId });
-
+export function toQuestionGrid(rows: QuestionRow[]): Grid {
 	return Object.fromEntries(
 		rows.map((row) => [
 			row.id,
@@ -291,19 +269,48 @@ export async function loadQuestionGrid(
 	);
 }
 
-export async function loadQuestion({
-	projectId,
-	questionId,
-}: {
-	projectId: string;
-	questionId: string;
-}): Promise<Question | undefined> {
-	const rows = await loadQuestionRows({ projectId });
+// Canonical cached source for project-wide question rows. `loadQuestionGrid` and
+// `loadQuestion` derive from this, so all three share one cache entry per project.
+//
+// The `db` option is a test seam only (ADR 0007 rules 13–14): runtime callers must
+// omit it. A Kysely handle is a non-serializable class instance, and `"use cache"`
+// serializes arguments to form the cache key, so passing one throws
+// `Cannot serialize class instance` at runtime. Tests mock `next/cache`, which makes
+// the directive inert so the handle reaches the primitive.
+export async function loadQuestionRows(
+	{ projectId }: { projectId: string },
+	{ db = defaultDb }: { db?: Kysely<DB> } = {},
+): Promise<QuestionRow[]> {
+	"use cache";
+	cacheTags(...questionCacheTags());
+	cacheLife("definitions");
+	return loadQuestionRowsFromDb(db, { projectId });
+}
+
+// Plain deriver: shares `loadQuestionRows`' cache entry at runtime. Forwards its
+// own `db` option unchanged (no destructured default) so callers can use the same
+// test seam without knowing this is a deriver. Omitted, the forwarded value stays
+// `undefined`, so the call collapses to the exact shape `loadQuestionRows` gets
+// when called directly and the cache entry is shared, not split. Resolving a
+// default here before forwarding would pass a real handle into the cached
+// function even on the no-args runtime path — never do that (ADR 0007 rule 14).
+export async function loadQuestionGrid(
+	{ projectId }: { projectId: string },
+	options?: { db?: Kysely<DB> },
+): Promise<Grid> {
+	return toQuestionGrid(await loadQuestionRows({ projectId }, options));
+}
+
+export async function loadQuestion(
+	{ projectId, questionId }: { projectId: string; questionId: string },
+	options?: { db?: Kysely<DB> },
+): Promise<Question | undefined> {
+	// Intentionally loads the whole project question set: warms the shared row cache
+	// for grading navigation, which typically visits multiple questions. Add a
+	// per-question primitive only if measurement shows the broad load is costly
+	// (caching plan Decision 5).
+	const rows = await loadQuestionRows({ projectId }, options);
 	const row = rows.find((item) => item.id === questionId);
-
-	if (row == null) {
-		return undefined;
-	}
-
+	if (row == null) return undefined;
 	return { label: row.label ?? undefined, rubrics: row.rubrics.map(toRubric) };
 }

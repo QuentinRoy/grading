@@ -7,6 +7,7 @@ import {
 	createOrdinalQuestionFixture,
 } from "#test/questions.ts";
 import {
+	loadQuestion,
 	loadQuestionGrid,
 	loadQuestionRows,
 	loadQuestionRowsFromDb,
@@ -61,15 +62,33 @@ test("loadQuestionRows wrapper delegates to its primitive and declares its cache
 	expect(declaredTags).toEqual(questionCacheTags());
 });
 
-test("loadQuestionGrid wrapper returns the rubric grid through the injected handle", async () => {
+test("loadQuestionGrid forwards its db option to the shared loadQuestionRows source", async () => {
 	await using db = await createTestDb();
-	await using project = await createProject(db, "Grid Wrapper Project");
+	await using project = await createProject(db, "Grid Forwarding Project");
 	const fixture = await createAssessedBooleanQuestionFixture(db, project.rowId);
 
 	const grid = await loadQuestionGrid({ projectId: project.id }, { db });
 
 	expect(Object.keys(grid)).toEqual([fixture.questionId]);
 	expect(grid[fixture.questionId]?.rubrics.map((rubric) => rubric.id)).toEqual([
+		fixture.rubricId,
+	]);
+
+	const declaredTags = vi.mocked(cacheTag).mock.calls.map((call) => call[0]);
+	expect(declaredTags).toEqual(questionCacheTags());
+});
+
+test("loadQuestion forwards its db option to the shared loadQuestionRows source", async () => {
+	await using db = await createTestDb();
+	await using project = await createProject(db, "Question Forwarding Project");
+	const fixture = await createAssessedBooleanQuestionFixture(db, project.rowId);
+
+	const question = await loadQuestion(
+		{ projectId: project.id, questionId: fixture.questionId },
+		{ db },
+	);
+
+	expect(question?.rubrics.map((rubric) => rubric.id)).toEqual([
 		fixture.rubricId,
 	]);
 });

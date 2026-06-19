@@ -1,8 +1,51 @@
 import { describe, expect, test } from "vitest";
-import { questionCacheTags, toRubric } from "./questions.ts";
+import type { QuestionRow } from "./questions.ts";
+import { questionCacheTags, toQuestionGrid, toRubric } from "./questions.ts";
 
 test("questionCacheTags declares the questions tag", () => {
 	expect(questionCacheTags()).toEqual(["questions"]);
+});
+
+describe("toQuestionGrid", () => {
+	const booleanRow: QuestionRow = {
+		id: "q1",
+		label: "Question 1",
+		rubrics: [
+			{
+				id: "r1",
+				type: "boolean",
+				description: null,
+				label: "Correct",
+				booleanRubric: { marks: 2, falseMarks: 0 },
+				ordinalRubric: null,
+				numericalRubric: null,
+			},
+		],
+	};
+
+	test("returns empty object for no rows", () => {
+		expect(toQuestionGrid([])).toEqual({});
+	});
+
+	test("uses question id as key", () => {
+		const grid = toQuestionGrid([booleanRow]);
+		expect(Object.keys(grid)).toEqual(["q1"]);
+	});
+
+	test("converts null label to undefined", () => {
+		const row: QuestionRow = { id: "q2", label: null, rubrics: [] };
+		expect(toQuestionGrid([row])["q2"]?.label).toBeUndefined();
+	});
+
+	test("preserves non-null label", () => {
+		expect(toQuestionGrid([booleanRow])["q1"]?.label).toBe("Question 1");
+	});
+
+	test("converts rubric rows via toRubric", () => {
+		const grid = toQuestionGrid([booleanRow]);
+		expect(grid["q1"]?.rubrics).toHaveLength(1);
+		expect(grid["q1"]?.rubrics[0]?.id).toBe("r1");
+	});
 });
 
 describe("toRubric", () => {

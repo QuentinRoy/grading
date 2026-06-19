@@ -28,7 +28,7 @@ Umbrella: #59. Each PR below is a native GitHub sub-issue of #59 (#155–#167), 
 | PR3 | #157 | Done — #170 |
 | PR4 | #158 | Done — #171 |
 | PR5 | #159 | Done — #174 |
-| PR6 | #160 | Not started |
+| PR6 | #160 | Done — #176 |
 | PR7 | #161 | Not started |
 | PR8 | #162 | Not started |
 | PR9 | #163 | Not started |
@@ -137,7 +137,7 @@ The tag-registration rule is already decided (Decision 1 / ADR 0008 rule 3: full
 
 ### Phase 3 — share canonical cached sources
 
-- **PR6 `questions: share cached question rows (and remove db handles from cached signatures)`** (Findings 5, 6). One canonical cached question-row source; derive `loadQuestionRows`/`loadQuestionGrid`/`loadQuestion` from it via `db === defaultDb` dispatch outside the cached function, so no cached wrapper declares a `db` param (ADR 0007 rules 13–14). Keep `...FromDb` for tests/transactions. Lock and record Decision 5 (the `loadQuestion` whole-project-set tradeoff) at the call site. **Acceptance**: runtime reads needing the same project-wide question rows share one cache entry; no cached wrapper's signature can express a `db` handle; the `loadQuestion` breadth choice is documented. **Depends on**: PR2.
+- **PR6 `questions: share cached question rows`** (Findings 5, 6). `loadQuestionRows` is the one canonical `"use cache"` source for project-wide question rows; `loadQuestionGrid` and `loadQuestion` become plain (non-cached) derivers that call it with domain arguments only, so all three share a single cache entry per project. `loadQuestionRows` keeps the mock-based `{ db = defaultDb }` test seam (ADR 0007 rule 13). The derivers forward their own optional `db` option unchanged to `loadQuestionRows` — never resolving their own default first, so an omitted option stays `undefined` and the call still shares `loadQuestionRows`' cache entry — which keeps both derivers independently integration-testable through the same seam. No dispatch layer: a stray runtime handle, forwarded or direct, reaches the cached wrapper and Next throws loudly rather than silently bypassing the cache. Clarify ADR 0007 rules 13–14 and ADR 0008 rule 5 (seam is test-only; the forwarding pattern is the sanctioned way for a deriver to share a seam; runtime misuse throws; reject dispatch). Tighten the seam comments on `loadSubmissions`, `loadQuestionAssessment`, and `loadSubmissionAssessments`. Lock Decision 5 (whole-project-set load tradeoff) at the call site. **Acceptance**: runtime reads needing the same project-wide question rows share one cache entry; the seam is documented as test-only on every cached wrapper and deriver; ADRs clarified; the `loadQuestion` breadth choice is documented. **Depends on**: PR2.
 - **PR7 `questions: cache question definitions from the canonical row source`** (Finding 4). Cache `loadQuestionDefinitions` (or document why the authoring route stays uncached); derive it from the canonical cached question rows (PR6) plus the assessment-count query. **Depends on**: PR6.
 - **PR8 `assessments: share completion row cache`** (Finding 8). Add `loadAssessmentCompletionRowsCached`; derive the by-submission and summary projections from it. (`#153` already shares the primitive; this shares the cached entry.) **Acceptance**: runtime reads needing the same completion base rows share one cache entry; ADR 0007's no-runtime-handle rule stays intact. **Depends on**: PR2, PR5.
 
