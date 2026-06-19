@@ -37,6 +37,38 @@ pnpm test:storybook <changed-stories-stem>
 
 Vitest runs Storybook in headless mode via Playwright, so no separate Storybook server is needed.
 
+## End-to-end tier
+
+`e2e/grading-workflow.spec.ts` is a single, narrow Playwright smoke test for the
+happy-path grading workflow (create project → import questions/students/assessments
+→ dashboard completion → reload → export). It is separate from the Storybook
+Vitest browser project and from `test:unit`/`test:integration`: it drives a real
+browser against a production `next build` + `next start` server and a real
+Postgres, so it is the only tier that exercises browser UI, server actions/routes,
+persistence, and production cache invalidation together. Edge cases stay in unit
+and integration tests; this tier is not a UI regression suite.
+
+Run it locally with:
+
+```bash
+pnpm build
+pnpm test:e2e
+```
+
+A build must exist first; `playwright.config.ts`'s `webServer` runs `pnpm start`
+(no rebuild) and reuses an already-running server locally (`reuseExistingServer`).
+
+The database contract is an empty, migrated Postgres — never a developer's
+database. `e2e/globalSetup.ts` uses `TEST_DATABASE_URL` if set (CI reuses the
+`build` job's service container; see `.github/workflows/ci.yml`), otherwise it
+provisions and tears down an ephemeral Docker Postgres, the same pattern as
+`src/test/integrationGlobalSetup.ts`. All test data is created through the UI; the
+only fixtures are the import payloads under `e2e/fixtures/`.
+
+Selectors are accessible-first (`getByRole` / `getByLabel`); treat a missing
+accessible name as a real accessibility gap to fix on the component, not a reason
+to reach for `data-testid`.
+
 ## Module aliases in tests
 
 The node test projects (`unit` and `integration`) alias `server-only` to an empty
