@@ -10,6 +10,31 @@ const DEFAULT_POSTGRES_USER = "postgres";
 const DEFAULT_POSTGRES_PASSWORD = "postgres";
 const DEFAULT_POSTGRES_DB = "postgres";
 const DEFAULT_HOST = "127.0.0.1";
+const TEARDOWN_STOP_TIMEOUT_SECONDS = "10";
+
+// Postgres reports these SQLSTATE codes when it terminates a client connection
+// as part of its own shutdown (smart shutdown still has to cut off any session
+// that is mid-disconnect once the timeout elapses). A per-test pg pool can
+// still be flushing its graceful `pool.end()` call when this happens, which
+// surfaces as an unhandled exception in the test process even though every
+// test already passed. We only ignore these errors for the duration of the
+// container teardown below, so a real failure elsewhere is never masked.
+const POSTGRES_SHUTDOWN_ERROR_CODES = new Set([
+	"57P01", // admin_shutdown
+	"57P02", // crash_shutdown
+	"57P03", // cannot_connect_now
+]);
+
+function isPostgresShutdownError(error: unknown): boolean {
+	if (typeof error !== "object" || error === null || !("code" in error)) {
+		return false;
+	}
+
+	return (
+		typeof error.code === "string" &&
+		POSTGRES_SHUTDOWN_ERROR_CODES.has(error.code)
+	);
+}
 
 function run(
 	command: string,
@@ -98,6 +123,44 @@ async function waitForQueryReady(connectionString: string): Promise<void> {
 	throw new Error("Postgres did not become query-ready in time");
 }
 
+async function stopAndRemoveContainers(
+	composeProject: string,
+	composeEnv: NodeJS.ProcessEnv,
+): Promise<void> {
+	const onUncaughtException = (error: unknown): void => {
+		if (isPostgresShutdownError(error)) {
+			return;
+		}
+
+		process.removeListener("uncaughtException", onUncaughtException);
+		throw error;
+	};
+
+	process.on("uncaughtException", onUncaughtException);
+
+	try {
+		await run(
+			"docker",
+			[
+				"compose",
+				"-p",
+				composeProject,
+				"stop",
+				"-t",
+				TEARDOWN_STOP_TIMEOUT_SECONDS,
+			],
+			composeEnv,
+		);
+		await run(
+			"docker",
+			["compose", "-p", composeProject, "down", "-v", "--remove-orphans"],
+			composeEnv,
+		);
+	} finally {
+		process.removeListener("uncaughtException", onUncaughtException);
+	}
+}
+
 function buildTestDatabaseUrl(params: {
 	user: string;
 	password: string;
@@ -175,10 +238,6 @@ export default async function integrationGlobalSetup(): Promise<
 	}
 
 	return async () => {
-		await run(
-			"docker",
-			["compose", "-p", composeProject, "down", "-v", "--remove-orphans"],
-			composeEnv,
-		);
+		await stopAndRemoveContainers(composeProject, composeEnv);
 	};
 }
