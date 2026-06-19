@@ -41,22 +41,6 @@ export function assessmentCompletionRowsCacheTags(): string[] {
 	];
 }
 
-export function assessmentCompletionBySubmissionCacheTags(): string[] {
-	return [
-		submissionListCacheTag(),
-		questionListCacheTag(),
-		assessmentAggregateCacheTag(),
-	];
-}
-
-export function assessmentCompletionSummaryCacheTags(): string[] {
-	return [
-		submissionListCacheTag(),
-		questionListCacheTag(),
-		assessmentAggregateCacheTag(),
-	];
-}
-
 // `db` may be the global client or a caller-supplied transaction.
 // Shared rows for `buildAssessmentCompletion`, scoped to a single project.
 export async function loadAssessmentCompletionRowsFromDb(
@@ -163,18 +147,15 @@ export async function loadAssessmentCompletionRows(
 	});
 }
 
-// `options` is forwarded to `loadAssessmentCompletionRows` unchanged (ADR 0007
-// rule 14): never resolve a default here before forwarding, so an omitted `db`
-// stays `undefined` and the nested call shares that wrapper's own no-argument
-// cache entry.
+// Plain deriver: shares `loadAssessmentCompletionRows`' cache entry at runtime
+// instead of owning a second cache entry for the same underlying data (ADR 0008
+// rule 5). `options` is forwarded unchanged (ADR 0007 rule 14): never resolve a
+// default here before forwarding, so an omitted `db` stays `undefined` and the
+// call shares that wrapper's own no-argument cache entry.
 export async function loadAssessmentCompletionBySubmission(
 	{ projectId }: { projectId: string },
 	options?: { db?: Kysely<DB> },
 ): Promise<Record<string, CompletionMetric>> {
-	"use cache";
-	cacheTags(...assessmentCompletionBySubmissionCacheTags());
-	cacheLife("projection");
-
 	const rows = await loadAssessmentCompletionRows({ projectId }, options);
 	return buildCompletionBySubmission(rows);
 }
@@ -322,18 +303,15 @@ export async function loadAssessmentCompletionSummaryFromDb(
 	return buildCompletionSummary(rows, rubricAssessmentsCount);
 }
 
-// `options` is forwarded to `loadAssessmentCompletionRows` unchanged (ADR 0007
-// rule 14): never resolve a default here before forwarding, so an omitted `db`
-// stays `undefined` and the nested call shares that wrapper's own no-argument
-// cache entry.
+// Plain deriver: shares `loadAssessmentCompletionRows`' cache entry at runtime
+// instead of owning a second cache entry for the same underlying data (ADR 0008
+// rule 5). `options` is forwarded unchanged (ADR 0007 rule 14): never resolve a
+// default here before forwarding, so an omitted `db` stays `undefined` and the
+// call shares that wrapper's own no-argument cache entry.
 export async function loadAssessmentCompletionSummary(
 	{ projectId }: { projectId: string },
 	options?: { db?: Kysely<DB> },
 ): Promise<AssessmentCompletionSummary> {
-	"use cache";
-	cacheTags(...assessmentCompletionSummaryCacheTags());
-	cacheLife("projection");
-
 	const [rows, rubricAssessmentsCount] = await Promise.all([
 		loadAssessmentCompletionRows({ projectId }, options),
 		loadRubricAssessmentsCountFromDb(options?.db ?? defaultDb, { projectId }),

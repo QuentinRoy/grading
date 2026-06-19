@@ -1,8 +1,7 @@
 import { expect, test } from "vitest";
 import {
 	assessedRubricCountsBySubmissionCacheTags,
-	assessmentCompletionBySubmissionCacheTags,
-	assessmentCompletionSummaryCacheTags,
+	assessmentCompletionRowsCacheTags,
 } from "./loadAssessmentCompletion.ts";
 
 test("assessedRubricCountsBySubmissionCacheTags scopes invalidation to the given question", () => {
@@ -14,16 +13,8 @@ test("assessedRubricCountsBySubmissionCacheTags scopes invalidation to the given
 	]);
 });
 
-test("assessmentCompletionBySubmissionCacheTags declares the coarse submission, question and assessment tags", () => {
-	expect(assessmentCompletionBySubmissionCacheTags()).toEqual([
-		"submissions",
-		"questions",
-		"assessments",
-	]);
-});
-
-test("assessmentCompletionSummaryCacheTags declares the coarse submission, question and assessment tags", () => {
-	expect(assessmentCompletionSummaryCacheTags()).toEqual([
+test("assessmentCompletionRowsCacheTags declares the coarse submission, question and assessment tags", () => {
+	expect(assessmentCompletionRowsCacheTags()).toEqual([
 		"submissions",
 		"questions",
 		"assessments",
