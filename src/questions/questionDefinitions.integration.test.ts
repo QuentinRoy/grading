@@ -1,4 +1,5 @@
-import { expect, test } from "vitest";
+import { cacheTag } from "next/cache";
+import { beforeEach, expect, test, vi } from "vitest";
 import { createTestDb } from "#test/dbIntegration.ts";
 import { createProject } from "#test/projects.ts";
 import {
@@ -10,7 +11,14 @@ import {
 	getQuestionDefinitionDeleteImpactFromDb,
 	loadQuestionDefinitions,
 	loadQuestionDefinitionsFromDb,
+	questionDefinitionCacheTags,
 } from "./questionDefinitions.ts";
+
+vi.mock("next/cache", () => ({ cacheTag: vi.fn(), cacheLife: vi.fn() }));
+
+beforeEach(() => {
+	vi.clearAllMocks();
+});
 
 test("loadQuestionDefinitionsFromDb returns scoped definitions with assessment counts", async () => {
 	await using db = await createTestDb();
@@ -113,6 +121,11 @@ test("loadQuestionDefinitions wrapper delegates to its primitive through the inj
 		fixture.questionId,
 	]);
 	expect(definitions[0]?.assessmentCount).toBe(1);
+
+	// Includes the nested `loadQuestionRows` registration: this scope's own tags
+	// plus the full closure of everything it composes (ADR 0008 rule 3).
+	const declaredTags = vi.mocked(cacheTag).mock.calls.map((call) => call[0]);
+	expect(declaredTags).toEqual([...questionDefinitionCacheTags(), "questions"]);
 });
 
 test("getQuestionDefinitionDeleteImpact wrapper delegates to its primitive through the injected handle", async () => {
