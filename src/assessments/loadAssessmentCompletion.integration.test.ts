@@ -7,6 +7,7 @@ import { createProject } from "#test/projects.ts";
 import {
 	assessedRubricCountsBySubmissionCacheTags,
 	assessmentCompletionBySubmissionCacheTags,
+	assessmentCompletionRowsCacheTags,
 	assessmentCompletionSummaryCacheTags,
 	loadAssessedRubricCountsBySubmission,
 	loadAssessedRubricCountsBySubmissionFromDb,
@@ -302,8 +303,14 @@ test("loadAssessmentCompletionBySubmission wrapper delegates to its primitive an
 
 	expect(overview[String(submissionId)]).toEqual({ completed: 0, total: 1 });
 
+	// Includes the nested `loadAssessmentCompletionRows` registration: this
+	// scope's own tags plus the full closure of everything it composes
+	// (ADR 0008 rule 3).
 	const declaredTags = vi.mocked(cacheTag).mock.calls.map((call) => call[0]);
-	expect(declaredTags).toEqual(assessmentCompletionBySubmissionCacheTags());
+	expect(declaredTags).toEqual([
+		...assessmentCompletionBySubmissionCacheTags(),
+		...assessmentCompletionRowsCacheTags(),
+	]);
 });
 
 test("a zero-rubric question counts as complete per submission and consistently with the summary", async () => {
@@ -395,6 +402,12 @@ test("loadAssessmentCompletionSummary wrapper delegates to its primitive and dec
 		rubrics: { completed: 0, total: 1 },
 	});
 
+	// Includes the nested `loadAssessmentCompletionRows` registration: this
+	// scope's own tags plus the full closure of everything it composes
+	// (ADR 0008 rule 3).
 	const declaredTags = vi.mocked(cacheTag).mock.calls.map((call) => call[0]);
-	expect(declaredTags).toEqual(assessmentCompletionSummaryCacheTags());
+	expect(declaredTags).toEqual([
+		...assessmentCompletionSummaryCacheTags(),
+		...assessmentCompletionRowsCacheTags(),
+	]);
 });

@@ -33,6 +33,14 @@ export function assessedRubricCountsBySubmissionCacheTags(
 	];
 }
 
+export function assessmentCompletionRowsCacheTags(): string[] {
+	return [
+		submissionListCacheTag(),
+		questionListCacheTag(),
+		assessmentAggregateCacheTag(),
+	];
+}
+
 export function assessmentCompletionBySubmissionCacheTags(): string[] {
 	return [
 		submissionListCacheTag(),
@@ -108,12 +116,10 @@ export async function loadAssessmentCompletionRowsFromDb(
 	};
 }
 
-// `db` may be the global client or a caller-supplied transaction.
-export async function loadAssessmentCompletionBySubmissionFromDb(
-	db: Kysely<DB>,
-	{ projectId }: { projectId: string },
-): Promise<Record<string, CompletionMetric>> {
-	const rows = await loadAssessmentCompletionRowsFromDb(db, { projectId });
+// Pure builder: per-submission completed/total counts from shared completion rows.
+function buildCompletionBySubmission(
+	rows: AssessmentCompletionInput,
+): Record<string, CompletionMetric> {
 	const completion = buildAssessmentCompletion(rows);
 
 	return Object.fromEntries(
@@ -129,15 +135,48 @@ export async function loadAssessmentCompletionBySubmissionFromDb(
 	);
 }
 
+// `db` may be the global client or a caller-supplied transaction.
+export async function loadAssessmentCompletionBySubmissionFromDb(
+	db: Kysely<DB>,
+	{ projectId }: { projectId: string },
+): Promise<Record<string, CompletionMetric>> {
+	const rows = await loadAssessmentCompletionRowsFromDb(db, { projectId });
+	return buildCompletionBySubmission(rows);
+}
+
+// Canonical cached source for project-wide completion rows (Finding 8). Shared by
+// `loadAssessmentCompletionBySubmission` and `loadAssessmentCompletionSummary`, so
+// both projections compose one cache entry instead of each querying
+// independently.
+//
+// `options` is forwarded to nothing further; it is the test-only `db` seam
+// (ADR 0007 rules 13–14). Runtime callers omit it.
+export async function loadAssessmentCompletionRows(
+	{ projectId }: { projectId: string },
+	options?: { db?: Kysely<DB> },
+): Promise<AssessmentCompletionInput> {
+	"use cache";
+	cacheTags(...assessmentCompletionRowsCacheTags());
+	cacheLife("projection");
+	return loadAssessmentCompletionRowsFromDb(options?.db ?? defaultDb, {
+		projectId,
+	});
+}
+
+// `options` is forwarded to `loadAssessmentCompletionRows` unchanged (ADR 0007
+// rule 14): never resolve a default here before forwarding, so an omitted `db`
+// stays `undefined` and the nested call shares that wrapper's own no-argument
+// cache entry.
 export async function loadAssessmentCompletionBySubmission(
 	{ projectId }: { projectId: string },
-	{ db = defaultDb }: { db?: Kysely<DB> } = {},
+	options?: { db?: Kysely<DB> },
 ): Promise<Record<string, CompletionMetric>> {
 	"use cache";
 	cacheTags(...assessmentCompletionBySubmissionCacheTags());
 	cacheLife("projection");
 
-	return loadAssessmentCompletionBySubmissionFromDb(db, { projectId });
+	const rows = await loadAssessmentCompletionRows({ projectId }, options);
+	return buildCompletionBySubmission(rows);
 }
 
 // `db` may be the global client or a caller-supplied transaction.
@@ -217,25 +256,31 @@ export async function loadAssessedRubricCountsBySubmission(
 }
 
 // `db` may be the global client or a caller-supplied transaction.
-export async function loadAssessmentCompletionSummaryFromDb(
+export async function loadRubricAssessmentsCountFromDb(
 	db: Kysely<DB>,
 	{ projectId }: { projectId: string },
-): Promise<AssessmentCompletionSummary> {
+): Promise<number> {
 	const projectRowIdQuery = db
 		.selectFrom("project")
 		.select("rowId")
 		.where("id", "=", projectId);
 
-	const [rows, rubricAssessmentsCount] = await Promise.all([
-		loadAssessmentCompletionRowsFromDb(db, { projectId }),
-		db
-			.selectFrom("rubricAssessment")
-			.innerJoin("assessment", "assessment.id", "rubricAssessment.assessmentId")
-			.where("assessment.projectId", "in", projectRowIdQuery)
-			.select((eb) => eb.fn.countAll<number>().as("count"))
-			.executeTakeFirstOrThrow(),
-	]);
+	const row = await db
+		.selectFrom("rubricAssessment")
+		.innerJoin("assessment", "assessment.id", "rubricAssessment.assessmentId")
+		.where("assessment.projectId", "in", projectRowIdQuery)
+		.select((eb) => eb.fn.countAll<number>().as("count"))
+		.executeTakeFirstOrThrow();
 
+	return Number(row.count);
+}
+
+// Pure builder: completion summary from shared completion rows plus the rubric
+// assessment count.
+function buildCompletionSummary(
+	rows: AssessmentCompletionInput,
+	rubricAssessmentsCount: number,
+): AssessmentCompletionSummary {
 	const completion = buildAssessmentCompletion(rows);
 
 	const totalRubricsInProject = rows.questions.reduce(
@@ -256,7 +301,7 @@ export async function loadAssessmentCompletionSummaryFromDb(
 		},
 		rubrics: {
 			completed: Math.min(
-				Number(rubricAssessmentsCount.count),
+				rubricAssessmentsCount,
 				totalExpectedRubricAssessments,
 			),
 			total: totalExpectedRubricAssessments,
@@ -264,13 +309,35 @@ export async function loadAssessmentCompletionSummaryFromDb(
 	};
 }
 
+// `db` may be the global client or a caller-supplied transaction.
+export async function loadAssessmentCompletionSummaryFromDb(
+	db: Kysely<DB>,
+	{ projectId }: { projectId: string },
+): Promise<AssessmentCompletionSummary> {
+	const [rows, rubricAssessmentsCount] = await Promise.all([
+		loadAssessmentCompletionRowsFromDb(db, { projectId }),
+		loadRubricAssessmentsCountFromDb(db, { projectId }),
+	]);
+
+	return buildCompletionSummary(rows, rubricAssessmentsCount);
+}
+
+// `options` is forwarded to `loadAssessmentCompletionRows` unchanged (ADR 0007
+// rule 14): never resolve a default here before forwarding, so an omitted `db`
+// stays `undefined` and the nested call shares that wrapper's own no-argument
+// cache entry.
 export async function loadAssessmentCompletionSummary(
 	{ projectId }: { projectId: string },
-	{ db = defaultDb }: { db?: Kysely<DB> } = {},
+	options?: { db?: Kysely<DB> },
 ): Promise<AssessmentCompletionSummary> {
 	"use cache";
 	cacheTags(...assessmentCompletionSummaryCacheTags());
 	cacheLife("projection");
 
-	return loadAssessmentCompletionSummaryFromDb(db, { projectId });
+	const [rows, rubricAssessmentsCount] = await Promise.all([
+		loadAssessmentCompletionRows({ projectId }, options),
+		loadRubricAssessmentsCountFromDb(options?.db ?? defaultDb, { projectId }),
+	]);
+
+	return buildCompletionSummary(rows, rubricAssessmentsCount);
 }
