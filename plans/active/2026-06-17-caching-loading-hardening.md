@@ -29,7 +29,7 @@ Umbrella: #59. Each PR below is a native GitHub sub-issue of #59 (#155–#167), 
 | PR4 | #158 | Done — #171 |
 | PR5 | #159 | Done — #174 |
 | PR6 | #160 | Done — #176 |
-| PR7 | #161 | In progress — implemented, PR pending |
+| PR7 | #161 | Implemented — #180 (open, not merged) |
 | PR8 | #162 | Not started |
 | PR9 | #163 | Not started |
 | PR10 | #164 | Not started |
