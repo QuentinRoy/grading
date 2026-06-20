@@ -4,6 +4,22 @@ Status: Current reference
 
 This document records project-specific testing conventions that should remain stable across individual test files.
 
+## Test file placement
+
+- Unit and integration test cases are **co-located** with the module they test
+  under `src/`, next to the source file (for example
+  `src/assessments/assessmentCompletion.test.ts`). Vitest discovers them via the
+  `src/**/*.{test,spec}.{ts,tsx,js,jsx}` glob in `vitest.config.ts`.
+- Shared test tooling — global setup, database helpers, fixture builders — lives
+  in `src/test/`. That directory holds tooling, not test cases.
+- The end-to-end tier lives in the root `e2e/` directory, not under `src/`. It is
+  a separate test tier with its own runner (`@playwright/test`, configured by the
+  root `playwright.config.ts`), and the smoke test spans the whole app rather than
+  any single module, so it has no module to co-locate with. Keeping it out of
+  `src/` also keeps the two runners partitioned by directory: Vitest owns
+  `src/**`, Playwright owns `e2e/**`. A `.spec.ts` placed under `src/` would be
+  picked up by the Vitest unit project and fail under the wrong runner.
+
 ## Test command selection
 
 After code changes, run repository checks and the targeted tests that match the files changed.
