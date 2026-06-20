@@ -32,5 +32,5 @@ All server-side code that needs to report an unexpected or operational event it 
 ## Consequences
 
 - Future server-side code that needs to report a non-thrown error or operational event has one obvious place to import from (`src/utils/logger.ts`) instead of reaching for `console.*` or inventing another ad-hoc pattern, and tags it with a known subsystem scope.
-- `pino` is now a runtime dependency; no log transport, redaction, or shipping configuration exists yet — only the default synchronous-by-default pino instance. Adding those is a separate, deliberate decision when a real need (e.g., production log aggregation) arises.
+- `pino` is now a runtime dependency; no log transport, redaction, or shipping configuration exists yet — only the default `pino()` instance, which writes asynchronously (buffered, non-blocking) to stdout via `sonic-boom`, not synchronously. Adding a transport, redaction, or shipping config is a separate, deliberate decision when a real need (e.g., production log aggregation) arises.
 - `AGENTS.md`'s "Error handling UX" section governs *user-facing* error messages; this ADR governs *operational* logging that is never shown to a user. The two are not in tension, but a future contributor should not conflate "log it" with "tell the user."
