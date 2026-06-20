@@ -18,7 +18,7 @@ function ControlledNumberField({
 	return (
 		<NumberField
 			label={label}
-			value={value}
+			defaultValue={value}
 			onChange={(next) => {
 				onCommit(next);
 				setValue(next);

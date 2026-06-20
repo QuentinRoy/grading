@@ -5,7 +5,7 @@ import type { ReactElement } from "react";
 
 type NumberFieldProps = {
 	label: string;
-	value: number;
+	defaultValue: number;
 	onChange: (value: number) => void;
 	error?: string | undefined;
 };
@@ -13,7 +13,8 @@ type NumberFieldProps = {
 /**
  * Uncontrolled numeric input. The browser owns the field text while the user
  * types, so intermediate states like `-`, `-0`, `1.`, and `0.` are preserved
- * instead of being parsed and overwritten on every keystroke.
+ * instead of being parsed and overwritten on every keystroke. `defaultValue`
+ * is read once on mount; later changes to it do not update the displayed text.
  *
  * Every change reports a value through `onChange`, including `NaN` for an
  * empty or not-yet-numeric draft, so the submitted payload reflects exactly
@@ -24,7 +25,7 @@ type NumberFieldProps = {
  */
 export default function NumberField({
 	label,
-	value,
+	defaultValue,
 	onChange,
 	error,
 }: NumberFieldProps): ReactElement {
@@ -32,7 +33,7 @@ export default function NumberField({
 		<TextField
 			label={label}
 			type="number"
-			defaultValue={Number.isFinite(value) ? value : ""}
+			defaultValue={Number.isFinite(defaultValue) ? defaultValue : ""}
 			onChange={(event) => {
 				const text = event.target.value.trim();
 				const parsed = Number(text);
@@ -42,6 +43,7 @@ export default function NumberField({
 			error={error != null}
 			helperText={error ?? ""}
 			size="small"
+			slotProps={{ htmlInput: { step: "any" } }}
 		/>
 	);
 }

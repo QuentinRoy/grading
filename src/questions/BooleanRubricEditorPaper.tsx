@@ -32,13 +32,13 @@ export default function BooleanRubricEditorPaper({
 			<Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
 				<NumberField
 					label="True marks"
-					value={rubric.marks}
+					defaultValue={rubric.marks}
 					onChange={(value) => onChange({ ...rubric, marks: value })}
 					error={fieldErrors?.marks}
 				/>
 				<NumberField
 					label="False marks"
-					value={rubric.falseMarks ?? 0}
+					defaultValue={rubric.falseMarks ?? 0}
 					onChange={(value) => onChange({ ...rubric, falseMarks: value })}
 					error={fieldErrors?.falseMarks}
 				/>
