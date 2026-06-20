@@ -20,7 +20,7 @@ jobs:
       non_docs_changed: ${{ steps.filter.outputs.non_docs }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -47,7 +47,7 @@ jobs:
     if: needs.changes.outputs.non_docs_changed == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - uses: ./.github/actions/setup-node-pnpm
 
@@ -61,7 +61,7 @@ jobs:
     if: needs.changes.outputs.non_docs_changed == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - uses: ./.github/actions/setup-node-pnpm
 
@@ -75,7 +75,7 @@ jobs:
     if: needs.changes.outputs.non_docs_changed == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - uses: ./.github/actions/setup-node-pnpm
 
@@ -105,7 +105,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - uses: ./.github/actions/setup-node-pnpm
 
@@ -128,7 +128,7 @@ jobs:
     if: needs.changes.outputs.non_docs_changed == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Trust the workspace for git
         # The container runs as root over a workspace owned by the runner user,
@@ -169,12 +169,24 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+      NEXT_TELEMETRY_DISABLED: "1"
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - uses: ./.github/actions/setup-node-pnpm
+
+      - name: Cache Next.js build
+        uses: actions/cache@v5
+        with:
+          path: .next/cache
+          # Bust when deps or source change; restore-keys gives a warm partial
+          # cache when only source changed. Scoped to app/src and root config
+          # so the hash doesn't walk node_modules (installed by this point).
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('app/**/*.[jt]s', 'app/**/*.[jt]sx', 'src/**/*.[jt]s', 'src/**/*.[jt]sx', 'next.config.ts') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-
 
       - name: Migrate database
         run: pnpm run db:migrate:up
@@ -183,7 +195,7 @@ jobs:
         run: pnpm run build
 
       - name: Upload build output
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: next-build
           path: .next/
@@ -220,7 +232,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Trust the workspace for git
         # The container runs as root over a workspace owned by the runner user,
@@ -231,7 +243,7 @@ jobs:
 
       - name: Download build output
         # Reuses the `build` job's production build; no rebuild here.
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: next-build
           path: .next/
@@ -252,7 +264,7 @@ jobs:
 
       - name: Upload Playwright report
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: playwright-report/
