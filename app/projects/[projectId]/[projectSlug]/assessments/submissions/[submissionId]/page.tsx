@@ -29,6 +29,13 @@ export default function ProjectSubmissionPage({ params }: SubmissionPageProps) {
 async function ProjectSubmissionPageContent({ params }: SubmissionPageProps) {
 	const { submissionId, projectId } = await params;
 
+	// Not awaited: only the on-demand submission lookup dialog needs this, so a
+	// save-then-navigate never blocks on recomputing project-wide completion
+	// (Finding 19). It streams in via Suspense once the dialog resolves it.
+	// Started before the page's own Promise.all so it runs alongside that data,
+	// not after, shortening the wait if the dialog is opened quickly.
+	const progressPromise = loadAssessmentCompletionBySubmission({ projectId });
+
 	const [project, submissions, questionGrid, assessmentsByQuestionId] =
 		await Promise.all([
 			loadProjectByPublicId(projectId, { required: true }),
@@ -36,11 +43,6 @@ async function ProjectSubmissionPageContent({ params }: SubmissionPageProps) {
 			loadQuestionGrid({ projectId }),
 			loadSubmissionAssessments({ submissionId, projectId }),
 		]);
-
-	// Not awaited: only the on-demand submission lookup dialog needs this, so a
-	// save-then-navigate never blocks on recomputing project-wide completion
-	// (Finding 19). It streams in via Suspense once the dialog resolves it.
-	const progressPromise = loadAssessmentCompletionBySubmission({ projectId });
 
 	// Ensure the submission belongs to the project and can be assessed.
 	const currentSubmission = submissions.find((s) => s.id === submissionId);

@@ -112,6 +112,14 @@ async function SubmissionRubricSection({
 }) {
 	const project = await loadProjectByPublicId(projectId, { required: true });
 
+	// Doesn't depend on `submissions`, so it's started alongside the Promise.all
+	// below rather than after it, keeping the progress work parallel and
+	// shortening the wait if the lookup dialog is opened quickly.
+	const rubricCountsPromise = loadAssessedRubricCounts({
+		questionId,
+		projectId: project.id,
+	});
+
 	const [question, submissions, assessments] = await Promise.all([
 		loadQuestion({ questionId, projectId: project.id }),
 		loadSubmissions({ projectId: project.id }),
@@ -127,10 +135,7 @@ async function SubmissionRubricSection({
 
 	// Reuses the submissions already loaded above instead of querying them again
 	// inside the progress primitive (Finding 7).
-	const progressPromise = loadAssessedRubricCounts({
-		questionId,
-		projectId: project.id,
-	}).then((rubricCounts) =>
+	const progressPromise = rubricCountsPromise.then((rubricCounts) =>
 		buildAssessedRubricCountsBySubmission(
 			submissions.map((submission) => submission.id),
 			rubricCounts,
