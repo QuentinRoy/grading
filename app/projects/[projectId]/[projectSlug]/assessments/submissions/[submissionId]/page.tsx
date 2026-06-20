@@ -94,6 +94,7 @@ async function SubmissionGradingSection({
 	// only the on-demand submission lookup dialog needs it, so a save-then-
 	// navigate never blocks on recomputing project-wide completion (Finding 19).
 	const progressPromise = loadAssessmentCompletionBySubmission({ projectId });
+	progressPromise.catch(() => {});
 
 	const [questionGrid, assessmentsByQuestionId] = await Promise.all([
 		loadQuestionGrid({ projectId }),
