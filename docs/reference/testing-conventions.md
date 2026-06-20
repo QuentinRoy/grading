@@ -59,10 +59,14 @@ A build must exist first; `playwright.config.ts`'s `webServer` runs `pnpm start`
 (no rebuild) and reuses an already-running server locally (`reuseExistingServer`).
 
 The database contract is an empty, migrated Postgres — never a developer's
-database. `e2e/globalSetup.ts` uses `TEST_DATABASE_URL` if set (CI's `e2e` job
-runs its own service container and migrates it via `globalSetup.ts`; see
-`.github/workflows/ci.yml`), otherwise it provisions and tears down an ephemeral
-Docker Postgres, the same pattern as `src/test/integrationGlobalSetup.ts`. All
+database. The test database is resolved in `playwright.config.ts` itself
+(top-level `await`, not a `globalSetup` file — Playwright starts `webServer`
+before running `globalSetup`, which would otherwise let the production server
+boot against a developer's real database before the override took effect) and
+passed through `webServer.env`. It uses `TEST_DATABASE_URL` if set (CI's `e2e`
+job runs its own service container; see `.github/workflows/ci.yml`), otherwise
+it provisions an ephemeral Docker Postgres, the same pattern as
+`src/test/integrationGlobalSetup.ts`; `e2e/globalTeardown.ts` tears it down. All
 test data is created through the UI; the only fixtures are the import payloads
 under `e2e/fixtures/`.
 
