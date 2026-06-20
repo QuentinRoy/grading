@@ -63,7 +63,7 @@ export default function SubmissionQuickJumpDialog({
 		<Suspense
 			fallback={
 				<QuickJumpDialogShell onClose={onClose}>
-					<CircularProgress sx={{ alignSelf: "center", my: 4 }} />
+					<CircularProgress sx={{ alignSelf: "center" }} />
 				</QuickJumpDialogShell>
 			}
 		>
@@ -205,11 +205,11 @@ function SubmissionQuickJumpDialogContent({
 			/>
 
 			{results.length === 0 && query.length === 0 ? (
-				<Typography color="text.secondary" sx={{ my: 2 }}>
+				<Typography color="text.secondary">
 					Type to search by team or student name (supports partial matches)
 				</Typography>
 			) : results.length === 0 ? (
-				<Typography color="text.secondary" sx={{ my: 2 }}>
+				<Typography color="text.secondary">
 					No matching submissions found. Try a different search term.
 				</Typography>
 			) : (
