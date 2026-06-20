@@ -20,7 +20,7 @@ jobs:
       non_docs_changed: ${{ steps.filter.outputs.non_docs }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -47,7 +47,7 @@ jobs:
     if: needs.changes.outputs.non_docs_changed == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - uses: ./.github/actions/setup-node-pnpm
 
@@ -61,7 +61,7 @@ jobs:
     if: needs.changes.outputs.non_docs_changed == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - uses: ./.github/actions/setup-node-pnpm
 
@@ -75,7 +75,7 @@ jobs:
     if: needs.changes.outputs.non_docs_changed == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - uses: ./.github/actions/setup-node-pnpm
 
@@ -105,7 +105,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - uses: ./.github/actions/setup-node-pnpm
 
@@ -128,7 +128,7 @@ jobs:
     if: needs.changes.outputs.non_docs_changed == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Trust the workspace for git
         # The container runs as root over a workspace owned by the runner user,
@@ -173,7 +173,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - uses: ./.github/actions/setup-node-pnpm
 
@@ -195,7 +195,7 @@ jobs:
         run: pnpm run build
 
       - name: Upload build output
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: next-build
           path: .next/
@@ -232,7 +232,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Trust the workspace for git
         # The container runs as root over a workspace owned by the runner user,
@@ -243,7 +243,7 @@ jobs:
 
       - name: Download build output
         # Reuses the `build` job's production build; no rebuild here.
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: next-build
           path: .next/
@@ -264,7 +264,7 @@ jobs:
 
       - name: Upload Playwright report
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: playwright-report/
