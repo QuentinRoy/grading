@@ -35,7 +35,7 @@ Umbrella: #59. Each PR below is a native GitHub sub-issue of #59 (#155–#167), 
 | PR10 | #164 | Done — #186 |
 | PR11 | #165 | Done — #187 |
 | PR12 | #166 | Not started |
-| PR13 | #167 | Not started |
+| PR13 | #167 | Done — #189 |
 
 ## Guidance consulted
 
@@ -70,6 +70,18 @@ Method: drove the app with a real browser (Playwright), counting executed SQL st
 - **Decisive test for Finding 19** (coarse `assessments` over-coupling): warmed submission-overview pages for two different submissions (0 queries on repeat visits to each). Saved an assessment for a third, unrelated submission. Immediately revisiting one of the two already-warm overview pages forced a full project-wide recompute (3 queries: all submission ids, all questions' rubric counts, all assessment counts project-wide) even though the visited submission was untouched by the save. **Confirms Finding 19 exactly**: `saveAssessment` busts the coarse `assessments` tag project-wide, and `loadAssessmentCompletionBySubmission` (registering that coarse tag) recomputes for everyone on the next visit, not just for the submission that was saved.
 
 This baseline is what PR10 (decouple progress freshness from interactive saves) and PR11 (cached submission-overview sections) must not regress, and the bar they should clear: the decisive-test scenario above (save submission A, then visit submission B's overview) should no longer force a full project-wide recompute on B's visit.
+
+## Measured baseline (PR13, 2026-06-20)
+
+Finding 12 asked for measurement before any architecture change to the rubric overview (`loadRubricOverviewData`, `RubricAnalyticsTable`, `StudentMatrix`). Measured against a production build (`next build && next start`), same rationale as PR1: dev mode re-executes `"use cache"` bodies on every request. Seeded a throwaway project sized for a large class — 20 questions (one boolean rubric each), 200 individual submissions, ~90% of cells assessed (3606 rubric assessments) — into the local dev Postgres; the seed/cleanup scripts and the temporary `console.time` added to `loadRubricOverviewData` were removed afterward.
+
+Method: `curl` for server-only timing/payload size; a throwaway Playwright script for real-browser navigation timing (`performance.getEntriesByType("navigation")`).
+
+- **Server query time** (`loadRubricOverviewData`'s DB work, cold): 47 ms. **In-memory build** (`buildRubricOverviewData`, shaping the matrix): 2.5 ms. Negligible — at this scale, the DB and the build step are not the cost driver.
+- **Cache behavior**: the cold load ran the query once; three subsequent warm loads ran it zero times (full cache hit), consistent with the rest of this plan's caching model.
+- **Payload size**: ~3.2–3.4 MB decoded HTML for the page, compressing to ~205–224 KB over the wire (gzip). The matrix table (200 rows × 20+ columns) is the bulk of this.
+- **Browser timing** (warm, repeated): `responseEnd` ~235–270 ms from navigation start; `domContentLoadedEventEnd - responseEnd` (DOM parse + layout/paint of the large table, no client JS — these are Server Components) ~14–22 ms. Total `loadEventEnd` ~250–295 ms warm, ~410 ms cold.
+- **Conclusion**: at this realistic large-class scale, nothing here is slow enough to justify Finding 12's candidate refactors (splitting summary from matrix, virtualizing, a dedicated first-viewport projection). Query and build time are negligible; the warm round-trip is well under 300 ms; the large decoded size compresses well and isn't a real bottleneck at this scale. **Per Finding 12's "do not refactor blindly" framing: no refactor.** Revisit if a real project's scale meaningfully exceeds ~200 submissions × ~20 rubrics, since payload size scales with submissions × rubrics and would eventually dominate.
 
 ## Invalidation map (verified — Phase 1 promotes this to `docs/reference/cache-invalidation-map.md`)
 
@@ -166,7 +178,7 @@ The tag-registration rule is already decided (Decision 1 / ADR 0008 rule 3: full
 
 ### Phase 6 — measure, then optimize rubric overview
 
-- **PR13 `assessments: measure rubric overview scale`** (Finding 12). Realistic fixtures; measure server query time, payload size, client render time before any architecture change. **Depends on**: nothing (can run in parallel); refactor only if measured slow.
+- **PR13 `assessments: measure rubric overview scale`** (Finding 12). Realistic fixtures; measure server query time, payload size, client render time before any architecture change. **Depends on**: nothing (can run in parallel); refactor only if measured slow. **Result**: measured at 200 submissions × 20 rubrics (see "Measured baseline (PR13, 2026-06-20)" above) — not slow; no refactor.
 
 ## Cross-plan sequencing (reliability hardening)
 
