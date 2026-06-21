@@ -165,6 +165,16 @@ function createDisposableMigrationDb(
 	};
 }
 
+async function createTemplateDatabase(
+	adminConnectionUrl: URL,
+	templateDbName: string,
+): Promise<void> {
+	await using adminPool = createDisposableAdminPool(
+		adminConnectionUrl.toString(),
+	);
+	await createDatabase(adminPool.pool, templateDbName);
+}
+
 // Runs once from integrationGlobalSetup.ts, before any test file starts, so
 // the migrations only run once even when test files run in parallel across
 // workers. Each test then clones this template instead of migrating from
@@ -173,12 +183,9 @@ export async function buildTestTemplate(
 	migrationFolder: string,
 ): Promise<string> {
 	const adminConnectionUrl = readExternalAdminUrl();
-	await using adminPool = createDisposableAdminPool(
-		adminConnectionUrl.toString(),
-	);
 	const templateDbName = buildDbName(TEST_TEMPLATE_PREFIX);
 
-	await createDatabase(adminPool.pool, templateDbName);
+	await createTemplateDatabase(adminConnectionUrl, templateDbName);
 
 	await using templateDb = createDisposableMigrationDb(
 		buildConnectionString(adminConnectionUrl, templateDbName),
