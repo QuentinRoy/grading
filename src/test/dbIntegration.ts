@@ -124,16 +124,45 @@ function readTemplateDbName(): string {
 	return name;
 }
 
+type DisposableAdminPool = {
+	pool: Pool;
+	[Symbol.asyncDispose](): Promise<void>;
+};
+
 function createDisposableAdminPool(
 	connectionString: string,
-): Pool & AsyncDisposable {
+): DisposableAdminPool {
 	const pool = new Pool({ connectionString, max: TEST_DB_POOL_MAX });
 
-	return Object.assign(pool, {
+	return {
+		pool,
 		async [Symbol.asyncDispose](): Promise<void> {
 			await pool.end();
 		},
+	};
+}
+
+type DisposableMigrationDb = {
+	db: Kysely<DB>;
+	[Symbol.asyncDispose](): Promise<void>;
+};
+
+function createDisposableMigrationDb(
+	connectionString: string,
+): DisposableMigrationDb {
+	const db = new Kysely<DB>({
+		dialect: new PostgresDialect({
+			pool: new Pool({ connectionString, max: TEST_DB_POOL_MAX }),
+		}),
+		plugins: [new CamelCasePlugin()],
 	});
+
+	return {
+		db,
+		async [Symbol.asyncDispose](): Promise<void> {
+			await db.destroy();
+		},
+	};
 }
 
 // Runs once from integrationGlobalSetup.ts, before any test file starts, so
@@ -149,30 +178,16 @@ export async function buildTestTemplate(
 	);
 	const templateDbName = buildDbName(TEST_TEMPLATE_PREFIX);
 
-	await createDatabase(adminPool, templateDbName);
+	await createDatabase(adminPool.pool, templateDbName);
 
-	const templateDb = new Kysely<DB>({
-		dialect: new PostgresDialect({
-			pool: new Pool({
-				connectionString: buildConnectionString(
-					adminConnectionUrl,
-					templateDbName,
-				),
-				max: TEST_DB_POOL_MAX,
-			}),
-		}),
-		plugins: [new CamelCasePlugin()],
-	});
+	await using templateDb = createDisposableMigrationDb(
+		buildConnectionString(adminConnectionUrl, templateDbName),
+	);
+	const migrator = createMigrator(templateDb.db, migrationFolder);
+	const { error } = await migrator.migrateToLatest();
 
-	try {
-		const migrator = createMigrator(templateDb, migrationFolder);
-		const { error } = await migrator.migrateToLatest();
-
-		if (error != null) {
-			throw error;
-		}
-	} finally {
-		await templateDb.destroy();
+	if (error != null) {
+		throw error;
 	}
 
 	return templateDbName;
@@ -184,7 +199,7 @@ export async function dropTestTemplate(templateDbName: string): Promise<void> {
 		adminConnectionUrl.toString(),
 	);
 
-	await dropDatabase(adminPool, templateDbName);
+	await dropDatabase(adminPool.pool, templateDbName);
 }
 
 export async function startTestDatabase(): Promise<StartedTestDatabase> {
