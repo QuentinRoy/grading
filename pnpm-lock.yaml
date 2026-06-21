@@ -37,7 +37,7 @@ importers:
         version: 9.1.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@mui/material-nextjs':
         specifier: ^9.1.1
-        version: 9.1.1(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(next@16.2.9(@babel/core@7.29.7)(@playwright/test@1.60.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)
+        version: 9.1.1(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(next@16.2.9(@babel/core@7.29.7)(@playwright/test@1.61.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)
       '@shikijs/langs':
         specifier: ^4.1.0
         version: 4.1.0
@@ -73,7 +73,7 @@ importers:
         version: 5.1.11
       next:
         specifier: ^16.2.9
-        version: 16.2.9(@babel/core@7.29.7)(@playwright/test@1.60.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        version: 16.2.9(@babel/core@7.29.7)(@playwright/test@1.61.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       pg:
         specifier: ^8.21.0
         version: 8.21.0
@@ -109,14 +109,14 @@ importers:
         specifier: ^1.69.1
         version: 1.69.1
       '@playwright/test':
-        specifier: 1.60.0
-        version: 1.60.0
+        specifier: 1.61.0
+        version: 1.61.0
       '@storybook/addon-vitest':
         specifier: ^10.4.1
-        version: 10.4.1(@vitest/browser-playwright@4.1.7)(@vitest/browser@4.1.7(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))(vitest@4.1.7))(@vitest/runner@4.1.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(storybook@10.4.1(@testing-library/dom@10.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(vitest@4.1.7)
+        version: 10.4.1(@vitest/browser-playwright@4.1.9)(@vitest/browser@4.1.9(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))(vitest@4.1.7))(@vitest/runner@4.1.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(storybook@10.4.1(@testing-library/dom@10.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(vitest@4.1.7)
       '@storybook/nextjs-vite':
         specifier: ^10.4.1
-        version: 10.4.1(@babel/core@7.29.7)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.27.7)(next@16.2.9(@babel/core@7.29.7)(@playwright/test@1.60.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(storybook@10.4.1(@testing-library/dom@10.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@6.0.3)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))
+        version: 10.4.1(@babel/core@7.29.7)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.27.7)(next@16.2.9(@babel/core@7.29.7)(@playwright/test@1.61.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(storybook@10.4.1(@testing-library/dom@10.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@6.0.3)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))
       '@types/js-yaml':
         specifier: ^4.0.9
         version: 4.0.9
@@ -136,14 +136,14 @@ importers:
         specifier: ^19.0.0
         version: 19.2.3(@types/react@19.2.17)
       '@vitest/browser-playwright':
-        specifier: ^4.1.7
-        version: 4.1.7(playwright@1.60.0)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))(vitest@4.1.7)
+        specifier: ^4.1.9
+        version: 4.1.9(playwright@1.61.0)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))(vitest@4.1.7)
       kysely-codegen:
         specifier: ^0.20.0
         version: 0.20.0(kysely@0.29.2)(pg@8.21.0)(typescript@6.0.3)
       playwright:
-        specifier: ^1.60.0
-        version: 1.60.0
+        specifier: ^1.61.0
+        version: 1.61.0
       storybook:
         specifier: ^10.4.1
         version: 10.4.1(@testing-library/dom@10.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -152,7 +152,7 @@ importers:
         version: 8.0.14(@types/node@26.0.0)(esbuild@0.27.7)
       vitest:
         specifier: ^4.1.7
-        version: 4.1.7(@types/node@26.0.0)(@vitest/browser-playwright@4.1.7)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))
+        version: 4.1.7(@types/node@26.0.0)(@vitest/browser-playwright@4.1.9)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))
 
 packages:
 
@@ -1203,8 +1203,8 @@ packages:
   '@pinojs/redact@0.4.0':
     resolution: {integrity: sha512-k2ENnmBugE/rzQfEcdWHcCY+/FM3VLzH9cYEsbdsoqrvzAKRhUZeRNhAZvB8OitQJ1TBed3yqWtdjzS6wJKBwg==}
 
-  '@playwright/test@1.60.0':
-    resolution: {integrity: sha512-O71yZIbAh/PxDMNGns37GHBIfrVkEVyn+AXyIa5dOTfb4/xNvRWV+Vv/NMbNCtODB/pO7vLlF2OTmMVLhmr7Ag==}
+  '@playwright/test@1.61.0':
+    resolution: {integrity: sha512-cKA5B6lpFEMyMGjxF54QihfYpB4FkEGH+qZhtArDEG+wezQAJY8Pq6C7T1SjWz+FFzt3TbyoXBQYk/0292TdJA==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -1557,16 +1557,16 @@ packages:
   '@ungap/structured-clone@1.3.1':
     resolution: {integrity: sha512-mUFwbeTqrVgDQxFveS+df2yfap6iuP20NAKAsBt5jDEoOTDew+zwLAOilHCeQJOVSvmgCX4ogqIrA0mnyr08yQ==}
 
-  '@vitest/browser-playwright@4.1.7':
-    resolution: {integrity: sha512-OlTlJej7YN6VwV7zJJoNeaCsctF+JXpzpZ4oBHUbrQFfIq+0KW2f07rprCLh9N/zRIZ0v4Mchn1QDDmWMUhPKw==}
+  '@vitest/browser-playwright@4.1.9':
+    resolution: {integrity: sha512-Bq1rOGf9waevzG3EOkO/dene6bvKTUsZMVg8S1i+WH3JcMjuXEjiahP9rAqZRELUqjBySOJsvvSWqK/B3wjKQw==}
     peerDependencies:
       playwright: '*'
-      vitest: 4.1.7
+      vitest: 4.1.9
 
-  '@vitest/browser@4.1.7':
-    resolution: {integrity: sha512-N2JFGfXoEGVAut+kHeru9dD4BUMq/q5xDvBARNl0tUsly3m5KglLOu8VO/6MkDfOlgxXTycojkt6gBKsuyR+IQ==}
+  '@vitest/browser@4.1.9':
+    resolution: {integrity: sha512-j1BKtWmPcqpMhmx/L9EPLgAJpCb0zKfwoWLmqBbxaogCXHjOwHFSEoHCBfnGtx93xKQwilZ26m+UOsHqHMkRNg==}
     peerDependencies:
-      vitest: 4.1.7
+      vitest: 4.1.9
 
   '@vitest/expect@3.2.4':
     resolution: {integrity: sha512-Io0yyORnB6sikFlt8QW5K7slY4OjqNX9jmJQ02QDda8lyM6B5oNgVWoSoKPac8/kgnCUzuHQKrSLtu/uOqqrig==}
@@ -1585,11 +1585,25 @@ packages:
       vite:
         optional: true
 
+  '@vitest/mocker@4.1.9':
+    resolution: {integrity: sha512-EVkXzBjrPGM+cK8/ANWgBrkUCfJfb38/EfTSO8h7pWvKkyPkpWxvR7BkD2MyItMF62C97zAEoqdpUixwR/e+Rw==}
+    peerDependencies:
+      msw: ^2.4.9
+      vite: ^6.0.0 || ^7.0.0 || ^8.0.0
+    peerDependenciesMeta:
+      msw:
+        optional: true
+      vite:
+        optional: true
+
   '@vitest/pretty-format@3.2.4':
     resolution: {integrity: sha512-IVNZik8IVRJRTr9fxlitMKeJeXFFFN0JaB9PHPGQ8NKQbGpfjlTx9zO4RefN8gp7eqjNy8nyK3NZmBzOPeIxtA==}
 
   '@vitest/pretty-format@4.1.7':
     resolution: {integrity: sha512-umgCarTOYQWIaDMvGDRZij+6b9oVeLIyJzfN+AS88e0ZOU3QTgNNSTtjQOpcvWr3np1N0j4WgZj+sb3oYBDscw==}
+
+  '@vitest/pretty-format@4.1.9':
+    resolution: {integrity: sha512-s0iufns3iIFitdgm+YR7g1whCAaGtXz459VS9/PqyKDEEFgYIhsHOQmXgIgDuYCt7DeQmiZT0Qe2OA2p4ZPu5A==}
 
   '@vitest/runner@4.1.7':
     resolution: {integrity: sha512-BapjmAQ2aI78WdMEfeUWivnfVzB+VPGwWRQcJE0OUq7qEeEcBsCSf+0T5iREBNE5nBb4wA5Ya0W6IA+sghdEFw==}
@@ -1603,11 +1617,17 @@ packages:
   '@vitest/spy@4.1.7':
     resolution: {integrity: sha512-kbkI5LMWakyuTIvs6fUJ5qdIVb1XVKsYJAT4OJ938cHMROYMSfmoQdZy0aaAnjbbc8F61vkoTqz/Az+/HiIu5Q==}
 
+  '@vitest/spy@4.1.9':
+    resolution: {integrity: sha512-fHpsS6mIi+PiEW+vcRVOMkX1oSaPKne3VOclSFICPcGOmfKgXPU5iAah+wcNcj2xPrCCmfq99IDGf+EojhhvhA==}
+
   '@vitest/utils@3.2.4':
     resolution: {integrity: sha512-fB2V0JFrQSMsCo9HiSq3Ezpdv4iYaXRG1Sx8edX3MwxfyNn83mKiGzOcH+Fkxt4MHxr3y42fQi1oeAInqgX2QA==}
 
   '@vitest/utils@4.1.7':
     resolution: {integrity: sha512-T532WBu791cBxJlCl6SO+J14l81DQx6uQHm1bQbmCDY7nqlEIgkza/UFnSBNaUtSf41unldDFjdOBYEQC4b5Hw==}
+
+  '@vitest/utils@4.1.9':
+    resolution: {integrity: sha512-A51o8ymO5PpqlWNnBP9ZHPXDIpuMtTLlGSjN7la4US+LJzoUMyhwjA5QXlm39JexgwHKW4Xjs8Z2d3dLCXOeuA==}
 
   '@webcontainer/env@1.1.1':
     resolution: {integrity: sha512-6aN99yL695Hi9SuIk1oC88l9o0gmxL1nGWWQ/kNy81HigJ0FoaoTXpytCj6ItzgyCEwA9kF1wixsTuv5cjsgng==}
@@ -2426,13 +2446,13 @@ packages:
     resolution: {integrity: sha512-r34yH/GlQpKZbU1BvFFqOjhISRo1MNx1tWYsYvmj6KIRHSPMT2+yHOEb1SG6NMvRoHRF0a07kCOox/9yakl1vg==}
     hasBin: true
 
-  playwright-core@1.60.0:
-    resolution: {integrity: sha512-9bW6zvX/m0lEbgTKJ6YppOKx8H3VOPBMOCFh2irXFOT4BbHgrx5hPjwJYLT40Lu+4qtD36qKc/Hn56StUW57IA==}
+  playwright-core@1.61.0:
+    resolution: {integrity: sha512-caX7TrY3Ml6egyDX0WUcTHDxodl/b51y5wJOdCEA36QviK/s2g081hvmGs8eaE3DWb6NYZQ6BjO/QkNRPenoPA==}
     engines: {node: '>=18'}
     hasBin: true
 
-  playwright@1.60.0:
-    resolution: {integrity: sha512-hheHdokM8cdqCb0lcE3s+zT4t4W+vvjpGxsZlDnikarzx8tSzMebh3UiFtgqwFwnTnjYQcsyMF8ei2mCO/tpeA==}
+  playwright@1.61.0:
+    resolution: {integrity: sha512-Z+7BeeqQPRRzklHsVFP4KTGIyMxKUmfeRA4WisM6G3/XW6nwGeX6fX9qYaDa+CiUqpOkb2f6X3nar05R3kSuJQ==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -3536,11 +3556,11 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.17
 
-  '@mui/material-nextjs@9.1.1(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(next@16.2.9(@babel/core@7.29.7)(@playwright/test@1.60.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)':
+  '@mui/material-nextjs@9.1.1(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(next@16.2.9(@babel/core@7.29.7)(@playwright/test@1.61.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)':
     dependencies:
       '@babel/runtime': 7.29.7
       '@emotion/react': 11.14.0(@types/react@19.2.17)(react@19.2.7)
-      next: 16.2.9(@babel/core@7.29.7)(@playwright/test@1.60.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      next: 16.2.9(@babel/core@7.29.7)(@playwright/test@1.61.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       react: 19.2.7
     optionalDependencies:
       '@emotion/cache': 11.14.0
@@ -3804,9 +3824,9 @@ snapshots:
 
   '@pinojs/redact@0.4.0': {}
 
-  '@playwright/test@1.60.0':
+  '@playwright/test@1.61.0':
     dependencies:
-      playwright: 1.60.0
+      playwright: 1.61.0
 
   '@polka/url@1.0.0-next.29': {}
 
@@ -3911,16 +3931,16 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@storybook/addon-vitest@10.4.1(@vitest/browser-playwright@4.1.7)(@vitest/browser@4.1.7(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))(vitest@4.1.7))(@vitest/runner@4.1.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(storybook@10.4.1(@testing-library/dom@10.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(vitest@4.1.7)':
+  '@storybook/addon-vitest@10.4.1(@vitest/browser-playwright@4.1.9)(@vitest/browser@4.1.9(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))(vitest@4.1.7))(@vitest/runner@4.1.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(storybook@10.4.1(@testing-library/dom@10.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(vitest@4.1.7)':
     dependencies:
       '@storybook/global': 5.0.0
       '@storybook/icons': 2.0.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       storybook: 10.4.1(@testing-library/dom@10.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
     optionalDependencies:
-      '@vitest/browser': 4.1.7(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))(vitest@4.1.7)
-      '@vitest/browser-playwright': 4.1.7(playwright@1.60.0)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))(vitest@4.1.7)
+      '@vitest/browser': 4.1.9(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))(vitest@4.1.7)
+      '@vitest/browser-playwright': 4.1.9(playwright@1.61.0)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))(vitest@4.1.7)
       '@vitest/runner': 4.1.7
-      vitest: 4.1.7(@types/node@26.0.0)(@vitest/browser-playwright@4.1.7)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))
+      vitest: 4.1.7(@types/node@26.0.0)(@vitest/browser-playwright@4.1.9)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))
     transitivePeerDependencies:
       - react
       - react-dom
@@ -3951,18 +3971,18 @@ snapshots:
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
 
-  '@storybook/nextjs-vite@10.4.1(@babel/core@7.29.7)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.27.7)(next@16.2.9(@babel/core@7.29.7)(@playwright/test@1.60.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(storybook@10.4.1(@testing-library/dom@10.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@6.0.3)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))':
+  '@storybook/nextjs-vite@10.4.1(@babel/core@7.29.7)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.27.7)(next@16.2.9(@babel/core@7.29.7)(@playwright/test@1.61.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(storybook@10.4.1(@testing-library/dom@10.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@6.0.3)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))':
     dependencies:
       '@storybook/builder-vite': 10.4.1(esbuild@0.27.7)(storybook@10.4.1(@testing-library/dom@10.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))
       '@storybook/react': 10.4.1(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(storybook@10.4.1(@testing-library/dom@10.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@6.0.3)
       '@storybook/react-vite': 10.4.1(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.27.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(storybook@10.4.1(@testing-library/dom@10.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@6.0.3)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))
-      next: 16.2.9(@babel/core@7.29.7)(@playwright/test@1.60.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      next: 16.2.9(@babel/core@7.29.7)(@playwright/test@1.61.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
       storybook: 10.4.1(@testing-library/dom@10.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       styled-jsx: 5.1.6(@babel/core@7.29.7)(react@19.2.7)
       vite: 8.0.14(@types/node@26.0.0)(esbuild@0.27.7)
-      vite-plugin-storybook-nextjs: 3.3.0(next@16.2.9(@babel/core@7.29.7)(@playwright/test@1.60.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(storybook@10.4.1(@testing-library/dom@10.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@6.0.3)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))
+      vite-plugin-storybook-nextjs: 3.3.0(next@16.2.9(@babel/core@7.29.7)(@playwright/test@1.61.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(storybook@10.4.1(@testing-library/dom@10.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@6.0.3)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))
     optionalDependencies:
       '@types/react': 19.2.17
       '@types/react-dom': 19.2.3(@types/react@19.2.17)
@@ -4138,29 +4158,29 @@ snapshots:
 
   '@ungap/structured-clone@1.3.1': {}
 
-  '@vitest/browser-playwright@4.1.7(playwright@1.60.0)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))(vitest@4.1.7)':
+  '@vitest/browser-playwright@4.1.9(playwright@1.61.0)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))(vitest@4.1.7)':
     dependencies:
-      '@vitest/browser': 4.1.7(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))(vitest@4.1.7)
-      '@vitest/mocker': 4.1.7(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))
-      playwright: 1.60.0
+      '@vitest/browser': 4.1.9(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))(vitest@4.1.7)
+      '@vitest/mocker': 4.1.9(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))
+      playwright: 1.61.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.7(@types/node@26.0.0)(@vitest/browser-playwright@4.1.7)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))
+      vitest: 4.1.7(@types/node@26.0.0)(@vitest/browser-playwright@4.1.9)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))
     transitivePeerDependencies:
       - bufferutil
       - msw
       - utf-8-validate
       - vite
 
-  '@vitest/browser@4.1.7(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))(vitest@4.1.7)':
+  '@vitest/browser@4.1.9(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))(vitest@4.1.7)':
     dependencies:
       '@blazediff/core': 1.9.1
-      '@vitest/mocker': 4.1.7(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))
-      '@vitest/utils': 4.1.7
+      '@vitest/mocker': 4.1.9(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))
+      '@vitest/utils': 4.1.9
       magic-string: 0.30.21
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.1.0
-      vitest: 4.1.7(@types/node@26.0.0)(@vitest/browser-playwright@4.1.7)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))
+      vitest: 4.1.7(@types/node@26.0.0)(@vitest/browser-playwright@4.1.9)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))
       ws: 8.21.0
     transitivePeerDependencies:
       - bufferutil
@@ -4193,11 +4213,23 @@ snapshots:
     optionalDependencies:
       vite: 8.0.14(@types/node@26.0.0)(esbuild@0.27.7)
 
+  '@vitest/mocker@4.1.9(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))':
+    dependencies:
+      '@vitest/spy': 4.1.9
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+    optionalDependencies:
+      vite: 8.0.14(@types/node@26.0.0)(esbuild@0.27.7)
+
   '@vitest/pretty-format@3.2.4':
     dependencies:
       tinyrainbow: 2.0.0
 
   '@vitest/pretty-format@4.1.7':
+    dependencies:
+      tinyrainbow: 3.1.0
+
+  '@vitest/pretty-format@4.1.9':
     dependencies:
       tinyrainbow: 3.1.0
 
@@ -4219,6 +4251,8 @@ snapshots:
 
   '@vitest/spy@4.1.7': {}
 
+  '@vitest/spy@4.1.9': {}
+
   '@vitest/utils@3.2.4':
     dependencies:
       '@vitest/pretty-format': 3.2.4
@@ -4228,6 +4262,12 @@ snapshots:
   '@vitest/utils@4.1.7':
     dependencies:
       '@vitest/pretty-format': 4.1.7
+      convert-source-map: 2.0.0
+      tinyrainbow: 3.1.0
+
+  '@vitest/utils@4.1.9':
+    dependencies:
+      '@vitest/pretty-format': 4.1.9
       convert-source-map: 2.0.0
       tinyrainbow: 3.1.0
 
@@ -4763,7 +4803,7 @@ snapshots:
 
   nanoid@5.1.11: {}
 
-  next@16.2.9(@babel/core@7.29.7)(@playwright/test@1.60.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
+  next@16.2.9(@babel/core@7.29.7)(@playwright/test@1.61.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
     dependencies:
       '@next/env': 16.2.9
       '@swc/helpers': 0.5.15
@@ -4782,7 +4822,7 @@ snapshots:
       '@next/swc-linux-x64-musl': 16.2.9
       '@next/swc-win32-arm64-msvc': 16.2.9
       '@next/swc-win32-x64-msvc': 16.2.9
-      '@playwright/test': 1.60.0
+      '@playwright/test': 1.61.0
       sharp: 0.34.5
     transitivePeerDependencies:
       - '@babel/core'
@@ -4961,11 +5001,11 @@ snapshots:
       sonic-boom: 4.2.1
       thread-stream: 4.2.0
 
-  playwright-core@1.60.0: {}
+  playwright-core@1.61.0: {}
 
-  playwright@1.60.0:
+  playwright@1.61.0:
     dependencies:
-      playwright-core: 1.60.0
+      playwright-core: 1.61.0
     optionalDependencies:
       fsevents: 2.3.2
 
@@ -5360,13 +5400,13 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  vite-plugin-storybook-nextjs@3.3.0(next@16.2.9(@babel/core@7.29.7)(@playwright/test@1.60.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(storybook@10.4.1(@testing-library/dom@10.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@6.0.3)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7)):
+  vite-plugin-storybook-nextjs@3.3.0(next@16.2.9(@babel/core@7.29.7)(@playwright/test@1.61.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(storybook@10.4.1(@testing-library/dom@10.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@6.0.3)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7)):
     dependencies:
       '@next/env': 16.0.0
       image-size: 2.0.2
       magic-string: 0.30.21
       module-alias: 2.3.4
-      next: 16.2.9(@babel/core@7.29.7)(@playwright/test@1.60.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      next: 16.2.9(@babel/core@7.29.7)(@playwright/test@1.61.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       storybook: 10.4.1(@testing-library/dom@10.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       ts-dedent: 2.2.0
       vite: 8.0.14(@types/node@26.0.0)(esbuild@0.27.7)
@@ -5398,7 +5438,7 @@ snapshots:
       esbuild: 0.27.7
       fsevents: 2.3.3
 
-  vitest@4.1.7(@types/node@26.0.0)(@vitest/browser-playwright@4.1.7)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7)):
+  vitest@4.1.7(@types/node@26.0.0)(@vitest/browser-playwright@4.1.9)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7)):
     dependencies:
       '@vitest/expect': 4.1.7
       '@vitest/mocker': 4.1.7(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))
@@ -5422,7 +5462,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 26.0.0
-      '@vitest/browser-playwright': 4.1.7(playwright@1.60.0)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))(vitest@4.1.7)
+      '@vitest/browser-playwright': 4.1.9(playwright@1.61.0)(vite@8.0.14(@types/node@26.0.0)(esbuild@0.27.7))(vitest@4.1.7)
     transitivePeerDependencies:
       - msw
 
