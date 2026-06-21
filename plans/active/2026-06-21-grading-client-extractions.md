@@ -26,13 +26,20 @@ Issue: none yet — a dedicated implementation issue is needed when work starts 
 
 ## Implementation steps
 
-Behavior-preserving extraction of working code; keep each client's observable behavior identical.
+Done — #197 (2026-06-21). Behavior-preserving extraction of working code; each client's observable behavior is unchanged.
 
-1. **`src/assessments/useSubmissionQuickJump.ts`** — move the Cmd/Ctrl+K `useEffect` (with the input/textarea/contentEditable guard) and the `isQuickJumpOpen` `useState` into the hook; return `{ isOpen, open, close }`.
-2. **`src/assessments/useSubmissionQuickJump.stories.tsx`** — a small harness component using the hook plus a text input and a visible open/closed marker; play function asserts: Cmd/Ctrl+K opens; focus an input, press Cmd/Ctrl+K, stays closed (guard); Escape/close closes.
-3. **Refactor `SubmissionAssessmentClient.tsx`** — replace the copied effect + `useState` + open/close handlers with `useSubmissionQuickJump`; source `currentSubmission` via `getSubmissionNavigation`; collapse the guard; keep the inline save-error object unchanged.
-4. **Refactor `SubmissionOverviewAssessmentClient.tsx`** — same, preserving the unknown-rubric-mapping branch in `saveRubric`.
-5. **Simplify pass** over the modified files, then `pnpm run check --fix`, `pnpm run check-types`, and `pnpm test:storybook useSubmissionQuickJump` (plus any stem-matched tests). Open a dedicated implementation issue before the PR per the backlog convention.
+1. ✅ **`src/assessments/useSubmissionQuickJump.ts`** — the Cmd/Ctrl+K `useEffect` (with the input/textarea/contentEditable guard) and the open state now live in the hook; returns `{ isOpen, open, close }`.
+2. ✅ **`src/assessments/useSubmissionQuickJump.stories.tsx`** — harness component plus three play functions: Cmd/Ctrl+K opens; a focused input guards the shortcut; the open/close controls work.
+3. ✅ **Refactor `SubmissionAssessmentClient.tsx`** — replaced the copied effect + `useState` + open/close handlers with `useSubmissionQuickJump`; `currentSubmission` now comes from `getSubmissionNavigation`; the guard collapsed to one check; the inline save-error object is unchanged.
+4. ✅ **Refactor `SubmissionOverviewAssessmentClient.tsx`** — same, with the unknown-rubric-mapping branch preserved.
+5. ✅ **Simplify pass** + checks (see Validation).
+
+## Validation
+
+- `pnpm run check --fix` — clean (only import-order autofix on the changed files).
+- `pnpm run check-types` — clean.
+- `pnpm test:storybook useSubmissionQuickJump` — 3/3 play tests pass (`OpensOnShortcut`, `IgnoresShortcutWhileTyping`, `OpenAndCloseControls`).
+- No other stem-matched unit tests exist (the two clients and `useAssessmentSession` are untested today; broader session coverage is #30).
 
 ## Non-goals
 
