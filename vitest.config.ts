@@ -24,6 +24,13 @@ export default defineConfig({
 					include: ["src/**/*.{test,spec}.{ts,tsx,js,jsx}"],
 					exclude: [integrationPattern],
 					alias: nodeTestAlias,
+					// Each project below sets its own `maxWorkers`. Vitest requires
+					// projects with different `maxWorkers` to run in different sequence
+					// groups (lower groups run before higher ones) when run together, since
+					// a single worker pool can't enforce two different concurrency limits
+					// at once. CI never runs the combined `pnpm test` script (each project
+					// has its own job), so this ordering only affects local full runs.
+					sequence: { groupOrder: 0 },
 				},
 			},
 			{
@@ -31,9 +38,16 @@ export default defineConfig({
 					name: "integration",
 					environment: "node",
 					include: [integrationPattern],
-					fileParallelism: false,
+					// Files run in parallel across workers. Each test gets its own
+					// database (cloned from a template built once in global setup,
+					// see integrationGlobalSetup.ts), so isolation holds without
+					// `fileParallelism: false`. Capped so concurrent per-test
+					// connection pools (see TEST_DB_POOL_MAX in dbIntegration.ts)
+					// stay well under Postgres's default max_connections.
+					maxWorkers: 4,
 					globalSetup: ["src/test/integrationGlobalSetup.ts"],
 					alias: nodeTestAlias,
+					sequence: { groupOrder: 1 },
 				},
 			},
 			{
@@ -51,6 +65,7 @@ export default defineConfig({
 						provider: playwright(),
 						instances: [{ browser: "chromium" }],
 					},
+					sequence: { groupOrder: 2 },
 				},
 			},
 		],

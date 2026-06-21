@@ -3,6 +3,12 @@ import { randomUUID } from "node:crypto";
 import net from "node:net";
 import { setTimeout as delay } from "node:timers/promises";
 import { Pool } from "pg";
+import {
+	buildTestTemplate,
+	dropTestTemplate,
+	TEST_TEMPLATE_DB_NAME_ENV_VAR,
+	testMigrationsPath,
+} from "./dbIntegration.ts";
 
 type RunResult = { code: number };
 
@@ -175,16 +181,10 @@ function buildTestDatabaseUrl(params: {
 	return `postgresql://${encodedUser}:${encodedPassword}@${params.host}:${params.port}/${encodedDatabase}`;
 }
 
-export default async function integrationGlobalSetup(): Promise<
-	void | (() => Promise<void>)
-> {
-	if (
-		process.env["TEST_DATABASE_URL"] != null &&
-		process.env["TEST_DATABASE_URL"] !== ""
-	) {
-		return;
-	}
-
+async function startDockerPostgres(): Promise<{
+	composeProject: string;
+	composeEnv: NodeJS.ProcessEnv;
+}> {
 	const port = await getFreePort();
 	const postgresUser = process.env["POSTGRES_USER"] ?? DEFAULT_POSTGRES_USER;
 	const postgresPassword =
@@ -237,7 +237,41 @@ export default async function integrationGlobalSetup(): Promise<
 		throw error;
 	}
 
+	return { composeProject, composeEnv };
+}
+
+export default async function integrationGlobalSetup(): Promise<
+	void | (() => Promise<void>)
+> {
+	const hasExternalDatabase =
+		process.env["TEST_DATABASE_URL"] != null &&
+		process.env["TEST_DATABASE_URL"] !== "";
+
+	const docker = hasExternalDatabase ? null : await startDockerPostgres();
+
+	// Run once here, before any test file starts, so migrations only run once
+	// even though integration test files now run in parallel across workers
+	// (see vitest.config.ts). Each test then clones this template instead of
+	// migrating from scratch.
+	let templateDbName: string;
+
+	try {
+		templateDbName = await buildTestTemplate(testMigrationsPath);
+	} catch (error) {
+		if (docker != null) {
+			await stopAndRemoveContainers(docker.composeProject, docker.composeEnv);
+		}
+
+		throw error;
+	}
+
+	process.env[TEST_TEMPLATE_DB_NAME_ENV_VAR] = templateDbName;
+
 	return async () => {
-		await stopAndRemoveContainers(composeProject, composeEnv);
+		await dropTestTemplate(templateDbName);
+
+		if (docker != null) {
+			await stopAndRemoveContainers(docker.composeProject, docker.composeEnv);
+		}
 	};
 }

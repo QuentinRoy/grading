@@ -17,24 +17,23 @@ export type DisposableTestDatabase = Kysely<DB> & {
 	[Symbol.asyncDispose](): Promise<void>;
 };
 
-type ExternalTemplateContext = {
-	adminConnectionUrl: URL;
-	templateDbName: string;
-};
-
 const TEST_DATABASE_PREFIX = "grading_test_db";
 const TEST_TEMPLATE_PREFIX = "grading_test_tpl";
+export const TEST_TEMPLATE_DB_NAME_ENV_VAR = "TEST_TEMPLATE_DB_NAME";
+// Each test owns a single connection at a time; this just bounds how many
+// connections a worker can pile up if a test leaks one, so that running
+// several integration test files in parallel (see vitest.config.ts) stays
+// well under Postgres's default max_connections.
+const TEST_DB_POOL_MAX = 5;
 const runTag = sanitizeDbIdentifier(
 	process.env["GITHUB_RUN_ID"] ?? `${Date.now()}_${process.pid}`,
 );
-
-let externalTemplatePromise: Promise<ExternalTemplateContext> | null = null;
 
 export function buildTestId(prefix: string): string {
 	return `${prefix}-${randomUUID()}`;
 }
 
-const testMigrationsPath = path.join(
+export const testMigrationsPath = path.join(
 	path.dirname(fileURLToPath(import.meta.url)),
 	"../db/migrations",
 );
@@ -113,20 +112,33 @@ function readExternalAdminUrl(): URL {
 	return new URL(url);
 }
 
-async function ensureExternalTemplate(
-	migrationFolder: string,
-): Promise<ExternalTemplateContext> {
-	if (externalTemplatePromise != null) {
-		return externalTemplatePromise;
+function readTemplateDbName(): string {
+	const name = process.env[TEST_TEMPLATE_DB_NAME_ENV_VAR];
+
+	if (name == null || name.length === 0) {
+		throw new Error(
+			`${TEST_TEMPLATE_DB_NAME_ENV_VAR} must be set for integration tests (set by integrationGlobalSetup.ts)`,
+		);
 	}
 
-	externalTemplatePromise = (async () => {
-		const adminConnectionUrl = readExternalAdminUrl();
-		const adminPool = new Pool({
-			connectionString: adminConnectionUrl.toString(),
-		});
-		const templateDbName = buildDbName(TEST_TEMPLATE_PREFIX);
+	return name;
+}
 
+// Runs once from integrationGlobalSetup.ts, before any test file starts, so
+// the migrations only run once even when test files run in parallel across
+// workers. Each test then clones this template instead of migrating from
+// scratch (see startTestDatabase below).
+export async function buildTestTemplate(
+	migrationFolder: string,
+): Promise<string> {
+	const adminConnectionUrl = readExternalAdminUrl();
+	const adminPool = new Pool({
+		connectionString: adminConnectionUrl.toString(),
+		max: TEST_DB_POOL_MAX,
+	});
+	const templateDbName = buildDbName(TEST_TEMPLATE_PREFIX);
+
+	try {
 		await createDatabase(adminPool, templateDbName);
 
 		const templateDb = new Kysely<DB>({
@@ -136,6 +148,7 @@ async function ensureExternalTemplate(
 						adminConnectionUrl,
 						templateDbName,
 					),
+					max: TEST_DB_POOL_MAX,
 				}),
 			}),
 			plugins: [new CamelCasePlugin()],
@@ -150,37 +163,47 @@ async function ensureExternalTemplate(
 			}
 		} finally {
 			await templateDb.destroy();
-			await adminPool.end();
 		}
+	} finally {
+		await adminPool.end();
+	}
 
-		return { adminConnectionUrl, templateDbName };
-	})();
-
-	return externalTemplatePromise;
+	return templateDbName;
 }
 
-async function startExternalDatabase(
-	migrationFolder: string,
-): Promise<StartedTestDatabase> {
-	const template = await ensureExternalTemplate(migrationFolder);
+export async function dropTestTemplate(templateDbName: string): Promise<void> {
+	const adminConnectionUrl = readExternalAdminUrl();
 	const adminPool = new Pool({
-		connectionString: template.adminConnectionUrl.toString(),
+		connectionString: adminConnectionUrl.toString(),
+		max: TEST_DB_POOL_MAX,
+	});
+
+	try {
+		await dropDatabase(adminPool, templateDbName);
+	} finally {
+		await adminPool.end();
+	}
+}
+
+export async function startTestDatabase(): Promise<StartedTestDatabase> {
+	const adminConnectionUrl = readExternalAdminUrl();
+	const templateDbName = readTemplateDbName();
+	const adminPool = new Pool({
+		connectionString: adminConnectionUrl.toString(),
+		max: TEST_DB_POOL_MAX,
 	});
 	const databaseName = buildDbName(TEST_DATABASE_PREFIX);
 
-	await createDatabaseFromTemplate(
-		adminPool,
-		databaseName,
-		template.templateDbName,
-	);
+	await createDatabaseFromTemplate(adminPool, databaseName, templateDbName);
 
 	const db = new Kysely<DB>({
 		dialect: new PostgresDialect({
 			pool: new Pool({
 				connectionString: buildConnectionString(
-					template.adminConnectionUrl,
+					adminConnectionUrl,
 					databaseName,
 				),
+				max: TEST_DB_POOL_MAX,
 			}),
 			cursor: Cursor,
 		}),
@@ -196,12 +219,6 @@ async function startExternalDatabase(
 	};
 }
 
-export async function startTestDatabase(
-	migrationFolder: string,
-): Promise<StartedTestDatabase> {
-	return startExternalDatabase(migrationFolder);
-}
-
 export async function stopTestDatabase({
 	db,
 	cleanup,
@@ -214,7 +231,7 @@ export async function stopTestDatabase({
 }
 
 export async function createTestDb(): Promise<DisposableTestDatabase> {
-	const startedDb = await startTestDatabase(testMigrationsPath);
+	const startedDb = await startTestDatabase();
 
 	return Object.assign(startedDb.db, {
 		async [Symbol.asyncDispose](): Promise<void> {
