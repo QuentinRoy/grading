@@ -27,34 +27,42 @@ function runPlaywright(env: NodeJS.ProcessEnv): Promise<number> {
 	});
 }
 
-async function runWithEphemeralPostgres(): Promise<number> {
-	const handle = await provisionEphemeralPostgres();
+type DisposableEphemeralPostgres = { databaseUrl: string } & AsyncDisposable;
 
+async function startEphemeralPostgres(): Promise<DisposableEphemeralPostgres> {
+	const handle = await provisionEphemeralPostgres();
 	let tornDown = false;
-	async function teardown(): Promise<void> {
-		if (tornDown) {
-			return;
-		}
-		tornDown = true;
-		await teardownEphemeralPostgres(handle);
-	}
+	return {
+		databaseUrl: handle.databaseUrl,
+		async [Symbol.asyncDispose](): Promise<void> {
+			if (tornDown) {
+				return;
+			}
+			tornDown = true;
+			await teardownEphemeralPostgres(handle);
+		},
+	};
+}
+
+async function runWithEphemeralPostgres(): Promise<number> {
+	await using postgres = await startEphemeralPostgres();
 
 	// A Ctrl-C or kill during the Playwright run must still stop the ephemeral
-	// database, otherwise the container leaks (it has no other owner).
+	// database, otherwise the container leaks (it has no other owner). This
+	// exits the process directly, bypassing normal scope unwinding, so
+	// `await using` alone would not run — dispose explicitly before exiting.
 	const handleSignal = (signal: NodeJS.Signals) => {
-		void teardown().then(() => process.exit(signal === "SIGINT" ? 130 : 143));
+		void postgres[Symbol.asyncDispose]().then(() =>
+			process.exit(signal === "SIGINT" ? 130 : 143),
+		);
 	};
 	process.on("SIGINT", handleSignal);
 	process.on("SIGTERM", handleSignal);
 
-	try {
-		return await runPlaywright({
-			...process.env,
-			TEST_DATABASE_URL: handle.databaseUrl,
-		});
-	} finally {
-		await teardown();
-	}
+	return await runPlaywright({
+		...process.env,
+		TEST_DATABASE_URL: postgres.databaseUrl,
+	});
 }
 
 const explicitUrl = process.env["TEST_DATABASE_URL"];
