@@ -194,7 +194,7 @@ export default function SubmissionAssessmentClient({
 				savedRubrics={savedRubrics}
 				rubrics={optimisticRubrics}
 				pendingByIndex={pendingByIndex}
-				disabled={currentSubmission == null}
+				disabled={false}
 				onAssess={(index, assessment) => assess(index, assessment)}
 			/>
 

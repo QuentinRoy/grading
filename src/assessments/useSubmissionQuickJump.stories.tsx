@@ -30,7 +30,7 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const OpensOnShortcut: Story = {
+export const OpensOnMetaShortcut: Story = {
 	play: async () => {
 		await expect(screen.getByText("Lookup closed")).toBeVisible();
 
@@ -40,10 +40,29 @@ export const OpensOnShortcut: Story = {
 	},
 };
 
-export const IgnoresShortcutWhileTyping: Story = {
+export const OpensOnCtrlShortcut: Story = {
+	play: async () => {
+		await expect(screen.getByText("Lookup closed")).toBeVisible();
+
+		await userEvent.keyboard("{Control>}k{/Control}");
+
+		await waitFor(() => expect(screen.getByText("Lookup open")).toBeVisible());
+	},
+};
+
+export const IgnoresMetaShortcutWhileTyping: Story = {
 	play: async () => {
 		await userEvent.click(screen.getByLabelText("Comment"));
 		await userEvent.keyboard("{Meta>}k{/Meta}");
+
+		await expect(screen.getByText("Lookup closed")).toBeVisible();
+	},
+};
+
+export const IgnoresCtrlShortcutWhileTyping: Story = {
+	play: async () => {
+		await userEvent.click(screen.getByLabelText("Comment"));
+		await userEvent.keyboard("{Control>}k{/Control}");
 
 		await expect(screen.getByText("Lookup closed")).toBeVisible();
 	},
