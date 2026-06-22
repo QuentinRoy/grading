@@ -44,6 +44,12 @@ export default defineConfig({
 					// `fileParallelism: false`. Capped so the number of Postgres
 					// containers running concurrently stays modest.
 					maxWorkers: 4,
+					// Each test provisions its own Postgres container (start +
+					// migrate), far exceeding Vitest's 5s default per-test timeout
+					// under parallel load; allow ample time so the per-test
+					// container cost is measured rather than timed out.
+					testTimeout: 60_000,
+					hookTimeout: 60_000,
 					alias: nodeTestAlias,
 					sequence: { groupOrder: 1 },
 				},
