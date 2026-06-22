@@ -45,13 +45,13 @@ Open-ended audits and option analysis. Investigations may contain hypotheses and
 
 ### Technical architecture investigations
 
-- [Source structure and technical debt audit](investigations/2026-05-25-source-structure-and-tech-debt-audit.md)
 - [Read-write separation and schema-change resilience](investigations/2026-05-26-read-write-separation-and-schema-change-resilience.md) — largely implemented; only R-008 (rubric overview analytics) remains open.
 - [Offline support and local assessment storage](investigations/2026-05-19-offline-support.md)
 - [Repository documentation architecture](investigations/2026-05-19-repo-documentation-architecture.md)
 
 ### Completed investigations
 
+- [Source structure and technical debt audit](investigations/2026-05-25-source-structure-and-tech-debt-audit.md) — all 8 prioritized backlog items Done; remaining narrow items deferred to #136 or intentionally deprioritized.
 - [Caching and loading audit](investigations/2026-06-11-caching-loading-audit.md) — resolved; all 13 planned PRs landed, #59 closed.
 - [Investigation overlap audit](investigations/2026-05-25-investigation-overlap-audit.md) — coordinated #115/#117 sequencing; all related issues are now closed.
 - [Agent instruction architecture audit](investigations/2026-05-26-agent-instruction-architecture-audit.md)
