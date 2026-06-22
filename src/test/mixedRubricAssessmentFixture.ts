@@ -1,5 +1,6 @@
 import type { Kysely } from "kysely";
 import type { DB } from "#db/generated/db.ts";
+import type { Simplify, Writable } from "#utils/utils.ts";
 import { createProjectRecord } from "./projects.ts";
 
 function mustGet<TKey, TValue>(map: Map<TKey, TValue>, key: TKey): TValue {
@@ -135,9 +136,23 @@ export async function createMixedRubricQuestionFixtureProject(
 	};
 }
 
-type FixtureTuple<TFixtures extends readonly unknown[], TResult> = {
-	[K in keyof TFixtures]: TResult;
+// Simplify is applied per element, inside the mapped type, rather than around
+// the whole tuple: that keeps `{ [K in keyof TFixtures]: ... }` a literal
+// homomorphic mapped type, which is what lets TypeScript carry tuple-ness
+// through `TFixtures` while it's still a generic (unresolved) parameter.
+// Wrapping the entire result in Simplify instead breaks that inference.
+type FixtureTuple<
+	TOverride,
+	TFixtures extends readonly unknown[],
+	TKeep extends keyof TFixtures[number] = never,
+> = {
+	[K in keyof TFixtures]: Simplify<
+		Writable<Pick<TFixtures[K], TKeep>> & TOverride
+	>;
 };
+
+type StudentFixtureTuple<TFixtures extends readonly { id: string }[]> =
+	FixtureTuple<{ rowId: number }, TFixtures, "id">;
 
 // Inserts one or more students in a single request. Callers needing several
 // students (a common case in these fixtures) avoid one round trip per
@@ -149,7 +164,7 @@ export async function createStudentFixtures<
 >(
 	db: Kysely<DB>,
 	fixtures: TFixtures,
-): Promise<FixtureTuple<TFixtures, { rowId: number; id: string }>> {
+): Promise<StudentFixtureTuple<TFixtures>> {
 	const rows = await db
 		.insertInto("student")
 		.values(
@@ -170,8 +185,12 @@ export async function createStudentFixtures<
 	return fixtures.map(({ id }) => ({
 		id,
 		rowId: mustGet(rowIdById, id),
-	})) as FixtureTuple<TFixtures, { rowId: number; id: string }>;
+	})) as StudentFixtureTuple<TFixtures>;
 }
+
+type SubmissionFixtureTuple<
+	TFixtures extends readonly { studentRowId: number }[],
+> = FixtureTuple<{ id: number }, TFixtures, "studentRowId">;
 
 // Inserts one or more individual submissions in a single request, one per
 // given student. See `createStudentFixtures` for the tuple-preserving typing.
@@ -183,7 +202,7 @@ export async function createIndividualSubmissionFixtures<
 >(
 	db: Kysely<DB>,
 	fixtures: TFixtures,
-): Promise<FixtureTuple<TFixtures, { id: number; studentRowId: number }>> {
+): Promise<SubmissionFixtureTuple<TFixtures>> {
 	const rows = await db
 		.insertInto("submission")
 		.values(
@@ -200,7 +219,7 @@ export async function createIndividualSubmissionFixtures<
 	return fixtures.map(({ studentRowId }) => ({
 		studentRowId,
 		id: mustGet(idByStudentRowId, studentRowId),
-	})) as FixtureTuple<TFixtures, { id: number; studentRowId: number }>;
+	})) as SubmissionFixtureTuple<TFixtures>;
 }
 
 // Inserts one assessment with all three rubric types filled in: boolean
