@@ -7,9 +7,9 @@ import {
 } from "#test/dbIntegration.ts";
 import {
 	addFullAssessmentFixture,
-	createIndividualSubmissionFixture,
+	createIndividualSubmissionFixtures,
 	createMixedRubricQuestionFixtureProject,
-	createStudentFixture,
+	createStudentFixtures,
 } from "#test/mixedRubricAssessmentFixture.ts";
 import { createCsvSubmissionExport } from "./submissionExport.ts";
 
@@ -92,52 +92,35 @@ test("createCsvSubmissionExport snapshots CSV for mixed rubric types and submiss
 		.execute();
 	const rubricRowId = new Map(rubricRowIds.map((r) => [r.id, r.rowId]));
 
-	const [student1, student2, student3] = await Promise.all([
-		createStudentFixture(db, {
-			projectRowId: project.rowId,
-			id: "student-export-1",
-		}),
-		createStudentFixture(db, {
-			projectRowId: project.rowId,
-			id: "student-export-2",
-		}),
-		createStudentFixture(db, {
-			projectRowId: project.rowId,
-			id: "student-export-3",
-		}),
+	const [student1, student2, student3] = await createStudentFixtures(db, [
+		{ projectRowId: project.rowId, id: "student-export-1" },
+		{ projectRowId: project.rowId, id: "student-export-2" },
+		{ projectRowId: project.rowId, id: "student-export-3" },
 	]);
 
-	// submission1: fully assessed
-	const sub1 = await createIndividualSubmissionFixture(db, {
-		projectRowId: project.rowId,
-		studentRowId: student1.rowId,
-	});
-	await addFullAssessmentFixture(db, {
-		projectRowId: project.rowId,
-		submissionId: sub1.id,
-		questionRowId: question.rowId,
-		booleanRubricRowId: rubricRowId.get(question.rubrics.booleanId)!,
-		ordinalRubricRowId: rubricRowId.get(question.rubrics.ordinalId)!,
-		numericalRubricRowId: rubricRowId.get(question.rubrics.numericalId)!,
-	});
+	// sub1: fully assessed, sub2: sparse (boolean only), sub3: no assessment
+	const [sub1, sub2] = await createIndividualSubmissionFixtures(db, [
+		{ projectRowId: project.rowId, studentRowId: student1.rowId },
+		{ projectRowId: project.rowId, studentRowId: student2.rowId },
+		{ projectRowId: project.rowId, studentRowId: student3.rowId },
+	]);
 
-	// submission2: sparse (boolean only assessed)
-	const sub2 = await createIndividualSubmissionFixture(db, {
-		projectRowId: project.rowId,
-		studentRowId: student2.rowId,
-	});
-	await addSparseAssessment(db, {
-		projectRowId: project.rowId,
-		submissionId: sub2.id,
-		questionRowId: question.rowId,
-		booleanRubricRowId: rubricRowId.get(question.rubrics.booleanId)!,
-	});
-
-	// submission3: no assessment at all
-	await createIndividualSubmissionFixture(db, {
-		projectRowId: project.rowId,
-		studentRowId: student3.rowId,
-	});
+	await Promise.all([
+		addFullAssessmentFixture(db, {
+			projectRowId: project.rowId,
+			submissionId: sub1.id,
+			questionRowId: question.rowId,
+			booleanRubricRowId: rubricRowId.get(question.rubrics.booleanId)!,
+			ordinalRubricRowId: rubricRowId.get(question.rubrics.ordinalId)!,
+			numericalRubricRowId: rubricRowId.get(question.rubrics.numericalId)!,
+		}),
+		addSparseAssessment(db, {
+			projectRowId: project.rowId,
+			submissionId: sub2.id,
+			questionRowId: question.rowId,
+			booleanRubricRowId: rubricRowId.get(question.rubrics.booleanId)!,
+		}),
+	]);
 
 	const stream = await createCsvSubmissionExport(
 		{ includeRubricAssessment: true, includeRubricMarks: true },

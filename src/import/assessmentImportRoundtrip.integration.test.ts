@@ -7,9 +7,9 @@ import {
 } from "#test/dbIntegration.ts";
 import {
 	addFullAssessmentFixture,
-	createIndividualSubmissionFixture,
+	createIndividualSubmissionFixtures,
 	createMixedRubricQuestionFixtureProject,
-	createStudentFixture,
+	createStudentFixtures,
 } from "#test/mixedRubricAssessmentFixture.ts";
 import { loadAssessmentImportContextFromDb } from "./assessmentImportContext.ts";
 import { parseAssessmentsCsv } from "./parseAssessments.ts";
@@ -49,14 +49,12 @@ async function createRoundtripFixtureProject(db: DisposableTestDatabase) {
 		.execute();
 	const rubricRowId = new Map(rubricRowIds.map((r) => [r.id, r.rowId]));
 
-	const student = await createStudentFixture(db, {
-		projectRowId: project.rowId,
-		id: "student-roundtrip-1",
-	});
-	const submission = await createIndividualSubmissionFixture(db, {
-		projectRowId: project.rowId,
-		studentRowId: student.rowId,
-	});
+	const [student] = await createStudentFixtures(db, [
+		{ projectRowId: project.rowId, id: "student-roundtrip-1" },
+	]);
+	const [submission] = await createIndividualSubmissionFixtures(db, [
+		{ projectRowId: project.rowId, studentRowId: student.rowId },
+	]);
 	await addFullAssessmentFixture(db, {
 		projectRowId: project.rowId,
 		submissionId: submission.id,

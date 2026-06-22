@@ -135,37 +135,72 @@ export async function createMixedRubricQuestionFixtureProject(
 	};
 }
 
-export async function createStudentFixture(
+type FixtureTuple<TFixtures extends readonly unknown[], TResult> = {
+	[K in keyof TFixtures]: TResult;
+};
+
+// Inserts one or more students in a single request. Callers needing several
+// students (a common case in these fixtures) avoid one round trip per
+// student. Mirrors `Promise.all`'s tuple-preserving typing: passing a fixed-
+// length array literal gives back a same-length, positionally-typed result,
+// so callers can destructure without `undefined` checks.
+export async function createStudentFixtures<
+	const TFixtures extends readonly { projectRowId: number; id: string }[],
+>(
 	db: Kysely<DB>,
-	params: { projectRowId: number; id: string },
-): Promise<{ rowId: number; id: string }> {
-	const { projectRowId, id } = params;
-	const row = await db
+	fixtures: TFixtures,
+): Promise<FixtureTuple<TFixtures, { rowId: number; id: string }>> {
+	const rows = await db
 		.insertInto("student")
-		.values({
-			projectId: projectRowId,
-			id,
-			firstName: "Test",
-			lastName: "Student",
-		})
-		.returning("rowId")
-		.executeTakeFirstOrThrow();
-	return { rowId: row.rowId, id };
+		.values(
+			fixtures.map(({ projectRowId, id }) => ({
+				projectId: projectRowId,
+				id,
+				firstName: "Test",
+				lastName: "Student",
+			})),
+		)
+		.returning(["rowId", "id"])
+		.execute();
+
+	const rowIdById = new Map(rows.map((row) => [row.id, row.rowId]));
+	// `.map()` preserves array length, so this structurally matches the
+	// `FixtureTuple` of the same length as `fixtures`; TypeScript can't infer
+	// that through `.map()`'s generic signature.
+	return fixtures.map(({ id }) => ({
+		id,
+		rowId: mustGet(rowIdById, id),
+	})) as FixtureTuple<TFixtures, { rowId: number; id: string }>;
 }
 
-export async function createIndividualSubmissionFixture(
+// Inserts one or more individual submissions in a single request, one per
+// given student. See `createStudentFixtures` for the tuple-preserving typing.
+export async function createIndividualSubmissionFixtures<
+	const TFixtures extends readonly {
+		projectRowId: number;
+		studentRowId: number;
+	}[],
+>(
 	db: Kysely<DB>,
-	params: { projectRowId: number; studentRowId: number },
-): Promise<{ id: number }> {
-	return db
+	fixtures: TFixtures,
+): Promise<FixtureTuple<TFixtures, { id: number; studentRowId: number }>> {
+	const rows = await db
 		.insertInto("submission")
-		.values({
-			projectId: params.projectRowId,
-			type: "individual",
-			studentId: params.studentRowId,
-		})
-		.returning("id")
-		.executeTakeFirstOrThrow();
+		.values(
+			fixtures.map(({ projectRowId, studentRowId }) => ({
+				projectId: projectRowId,
+				type: "individual" as const,
+				studentId: studentRowId,
+			})),
+		)
+		.returning(["id", "studentId"])
+		.execute();
+
+	const idByStudentRowId = new Map(rows.map((row) => [row.studentId, row.id]));
+	return fixtures.map(({ studentRowId }) => ({
+		studentRowId,
+		id: mustGet(idByStudentRowId, studentRowId),
+	})) as FixtureTuple<TFixtures, { id: number; studentRowId: number }>;
 }
 
 // Inserts one assessment with all three rubric types filled in: boolean
