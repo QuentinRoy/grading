@@ -299,3 +299,84 @@ test("prepareAssessmentImport lists existing values of targeted pairs as overwri
 	expect(plan.writes).toHaveLength(2);
 	expect(plan.overwrites).toEqual([{ submissionId: "42", rubricId: "r-bool" }]);
 });
+
+test("prepareAssessmentImport blocks with no-assessment-columns when the header has only derived export columns", () => {
+	const context = buildContext({
+		rubricsByColumn: new Map([
+			[
+				"q1:r-bool",
+				{ id: "r-bool", type: "boolean", questionId: "q1", ordinalLabels: [] },
+			],
+		]),
+		questionIds: new Set(["q1"]),
+		submissionIdsByLookup: new Map([
+			[
+				submissionLookupKey({
+					submissionType: "individual",
+					submitter: "student-1",
+				}),
+				["42"],
+			],
+		]),
+	});
+
+	const rows: ImportedAssessmentRow[] = [
+		{
+			submission_type: "individual",
+			submitter: "student-1",
+			"q1:r-bool:marks": "2",
+			q1: "2",
+			grand_total_marks: "2",
+		},
+	];
+
+	const plan = prepareAssessmentImport({ rows, context });
+
+	expect(plan.blockingDiagnostics).toEqual([{ type: "no-assessment-columns" }]);
+	expect(plan.writes).toEqual([]);
+});
+
+test("prepareAssessmentImport blocks with no-assessment-columns on an empty CSV", () => {
+	const context = buildContext({
+		rubricsByColumn: new Map([
+			[
+				"q1:r-bool",
+				{ id: "r-bool", type: "boolean", questionId: "q1", ordinalLabels: [] },
+			],
+		]),
+	});
+
+	const plan = prepareAssessmentImport({ rows: [], context });
+
+	expect(plan.blockingDiagnostics).toEqual([{ type: "no-assessment-columns" }]);
+	expect(plan.writes).toEqual([]);
+});
+
+test("prepareAssessmentImport does not block when the header has an assessment column with no values", () => {
+	const context = buildContext({
+		rubricsByColumn: new Map([
+			[
+				"q1:r-bool",
+				{ id: "r-bool", type: "boolean", questionId: "q1", ordinalLabels: [] },
+			],
+		]),
+		submissionIdsByLookup: new Map([
+			[
+				submissionLookupKey({
+					submissionType: "individual",
+					submitter: "student-1",
+				}),
+				["42"],
+			],
+		]),
+	});
+
+	const rows: ImportedAssessmentRow[] = [
+		{ submission_type: "individual", submitter: "student-1", "q1:r-bool": "" },
+	];
+
+	const plan = prepareAssessmentImport({ rows, context });
+
+	expect(plan.blockingDiagnostics).toEqual([]);
+	expect(plan.writes).toEqual([]);
+});

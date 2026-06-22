@@ -28,6 +28,9 @@ function formatBlockingDiagnostic(
 		case "invalid-value": {
 			return `Row ${diagnostic.row} (${diagnostic.submitter}): ${diagnostic.message} in column "${diagnostic.column}"`;
 		}
+		case "no-assessment-columns": {
+			return "No assessment columns found in this file. Nothing would be imported.";
+		}
 	}
 }
 

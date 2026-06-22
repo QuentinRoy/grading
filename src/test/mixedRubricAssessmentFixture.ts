@@ -1,0 +1,297 @@
+import type { Kysely } from "kysely";
+import type { DB } from "#db/generated/db.ts";
+import type { Simplify, Writable } from "#utils/utils.ts";
+import { createProjectRecord } from "./projects.ts";
+
+function mustGet<TKey, TValue>(map: Map<TKey, TValue>, key: TKey): TValue {
+	const value = map.get(key);
+	if (value == null) {
+		throw new Error(`Fixture setup failed: no value for key "${String(key)}".`);
+	}
+	return value;
+}
+
+export type MixedRubricQuestionFixture = {
+	project: { id: string; rowId: number };
+	question: {
+		id: string;
+		rowId: number;
+		rubrics: { booleanId: string; ordinalId: string; numericalId: string };
+	};
+};
+
+// Shared by export and import integration tests: a project with one question
+// that has one rubric of each type (boolean/ordinal/numerical). Rubric and
+// question ids are project-scoped, so each caller can pick its own ids
+// without colliding with other tests' projects.
+export async function createMixedRubricQuestionFixtureProject(
+	db: Kysely<DB>,
+	params: {
+		projectName: string;
+		questionId: string;
+		booleanRubricId: string;
+		ordinalRubricId: string;
+		numericalRubricId: string;
+	},
+): Promise<MixedRubricQuestionFixture> {
+	const {
+		projectName,
+		questionId,
+		booleanRubricId,
+		ordinalRubricId,
+		numericalRubricId,
+	} = params;
+	const project = await createProjectRecord(db, projectName);
+
+	const questionRow = await db
+		.insertInto("question")
+		.values({
+			projectId: project.rowId,
+			id: questionId,
+			label: "Mixed question",
+			position: 0,
+		})
+		.returning("rowId")
+		.executeTakeFirstOrThrow();
+
+	const insertedRubrics = await db
+		.insertInto("rubric")
+		.values([
+			{
+				id: booleanRubricId,
+				projectId: project.rowId,
+				questionId: questionRow.rowId,
+				type: "boolean",
+				position: 0,
+				label: "Boolean",
+			},
+			{
+				id: ordinalRubricId,
+				projectId: project.rowId,
+				questionId: questionRow.rowId,
+				type: "ordinal",
+				position: 1,
+				label: "Ordinal",
+			},
+			{
+				id: numericalRubricId,
+				projectId: project.rowId,
+				questionId: questionRow.rowId,
+				type: "numerical",
+				position: 2,
+				label: "Numerical",
+			},
+		])
+		.returning(["id", "rowId"])
+		.execute();
+
+	const rubricRowId = new Map(insertedRubrics.map((r) => [r.id, r.rowId]));
+
+	await Promise.all([
+		db
+			.insertInto("booleanRubric")
+			.values({
+				rubricId: mustGet(rubricRowId, booleanRubricId),
+				marks: 2,
+				falseMarks: 0,
+			})
+			.execute(),
+		db
+			.insertInto("ordinalRubric")
+			.values({ rubricId: mustGet(rubricRowId, ordinalRubricId) })
+			.returning("id")
+			.executeTakeFirstOrThrow()
+			.then((ordinalRubric) =>
+				db
+					.insertInto("ordinalRubricValue")
+					.values([
+						{ ordinalRubricId: ordinalRubric.id, label: "A", marks: 4 },
+						{ ordinalRubricId: ordinalRubric.id, label: "B", marks: 2 },
+					])
+					.execute(),
+			),
+		db
+			.insertInto("numericalRubric")
+			.values({
+				rubricId: mustGet(rubricRowId, numericalRubricId),
+				minScore: 0,
+				maxScore: 10,
+				minMarks: 0,
+				maxMarks: 5,
+			})
+			.execute(),
+	]);
+
+	return {
+		project: { id: project.id, rowId: project.rowId },
+		question: {
+			id: questionId,
+			rowId: questionRow.rowId,
+			rubrics: {
+				booleanId: booleanRubricId,
+				ordinalId: ordinalRubricId,
+				numericalId: numericalRubricId,
+			},
+		},
+	};
+}
+
+// Simplify is applied per element, inside the mapped type, rather than around
+// the whole tuple: that keeps `{ [K in keyof TFixtures]: ... }` a literal
+// homomorphic mapped type, which is what lets TypeScript carry tuple-ness
+// through `TFixtures` while it's still a generic (unresolved) parameter.
+// Wrapping the entire result in Simplify instead breaks that inference.
+type FixtureTuple<
+	TOverride,
+	TFixtures extends readonly unknown[],
+	TKeep extends keyof TFixtures[number] = never,
+> = {
+	[K in keyof TFixtures]: Simplify<
+		Writable<Pick<TFixtures[K], TKeep>> & TOverride
+	>;
+};
+
+type StudentFixtureTuple<TFixtures extends readonly { id: string }[]> =
+	FixtureTuple<{ rowId: number }, TFixtures, "id">;
+
+// Inserts one or more students in a single request. Callers needing several
+// students (a common case in these fixtures) avoid one round trip per
+// student. Mirrors `Promise.all`'s tuple-preserving typing: passing a fixed-
+// length array literal gives back a same-length, positionally-typed result,
+// so callers can destructure without `undefined` checks.
+export async function createStudentFixtures<
+	const TFixtures extends readonly { projectRowId: number; id: string }[],
+>(
+	db: Kysely<DB>,
+	fixtures: TFixtures,
+): Promise<StudentFixtureTuple<TFixtures>> {
+	const rows = await db
+		.insertInto("student")
+		.values(
+			fixtures.map(({ projectRowId, id }) => ({
+				projectId: projectRowId,
+				id,
+				firstName: "Test",
+				lastName: "Student",
+			})),
+		)
+		.returning(["rowId", "id"])
+		.execute();
+
+	const rowIdById = new Map(rows.map((row) => [row.id, row.rowId]));
+	// `.map()` preserves array length, so this structurally matches the
+	// `FixtureTuple` of the same length as `fixtures`; TypeScript can't infer
+	// that through `.map()`'s generic signature.
+	return fixtures.map(({ id }) => ({
+		id,
+		rowId: mustGet(rowIdById, id),
+	})) as StudentFixtureTuple<TFixtures>;
+}
+
+type SubmissionFixtureTuple<
+	TFixtures extends readonly { studentRowId: number }[],
+> = FixtureTuple<{ id: number }, TFixtures, "studentRowId">;
+
+// Inserts one or more individual submissions in a single request, one per
+// given student. See `createStudentFixtures` for the tuple-preserving typing.
+export async function createIndividualSubmissionFixtures<
+	const TFixtures extends readonly {
+		projectRowId: number;
+		studentRowId: number;
+	}[],
+>(
+	db: Kysely<DB>,
+	fixtures: TFixtures,
+): Promise<SubmissionFixtureTuple<TFixtures>> {
+	const rows = await db
+		.insertInto("submission")
+		.values(
+			fixtures.map(({ projectRowId, studentRowId }) => ({
+				projectId: projectRowId,
+				type: "individual" as const,
+				studentId: studentRowId,
+			})),
+		)
+		.returning(["id", "studentId"])
+		.execute();
+
+	const idByStudentRowId = new Map(rows.map((row) => [row.studentId, row.id]));
+	return fixtures.map(({ studentRowId }) => ({
+		studentRowId,
+		id: mustGet(idByStudentRowId, studentRowId),
+	})) as SubmissionFixtureTuple<TFixtures>;
+}
+
+// Inserts one assessment with all three rubric types filled in: boolean
+// passed, ordinal "A", numerical 7.5.
+export async function addFullAssessmentFixture(
+	db: Kysely<DB>,
+	params: {
+		projectRowId: number;
+		submissionId: number;
+		questionRowId: number;
+		booleanRubricRowId: number;
+		ordinalRubricRowId: number;
+		numericalRubricRowId: number;
+	},
+): Promise<void> {
+	const assessment = await db
+		.insertInto("assessment")
+		.values({
+			projectId: params.projectRowId,
+			submissionId: params.submissionId,
+			questionId: params.questionRowId,
+		})
+		.returning("id")
+		.executeTakeFirstOrThrow();
+
+	const rubricAssessments = await db
+		.insertInto("rubricAssessment")
+		.values([
+			{
+				assessmentId: assessment.id,
+				rubricId: params.booleanRubricRowId,
+				type: "boolean",
+			},
+			{
+				assessmentId: assessment.id,
+				rubricId: params.ordinalRubricRowId,
+				type: "ordinal",
+			},
+			{
+				assessmentId: assessment.id,
+				rubricId: params.numericalRubricRowId,
+				type: "numerical",
+			},
+		])
+		.returning(["id", "rubricId"])
+		.execute();
+
+	const raByRubricId = new Map(
+		rubricAssessments.map((ra) => [ra.rubricId, ra.id]),
+	);
+
+	await Promise.all([
+		db
+			.insertInto("booleanRubricAssessment")
+			.values({
+				rubricAssessmentId: mustGet(raByRubricId, params.booleanRubricRowId),
+				passed: true,
+			})
+			.execute(),
+		db
+			.insertInto("ordinalRubricAssessment")
+			.values({
+				rubricAssessmentId: mustGet(raByRubricId, params.ordinalRubricRowId),
+				selectedLabel: "A",
+			})
+			.execute(),
+		db
+			.insertInto("numericalRubricAssessment")
+			.values({
+				rubricAssessmentId: mustGet(raByRubricId, params.numericalRubricRowId),
+				score: 7.5,
+			})
+			.execute(),
+	]);
+}
