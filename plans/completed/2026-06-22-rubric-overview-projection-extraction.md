@@ -1,7 +1,7 @@
-Status: Done — implementation complete, PR pending
+Status: Done — #210
 Date: 2026-06-22
 Source: `docs/investigations/2026-05-26-read-write-separation-and-schema-change-resilience.md` §0/§5 (remaining Phase C scope); `plans/active/2026-05-17-reliability-hardening.md` R-008
-PRs: closes #26
+PRs: closes #26, implemented in #210
 
 # Rubric overview projection extraction (R-008)
 
