@@ -4,8 +4,8 @@ import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import type { ReactElement } from "react";
+import { loadRubricOverviewData } from "#assessments/loadRubricOverview.ts";
 import RubricAnalyticsTable from "#assessments/RubricAnalyticsTable.tsx";
-import { loadRubricOverviewData } from "#assessments/rubricOverview.ts";
 import StudentMatrix from "#assessments/StudentMatrix.tsx";
 import { loadProjectByPublicId } from "#projects/projects.ts";
 
@@ -55,7 +55,7 @@ async function ProjectAssessmentsOverviewPageContent({
 	const { projectId } = await params;
 	const project = await loadProjectByPublicId(projectId, { required: true });
 
-	const data = await loadRubricOverviewData(project.id);
+	const data = await loadRubricOverviewData({ projectId: project.id });
 
 	return (
 		<Container component="main" maxWidth="lg" sx={{ py: 5 }}>
