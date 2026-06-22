@@ -1,10 +1,10 @@
 # Investigation: Read-Write Separation and Schema-Change Resilience
 
-Status: Largely implemented; remaining scope tracked as R-008 in `plans/active/2026-05-17-reliability-hardening.md`
+Status: Completed. Direction accepted and implemented (ADR 0007 and the completed extraction plans in §0); the remaining R-008 scope is now executed via `plans/active/2026-06-22-rubric-overview-projection-extraction.md`, which supersedes this document for execution. Retained as background/rationale.
 Date: 2026-05-18
-Last reviewed: 2026-06-22 (R-007 closed by PR #153, assessment completion consolidation; only R-008 remains open)
+Last reviewed: 2026-06-22 (R-007 closed by PR #153, assessment completion consolidation; R-008 execution moved to `plans/active/2026-06-22-rubric-overview-projection-extraction.md` during grilling; investigation moved to Completed)
 Owner: Unassigned
-Related: #115 (closed), #117 (closed), #51 (closed), `plans/active/2026-05-17-reliability-hardening.md`
+Related: #115 (closed), #117 (closed), #51 (closed), `plans/active/2026-05-17-reliability-hardening.md`, `plans/active/2026-06-22-rubric-overview-projection-extraction.md`
 
 ## 0. Current Status and Ownership
 
@@ -282,12 +282,17 @@ This investigation can be considered resolved when one of the following happens:
 If implemented, the underlying refactor track would be complete when:
 
 - ✅ write paths are isolated behind stable command/write functions or repository contracts (questions, assessments, import);
-- ✅ read/reporting paths are isolated behind projection/read-model functions — done for export and for progress (R-007, via `buildAssessmentCompletion`/`loadAssessmentCompletion.ts`, PR #153); **not yet done** for rubric overview (R-008);
+- ✅ read/reporting paths are isolated behind projection/read-model functions — done for export and for progress (R-007, via `buildAssessmentCompletion`/`loadAssessmentCompletion.ts`, PR #153); rubric overview (R-008) extraction is now a concrete plan, see below;
 - ✅ app-level code no longer depends on storage key shape details in the targeted write areas;
-- ⏳ reliability tracker issues that overlap this refactor have updated status/evidence — R-003, R-005, R-006, R-007, R-011 Verified; R-008 remains Open and still carries the projection-extraction direction from this investigation;
+- ⏳ reliability tracker issues that overlap this refactor have updated status/evidence — R-003, R-005, R-006, R-007, R-011 Verified; R-008 remains Open in the tracker until `plans/active/2026-06-22-rubric-overview-projection-extraction.md` lands;
 - not yet assessed: schema-change implementation effort in a subsequent migration.
 
-This investigation remains open only for the R-008 scope; once it lands (or is explicitly deferred with rationale), this document can be archived or moved to `docs/design/` as a closed-out reference.
+This investigation is closed (2026-06-22): its proposed direction was accepted
+and implemented, and its one remaining scope item (R-008) now has a concrete
+execution plan at `plans/active/2026-06-22-rubric-overview-projection-extraction.md`,
+which owns the remaining work going forward. This document is retained as
+background/rationale and is no longer updated as work lands; see that plan and
+the reliability tracker's R-008 row for current status.
 
 ## 11. Follow-Up Tracking Updates Required When Execution Starts
 
@@ -296,9 +301,9 @@ Status of original follow-ups:
 - ✅ #117 — closed; the roadmap explicitly tracked moving this investigation out of `plans/active/` and reconciling it with #115/#51.
 - ✅ #115 — closed (source-structure umbrella).
 - ✅ #51 — closed (identifier naming).
-- ✅ `plans/active/2026-05-17-reliability-hardening.md` — R-006 promoted to Verified with evidence from the 2026-06-11 export internals refactor; R-003, R-005, R-011 already Verified; R-007 promoted to Verified 2026-06-22 after `plans/completed/2026-06-11-assessment-completion-consolidation.md` landed; R-008 still updated with current paths and a pointer back to this investigation for the remaining projection-extraction direction.
+- ✅ `plans/active/2026-05-17-reliability-hardening.md` — R-006 promoted to Verified with evidence from the 2026-06-11 export internals refactor; R-003, R-005, R-011 already Verified; R-007 promoted to Verified 2026-06-22 after `plans/completed/2026-06-11-assessment-completion-consolidation.md` landed; R-008 still Open, now executed via `plans/active/2026-06-22-rubric-overview-projection-extraction.md`.
+- ✅ Created `plans/active/2026-06-22-rubric-overview-projection-extraction.md` for the R-008 projection extraction (2026-06-22 grilling session).
 
-Remaining tracker actions (now owned by `plans/active/2026-05-17-reliability-hardening.md`, not this document):
+Remaining tracker action (now owned by `plans/active/2026-05-17-reliability-hardening.md` and the plan above, not this document):
 
-- Create a smaller `plans/active/...` plan for the R-008 projection extraction when that work starts.
-- Re-score R-008 after that extraction lands.
+- Re-score/promote R-008 to Verified once that plan's PR lands.
