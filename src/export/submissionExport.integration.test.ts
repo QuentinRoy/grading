@@ -92,21 +92,11 @@ test("createCsvSubmissionExport snapshots CSV for mixed rubric types and submiss
 		.execute();
 	const rubricRowId = new Map(rubricRowIds.map((r) => [r.id, r.rowId]));
 
-	const student1 = await createStudentFixture(
-		db,
-		project.rowId,
-		"student-export-1",
-	);
-	const student2 = await createStudentFixture(
-		db,
-		project.rowId,
-		"student-export-2",
-	);
-	const student3 = await createStudentFixture(
-		db,
-		project.rowId,
-		"student-export-3",
-	);
+	const [student1, student2, student3] = await Promise.all([
+		createStudentFixture(db, project.rowId, "student-export-1"),
+		createStudentFixture(db, project.rowId, "student-export-2"),
+		createStudentFixture(db, project.rowId, "student-export-3"),
+	]);
 
 	// submission1: fully assessed
 	const sub1 = await createIndividualSubmissionFixture(

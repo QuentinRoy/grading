@@ -86,39 +86,40 @@ export async function createMixedRubricQuestionFixtureProject(
 
 	const rubricRowId = new Map(insertedRubrics.map((r) => [r.id, r.rowId]));
 
-	await db
-		.insertInto("booleanRubric")
-		.values({
-			rubricId: mustGet(rubricRowId, booleanRubricId),
-			marks: 2,
-			falseMarks: 0,
-		})
-		.execute();
-
-	const ordinalRubric = await db
-		.insertInto("ordinalRubric")
-		.values({ rubricId: mustGet(rubricRowId, ordinalRubricId) })
-		.returning("id")
-		.executeTakeFirstOrThrow();
-
-	await db
-		.insertInto("ordinalRubricValue")
-		.values([
-			{ ordinalRubricId: ordinalRubric.id, label: "A", marks: 4 },
-			{ ordinalRubricId: ordinalRubric.id, label: "B", marks: 2 },
-		])
-		.execute();
-
-	await db
-		.insertInto("numericalRubric")
-		.values({
-			rubricId: mustGet(rubricRowId, numericalRubricId),
-			minScore: 0,
-			maxScore: 10,
-			minMarks: 0,
-			maxMarks: 5,
-		})
-		.execute();
+	await Promise.all([
+		db
+			.insertInto("booleanRubric")
+			.values({
+				rubricId: mustGet(rubricRowId, booleanRubricId),
+				marks: 2,
+				falseMarks: 0,
+			})
+			.execute(),
+		db
+			.insertInto("ordinalRubric")
+			.values({ rubricId: mustGet(rubricRowId, ordinalRubricId) })
+			.returning("id")
+			.executeTakeFirstOrThrow()
+			.then((ordinalRubric) =>
+				db
+					.insertInto("ordinalRubricValue")
+					.values([
+						{ ordinalRubricId: ordinalRubric.id, label: "A", marks: 4 },
+						{ ordinalRubricId: ordinalRubric.id, label: "B", marks: 2 },
+					])
+					.execute(),
+			),
+		db
+			.insertInto("numericalRubric")
+			.values({
+				rubricId: mustGet(rubricRowId, numericalRubricId),
+				minScore: 0,
+				maxScore: 10,
+				minMarks: 0,
+				maxMarks: 5,
+			})
+			.execute(),
+	]);
 
 	return {
 		project: { id: project.id, rowId: project.rowId },
@@ -217,27 +218,27 @@ export async function addFullAssessmentFixture(
 		rubricAssessments.map((ra) => [ra.rubricId, ra.id]),
 	);
 
-	await db
-		.insertInto("booleanRubricAssessment")
-		.values({
-			rubricAssessmentId: mustGet(raByRubricId, params.booleanRubricRowId),
-			passed: true,
-		})
-		.execute();
-
-	await db
-		.insertInto("ordinalRubricAssessment")
-		.values({
-			rubricAssessmentId: mustGet(raByRubricId, params.ordinalRubricRowId),
-			selectedLabel: "A",
-		})
-		.execute();
-
-	await db
-		.insertInto("numericalRubricAssessment")
-		.values({
-			rubricAssessmentId: mustGet(raByRubricId, params.numericalRubricRowId),
-			score: 7.5,
-		})
-		.execute();
+	await Promise.all([
+		db
+			.insertInto("booleanRubricAssessment")
+			.values({
+				rubricAssessmentId: mustGet(raByRubricId, params.booleanRubricRowId),
+				passed: true,
+			})
+			.execute(),
+		db
+			.insertInto("ordinalRubricAssessment")
+			.values({
+				rubricAssessmentId: mustGet(raByRubricId, params.ordinalRubricRowId),
+				selectedLabel: "A",
+			})
+			.execute(),
+		db
+			.insertInto("numericalRubricAssessment")
+			.values({
+				rubricAssessmentId: mustGet(raByRubricId, params.numericalRubricRowId),
+				score: 7.5,
+			})
+			.execute(),
+	]);
 }
