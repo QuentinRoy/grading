@@ -103,31 +103,42 @@ jobs:
 
   test-storybook:
     name: test-storybook
-    # Run in Playwright's official image: the browser is prebaked, so there is no
-    # download from cdn.playwright.dev (which stalls intermittently on the
-    # runners) and no `playwright install --with-deps` apt step (which hangs on
-    # the ubuntu-latest needrestart prompt — actions/runner-images#11347). Keep
-    # the tag in sync with the playwright version resolved in pnpm-lock.yaml.
+    # Cache Chromium and install it only on cache misses. This avoids pulling the
+    # full Playwright Docker image for Storybook tests. Do not use
+    # `playwright install --with-deps`: its apt/needrestart path has previously
+    # hung on GitHub-hosted Ubuntu runners.
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.61.0-noble
     needs: changes
     if: needs.changes.outputs.non_docs_changed == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Trust the workspace for git
-        # The container runs as root over a workspace owned by the runner user,
-        # so git would refuse with "dubious ownership".
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
       - uses: ./.github/actions/setup-node-pnpm
 
-      - name: Install Playwright browsers
-        # Prebaked in the image; this just verifies the matching binary is
-        # present (no download, no apt).
-        run: pnpm run storybook:browser:install
+      - name: Restore Playwright Chromium
+        id: playwright-cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-chromium-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install chromium
+
+      - name: Restore Storybook and Vite caches
+        id: storybook-cache
+        uses: actions/cache@v5
+        with:
+          path: |
+            node_modules/.vite
+            node_modules/.cache/storybook
+          key: >-
+            ${{ runner.os }}-storybook-vite-
+            ${{ hashFiles('pnpm-lock.yaml', 'vite.config.*', '.storybook/**') }}
+          restore-keys: |
+            ${{ runner.os }}-storybook-vite-${{ hashFiles('pnpm-lock.yaml') }}-
 
       - name: Storybook tests
         run: pnpm run test:storybook
