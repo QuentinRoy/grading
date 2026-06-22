@@ -77,7 +77,6 @@ pnpm start                          # Start the built production app.
 pnpm storybook                      # Start Storybook locally.
 pnpm storybook:build                # Build the static Storybook site.
 pnpm storybook:browser:install      # Install the Chromium browser used by Storybook tests.
-pnpm storybook:browser:install:ci   # Install the CI Chromium shell and system dependencies.
 ```
 
 ### Quality
