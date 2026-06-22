@@ -1,6 +1,6 @@
 # R-009 — Import/export roundtrip contract
 
-Status: Active
+Status: Completed
 Created: 2026-06-22
 Parent: `plans/active/2026-05-17-reliability-hardening.md` (risk R-009, Tier 1, issue [#27](https://github.com/QuentinRoy/grading/issues/27))
 
@@ -133,3 +133,13 @@ Lock in two contracts that are currently implicit:
       `plans/active/2026-05-17-reliability-hardening.md` with linked test
       files; dashboard counts and Change Log updated. PR body includes
       `Fixes #27`.
+
+## Post-merge follow-up (code review, same PR)
+
+The roundtrip test's fixture setup duplicated
+`submissionExport.integration.test.ts`'s project/question/rubric setup.
+Extracted into shared `src/test/mixedRubricAssessmentFixture.ts`, with
+`createStudentFixtures`/`createIndividualSubmissionFixtures` doing one
+bulk insert per call instead of one per row, typed with a
+`Promise.all`-style tuple-preserving generic so literal ids survive into
+the result. Test-only change, no behavior or coverage change.
