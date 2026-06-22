@@ -117,19 +117,19 @@ Lock in two contracts that are currently implicit:
 
 ## Acceptance (Tier 1 Definition of Done)
 
-- [ ] `AssessmentImportBlockingDiagnostic` gains the `no-assessment-columns`
+- [x] `AssessmentImportBlockingDiagnostic` gains the `no-assessment-columns`
       variant; `prepareAssessmentImport` detects it; `saveAssessments.ts`'s
       `formatBlockingDiagnostic` handles it (exhaustive switch keeps this
       type-checked).
-- [ ] Unit coverage in `prepareAssessmentImport.test.ts`: marks-only header
+- [x] Unit coverage in `prepareAssessmentImport.test.ts`: marks-only header
       blocks with `no-assessment-columns`; empty CSV (no rows) blocks the same
       way; a header with at least one assessment column does not block even
       when zero rows have a value for it.
-- [ ] `src/import/assessmentImportRoundtrip.integration.test.ts` covers the
+- [x] `src/import/assessmentImportRoundtrip.integration.test.ts` covers the
       three scenarios in decision 6.
-- [ ] `pnpm run check --fix`, `pnpm run check-types`, targeted
+- [x] `pnpm run check --fix`, `pnpm run check-types`, targeted
       `pnpm test src/import/` green.
-- [ ] R-009 promoted to Verified in
+- [x] R-009 promoted to Verified in
       `plans/active/2026-05-17-reliability-hardening.md` with linked test
       files; dashboard counts and Change Log updated. PR body includes
       `Fixes #27`.

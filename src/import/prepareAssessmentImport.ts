@@ -56,7 +56,8 @@ export type AssessmentImportBlockingDiagnostic =
 			column: string;
 			message: string;
 	  }
-	| { type: "unknown-column"; column: string };
+	| { type: "unknown-column"; column: string }
+	| { type: "no-assessment-columns" };
 
 export type AssessmentImportOverwrite = {
 	submissionId: string;
@@ -161,6 +162,10 @@ export function prepareAssessmentImport(params: {
 		}
 
 		blockingDiagnostics.push({ type: "unknown-column", column });
+	}
+
+	if (!headerColumns.some((column) => context.rubricsByColumn.has(column))) {
+		blockingDiagnostics.push({ type: "no-assessment-columns" });
 	}
 
 	for (const [rowIndex, row] of rows.entries()) {
