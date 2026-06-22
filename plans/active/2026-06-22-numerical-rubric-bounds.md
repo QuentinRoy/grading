@@ -3,7 +3,7 @@
 Status: Active
 Created: 2026-06-22
 Parent: `plans/active/2026-05-17-reliability-hardening.md` (risk R-010, Tier 1, issue [#23](https://github.com/QuentinRoy/grading/issues/23))
-Branch: `r010-numerical-rubric-score-range`
+Branch: `numerical-rubric-bounds`
 
 ## Purpose
 
