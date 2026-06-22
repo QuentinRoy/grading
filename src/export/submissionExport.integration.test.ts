@@ -93,17 +93,25 @@ test("createCsvSubmissionExport snapshots CSV for mixed rubric types and submiss
 	const rubricRowId = new Map(rubricRowIds.map((r) => [r.id, r.rowId]));
 
 	const [student1, student2, student3] = await Promise.all([
-		createStudentFixture(db, project.rowId, "student-export-1"),
-		createStudentFixture(db, project.rowId, "student-export-2"),
-		createStudentFixture(db, project.rowId, "student-export-3"),
+		createStudentFixture(db, {
+			projectRowId: project.rowId,
+			id: "student-export-1",
+		}),
+		createStudentFixture(db, {
+			projectRowId: project.rowId,
+			id: "student-export-2",
+		}),
+		createStudentFixture(db, {
+			projectRowId: project.rowId,
+			id: "student-export-3",
+		}),
 	]);
 
 	// submission1: fully assessed
-	const sub1 = await createIndividualSubmissionFixture(
-		db,
-		project.rowId,
-		student1.rowId,
-	);
+	const sub1 = await createIndividualSubmissionFixture(db, {
+		projectRowId: project.rowId,
+		studentRowId: student1.rowId,
+	});
 	await addFullAssessmentFixture(db, {
 		projectRowId: project.rowId,
 		submissionId: sub1.id,
@@ -114,11 +122,10 @@ test("createCsvSubmissionExport snapshots CSV for mixed rubric types and submiss
 	});
 
 	// submission2: sparse (boolean only assessed)
-	const sub2 = await createIndividualSubmissionFixture(
-		db,
-		project.rowId,
-		student2.rowId,
-	);
+	const sub2 = await createIndividualSubmissionFixture(db, {
+		projectRowId: project.rowId,
+		studentRowId: student2.rowId,
+	});
 	await addSparseAssessment(db, {
 		projectRowId: project.rowId,
 		submissionId: sub2.id,
@@ -127,7 +134,10 @@ test("createCsvSubmissionExport snapshots CSV for mixed rubric types and submiss
 	});
 
 	// submission3: no assessment at all
-	await createIndividualSubmissionFixture(db, project.rowId, student3.rowId);
+	await createIndividualSubmissionFixture(db, {
+		projectRowId: project.rowId,
+		studentRowId: student3.rowId,
+	});
 
 	const stream = await createCsvSubmissionExport(
 		{ includeRubricAssessment: true, includeRubricMarks: true },

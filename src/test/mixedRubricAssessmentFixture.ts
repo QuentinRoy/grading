@@ -137,9 +137,9 @@ export async function createMixedRubricQuestionFixtureProject(
 
 export async function createStudentFixture(
 	db: Kysely<DB>,
-	projectRowId: number,
-	id: string,
+	params: { projectRowId: number; id: string },
 ): Promise<{ rowId: number; id: string }> {
+	const { projectRowId, id } = params;
 	const row = await db
 		.insertInto("student")
 		.values({
@@ -155,15 +155,14 @@ export async function createStudentFixture(
 
 export async function createIndividualSubmissionFixture(
 	db: Kysely<DB>,
-	projectRowId: number,
-	studentRowId: number,
+	params: { projectRowId: number; studentRowId: number },
 ): Promise<{ id: number }> {
 	return db
 		.insertInto("submission")
 		.values({
-			projectId: projectRowId,
+			projectId: params.projectRowId,
 			type: "individual",
-			studentId: studentRowId,
+			studentId: params.studentRowId,
 		})
 		.returning("id")
 		.executeTakeFirstOrThrow();

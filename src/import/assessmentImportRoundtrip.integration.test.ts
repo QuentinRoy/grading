@@ -49,16 +49,14 @@ async function createRoundtripFixtureProject(db: DisposableTestDatabase) {
 		.execute();
 	const rubricRowId = new Map(rubricRowIds.map((r) => [r.id, r.rowId]));
 
-	const student = await createStudentFixture(
-		db,
-		project.rowId,
-		"student-roundtrip-1",
-	);
-	const submission = await createIndividualSubmissionFixture(
-		db,
-		project.rowId,
-		student.rowId,
-	);
+	const student = await createStudentFixture(db, {
+		projectRowId: project.rowId,
+		id: "student-roundtrip-1",
+	});
+	const submission = await createIndividualSubmissionFixture(db, {
+		projectRowId: project.rowId,
+		studentRowId: student.rowId,
+	});
 	await addFullAssessmentFixture(db, {
 		projectRowId: project.rowId,
 		submissionId: submission.id,
