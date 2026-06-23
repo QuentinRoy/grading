@@ -57,6 +57,11 @@ export default defineConfig({
 						storybookUrl: "http://localhost:6006",
 					}),
 				],
+				// Pre-bundle immer so the browser doesn't discover it mid-run and
+				// force a Vite reload, which fails whichever test was executing
+				// (see useAssessmentSession.stories.tsx, the first story to exercise
+				// the immer-importing useAssessmentSession hook).
+				optimizeDeps: { include: ["immer"] },
 				test: {
 					name: "storybook",
 					browser: {

@@ -8,20 +8,7 @@ import { useAssessmentSession } from "./useAssessmentSession.ts";
 // A deferred promise whose resolve the play function calls explicitly, so
 // completion order and timing are under test control rather than fixed
 // delays. See plan decision 5 (plans/active/2026-06-23-tier2-action-route-ux-hardening.md).
-// `saveRubric` only ever settles via SaveRubricResult, never a thrown
-// rejection, so this deferred has no reject handle.
-type Deferred<TValue> = {
-	promise: Promise<TValue>;
-	resolve: (value: TValue) => void;
-};
-
-function createDeferred<TValue>(): Deferred<TValue> {
-	let resolve!: (value: TValue) => void;
-	const promise = new Promise<TValue>((res) => {
-		resolve = res;
-	});
-	return { promise, resolve };
-}
+type Deferred<TValue> = ReturnType<typeof Promise.withResolvers<TValue>>;
 
 const initialRubrics: AssessedRubric[] = [
 	{
@@ -72,7 +59,7 @@ function Harness({
 			submissions,
 			currentSubmissionId: "submission-1",
 			saveRubric: async () => {
-				const deferred = createDeferred<SaveRubricResult<string>>();
+				const deferred = Promise.withResolvers<SaveRubricResult<string>>();
 				calls.push(deferred);
 				return deferred.promise;
 			},
