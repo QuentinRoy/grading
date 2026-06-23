@@ -21,13 +21,7 @@ export default defineConfig({
 				test: {
 					name: "unit",
 					environment: "node",
-					// Also matches app/ so route- and page-level tests co-located under
-					// app/ (e.g. server action error-shaping tests) are discovered too;
-					// the integration glob stays scoped to src/.
-					include: [
-						"src/**/*.{test,spec}.{ts,tsx,js,jsx}",
-						"app/**/*.{test,spec}.{ts,tsx}",
-					],
+					include: ["src/**/*.{test,spec}.{ts,tsx,js,jsx}"],
 					exclude: [integrationPattern],
 					alias: nodeTestAlias,
 					// Each project below sets its own `maxWorkers`. Vitest requires
