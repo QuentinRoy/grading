@@ -6,10 +6,16 @@ This document records project-specific testing conventions that should remain st
 
 ## Test file placement
 
-- Unit and integration test cases are **co-located** with the module they test
-  under `src/`, next to the source file (for example
-  `src/assessments/assessmentCompletion.test.ts`). Vitest discovers them via the
-  `src/**/*.{test,spec}.{ts,tsx,js,jsx}` glob in `vitest.config.ts`.
+- Unit and integration test cases are **co-located** with the module they test,
+  next to the source file (for example
+  `src/assessments/assessmentCompletion.test.ts`). The Vitest unit project
+  discovers them via the `src/**/*.{test,spec}.{ts,tsx,js,jsx}` and
+  `app/**/*.{test,spec}.{ts,tsx}` globs in `vitest.config.ts`.
+- Tests may be co-located under `app/` only when they test route-specific files
+  such as `page.tsx`, `layout.tsx`, `route.ts`, `loading.tsx`, or route-local
+  helpers. Domain logic stays under `src/` in its owning feature folder (ADR
+  0002) and is tested there — extracting a helper purely to make it testable is
+  not a reason to keep its test under `app/`.
 - Shared test tooling — global setup, database helpers, fixture builders — lives
   in `src/test/`. That directory holds tooling, not test cases.
 - The end-to-end tier lives in the root `e2e/` directory, not under `src/`. It is
@@ -17,8 +23,9 @@ This document records project-specific testing conventions that should remain st
   root `playwright.config.ts`), and the smoke test spans the whole app rather than
   any single module, so it has no module to co-locate with. Keeping it out of
   `src/` also keeps the two runners partitioned by directory: Vitest owns
-  `src/**`, Playwright owns `e2e/**`. A `.spec.ts` placed under `src/` would be
-  picked up by the Vitest unit project and fail under the wrong runner.
+  `src/**` and `app/**`, Playwright owns `e2e/**`. A `.spec.ts` placed under
+  `src/` would be picked up by the Vitest unit project and fail under the wrong
+  runner.
 
 ## Test command selection
 
