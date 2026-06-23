@@ -1,10 +1,14 @@
 # Server action, export route, and optimistic-save error/UX hardening
 
-Status: Active
+Status: Completed
 Date: 2026-06-23
-Resolution: Pending — execution plan grilled via `/grill-with-docs` and prepared
-for handoff. Executes the remaining Tier 2 scope of the reliability tracker
-(`plans/active/2026-05-17-reliability-hardening.md`).
+Resolution: Resolved — all three PRs merged: PR 2
+([#219](https://github.com/QuentinRoy/grading/pull/219)), PR 3
+([#220](https://github.com/QuentinRoy/grading/pull/220)), PR 1
+([#221](https://github.com/QuentinRoy/grading/pull/221)). All four Tier 2 risks
+(R-012, R-013, R-014, R-015) are Verified in the reliability tracker
+(`plans/active/2026-05-17-reliability-hardening.md`); milestones M6/M7 flipped
+in the same change that landed PR 1.
 Follow-up: None beyond the three PRs below.
 
 ## 1. Scope and traceability
@@ -177,6 +181,11 @@ guidance and avoid internal detail. Each lives in a per-feature named constant.
 
 ### PR 1 — Consistent server-action error shaping (closes #31, #29)
 
+Status: Completed ([#221](https://github.com/QuentinRoy/grading/pull/221)). The
+implementation moved `createProjectErrorMessage.ts` into `src/projects/` rather
+than `app/projects/` as originally sketched below — feature-owned per ADR 0002,
+since it is domain logic rather than route composition.
+
 Covers tracker risks R-012 and R-015, which share one rule (§4), so they land
 together.
 
@@ -221,6 +230,8 @@ domain/validation messages (including import blocking diagnostics) are unchanged
 
 ### PR 2 — Optimistic-save hook tests (closes #30)
 
+Status: Completed ([#219](https://github.com/QuentinRoy/grading/pull/219)).
+
 Covers tracker risk R-013.
 
 Edits:
@@ -250,6 +261,8 @@ Acceptance: pending counters are always ≥ 0 and return to 0; optimistic state
 matches saved state after settlement; `onError` fires exactly on failure.
 
 ### PR 3 — Export route tests + submissions-route shaping (closes #28)
+
+Status: Completed ([#220](https://github.com/QuentinRoy/grading/pull/220)).
 
 Covers tracker risk R-014.
 

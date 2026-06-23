@@ -21,7 +21,10 @@ export default defineConfig({
 				test: {
 					name: "unit",
 					environment: "node",
-					include: ["src/**/*.{test,spec}.{ts,tsx,js,jsx}"],
+					include: [
+						"src/**/*.{test,spec}.{ts,tsx,js,jsx}",
+						"app/**/*.{test,spec}.{ts,tsx}",
+					],
 					exclude: [integrationPattern],
 					alias: nodeTestAlias,
 					// Each project below sets its own `maxWorkers`. Vitest requires
@@ -57,6 +60,15 @@ export default defineConfig({
 						storybookUrl: "http://localhost:6006",
 					}),
 				],
+				// Pre-bundle immer so the browser doesn't discover it mid-run and
+				// force a Vite reload, which fails whichever test was executing
+				// (see useAssessmentSession.stories.tsx, the first story to exercise
+				// the immer-importing useAssessmentSession hook). This is a known
+				// addon-vitest limitation, not something specific to us — see
+				// https://github.com/storybookjs/storybook/issues/33067 and
+				// https://github.com/vitest-dev/vitest/issues/8447. Remove this once
+				// addon-vitest pre-bundles deps reachable from the story graph itself.
+				optimizeDeps: { include: ["immer"] },
 				test: {
 					name: "storybook",
 					browser: {
