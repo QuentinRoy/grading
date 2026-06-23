@@ -2,8 +2,11 @@
 
 Status: Active
 Date: 2026-06-23
-Resolution: Pending — execution plan grilled via `/grill-with-docs` and prepared
-for handoff. Executes the remaining Tier 2 scope of the reliability tracker
+Resolution: Pending — PR 2 merged ([#219](https://github.com/QuentinRoy/grading/pull/219)),
+PR 3 landing via this update ([#220](https://github.com/QuentinRoy/grading/pull/220)); PR 1
+([#221](https://github.com/QuentinRoy/grading/pull/221)) is open but not yet merged. Move this
+plan to `plans/completed/` and flip the reliability tracker's M6/M7 milestones once PR 1 lands.
+Executes the remaining Tier 2 scope of the reliability tracker
 (`plans/active/2026-05-17-reliability-hardening.md`).
 Follow-up: None beyond the three PRs below.
 
@@ -177,6 +180,8 @@ guidance and avoid internal detail. Each lives in a per-feature named constant.
 
 ### PR 1 — Consistent server-action error shaping (closes #31, #29)
 
+Status: Not yet merged ([#221](https://github.com/QuentinRoy/grading/pull/221)).
+
 Covers tracker risks R-012 and R-015, which share one rule (§4), so they land
 together.
 
@@ -221,6 +226,8 @@ domain/validation messages (including import blocking diagnostics) are unchanged
 
 ### PR 2 — Optimistic-save hook tests (closes #30)
 
+Status: Merged ([#219](https://github.com/QuentinRoy/grading/pull/219)).
+
 Covers tracker risk R-013.
 
 Edits:
@@ -250,6 +257,8 @@ Acceptance: pending counters are always ≥ 0 and return to 0; optimistic state
 matches saved state after settlement; `onError` fires exactly on failure.
 
 ### PR 3 — Export route tests + submissions-route shaping (closes #28)
+
+Status: Implemented, landing via this PR ([#220](https://github.com/QuentinRoy/grading/pull/220)).
 
 Covers tracker risk R-014.
 
