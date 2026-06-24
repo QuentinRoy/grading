@@ -1,9 +1,9 @@
 # Investigation: caching and loading audit
 
-Status: Resolved
-Date: 2026-06-11
-Last updated: 2026-06-20 (#59 closed; all 13 planned PRs landed)
-Related: #59 (closed), `docs/investigations/2026-05-25-source-structure-and-tech-debt-audit.md`, `docs/investigations/2026-05-26-read-write-separation-and-schema-change-resilience.md`, ADR 0007, ADR 0008, `docs/reference/cache-invalidation-map.md`, `plans/2026-06-17-caching-loading-hardening.md`
+- **Status:** Completed
+- **Created:** 2026-06-11
+- **Related:** #59 (closed), `docs/investigations/2026-05-25-source-structure-and-tech-debt-audit.md`, `docs/investigations/2026-05-26-read-write-separation-and-schema-change-resilience.md`, ADR 0007, ADR 0008, `docs/reference/cache-invalidation-map.md`, `plans/2026-06-17-caching-loading-hardening.md`
+- **Resolution:** All 13 planned PRs landed; #59 closed.
 
 ## Current status
 

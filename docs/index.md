@@ -24,14 +24,7 @@ Use date-prefixed filenames for time-bound documents:
 
 Do not date-prefix stable canonical documents by default, such as guides, reference docs, and ADRs.
 
-Investigations and designs should include lifecycle metadata near the top:
-
-- `Status: Active | Completed | Superseded | Archived`
-- `Date: YYYY-MM-DD`
-- `Resolution: ...`
-- `Follow-up: None | ...`
-
-Plans use a narrower metadata block — see [Plans](#plans) below.
+Every durable document carries a list-style metadata block (`Status`, `Created`, optional per-type fields) immediately below its title. The document types, their templates, the per-type status vocabulary, naming, and how documents retire are defined in the [documentation-conventions guide](guides/documentation-conventions.md). Plans use the block in [Plans](#plans) below.
 
 ## Investigations
 
@@ -55,7 +48,6 @@ Open-ended audits and option analysis. Investigations may contain hypotheses and
 - [Caching and loading audit](investigations/2026-06-11-caching-loading-audit.md) — resolved; all 13 planned PRs landed, #59 closed.
 - [Investigation overlap audit](investigations/2026-05-25-investigation-overlap-audit.md) — coordinated #115/#117 sequencing; all related issues are now closed.
 - [Agent instruction architecture audit](investigations/2026-05-26-agent-instruction-architecture-audit.md)
-- [Repository documentation architecture](investigations/2026-05-19-repo-documentation-architecture.md) — docs-as-code structure adopted via PR #103; agent-instruction parts superseded by the agent instruction architecture audit (PR #119); retained as the rationale companion to this index.
 - [Commit message conventions](investigations/2026-05-20-commit-message-conventions.md)
 
 ## ADRs
@@ -94,6 +86,7 @@ Durable facts about current system behavior, formats, and contracts.
 Procedural how-to documentation for humans.
 
 - [Commit message conventions](guides/commit-message-conventions.md)
+- [Documentation conventions](guides/documentation-conventions.md)
 - [Issue and PR conventions](guides/issue-and-pr-conventions.md)
 - [Next.js caching in this repository](guides/nextjs-caching.md)
 - [Running integration tests](guides/running-integration-tests.md)

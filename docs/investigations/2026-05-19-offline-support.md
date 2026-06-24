@@ -1,6 +1,10 @@
 # Offline support and local assessment storage
 
-## Status
+- **Status:** Active
+- **Created:** 2026-05-19
+- **Related:** #64
+
+## Overview
 
 Design note / architecture audit for #64, "Investigate optional offline grading mode".
 

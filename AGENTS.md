@@ -34,6 +34,7 @@ Use this table to find the canonical guidance instead of copying rules into this
 
 - Domain terminology, project identifiers, public/API contracts, database boundaries, import/export formats → `CONTEXT.md`.
 - Documentation placement and lifecycle → `docs/index.md`.
+- Documentation conventions, per-type templates, metadata, and status vocabulary → `docs/guides/documentation-conventions.md`.
 - GitHub issues, pull requests, labels, templates, and collaboration workflow → `docs/guides/issue-and-pr-conventions.md`.
 - Commit titles and squash merge titles → `docs/guides/commit-message-conventions.md`.
 - TypeScript public/helper APIs and function parameter design → `docs/guides/typescript-api-design.md`.

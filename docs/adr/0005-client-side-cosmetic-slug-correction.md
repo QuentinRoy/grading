@@ -1,6 +1,8 @@
 # Correct cosmetic project slugs client-side instead of redirecting
 
-Status: accepted (supersedes ADR-0001)
+- **Status:** Accepted
+- **Created:** 2026-06-04
+- **Supersedes:** ADR 0001
 
 A stale **Project Slug** is a cosmetic address-bar issue, not a routing error — the **Project ID** already resolves the project. We replace the stale slug segment in place via a client component (`usePathname()` + `window.history.replaceState()`) mounted in each slug-bearing layout, and remove the per-page server `canonicalProjectRedirect` entirely. The component delegates to a pure `canonicalizeSlugSegment(pathname, id, slug)` helper that finds the segment equal to `id` and rewrites the segment immediately after it; the same component serves project slugs now and submission-target slugs later (#136) by mounting it in deeper layouts.
 

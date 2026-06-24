@@ -1,11 +1,10 @@
 # Investigation: source structure and technical debt audit
 
-Status: Completed
-Date: 2026-05-25
-Last updated: 2026-06-22 (Finding 14 / Priority 7 done — #197 merged, `plans/2026-06-21-grading-client-extractions.md`; 2026-06-20: Finding 13 / Priority 6 and Finding 4 / Priority 8 resolved after #59 closed)
-Related: #99, #59, #68, #110, #24, #26, #32; #115 (closed umbrella), #51 (closed)
-Resolution: All 8 prioritized backlog items are Done (see [status table](#status-at-a-glance) and [Prioritized rewrite backlog](#prioritized-rewrite-backlog)). The two findings still marked "mostly resolved" (Finding 7, Finding 12) have no remaining work owned by this document: Finding 7's narrow remainder is deferred to #136; Finding 12's remainder is intentionally deprioritized until export options grow. No further audit pass is planned.
-Follow-up: None — pick up Finding 7's remainder under #136 if/when that issue is worked; pick up Finding 12's remainder only if export options grow beyond two checkboxes.
+- **Status:** Completed
+- **Created:** 2026-05-25
+- **Related:** #99, #59, #68, #110, #24, #26, #32; #115 (closed umbrella), #51 (closed)
+- **Resolution:** All 8 prioritized backlog items are Done (see [status table](#status-at-a-glance) and [Prioritized rewrite backlog](#prioritized-rewrite-backlog)). The two findings still marked "mostly resolved" (Finding 7, Finding 12) have no remaining work owned by this document: Finding 7's narrow remainder is deferred to #136; Finding 12's remainder is intentionally deprioritized until export options grow. No further audit pass is planned.
+- **Follow-up:** Pick up Finding 7's remainder under #136 if/when that issue is worked; pick up Finding 12's remainder only if export options grow beyond two checkboxes.
 
 ## Table of contents
 

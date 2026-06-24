@@ -1,8 +1,8 @@
 # Investigation: grading workflows and product positioning
 
-Status: Current investigation
-Date: 2026-05-22
-Related: #112
+- **Status:** Active
+- **Created:** 2026-05-22
+- **Related:** #112
 
 Note: "Dumbgrade" is currently used informally as a working project name and may change.
 

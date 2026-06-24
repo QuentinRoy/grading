@@ -1,6 +1,7 @@
 # Imports use the Node `imports` field with mandatory `.ts`/`.tsx` extensions; `#` marks cross-feature edges
 
-Status: accepted
+- **Status:** Accepted
+- **Created:** 2026-06-01
 
 The repository resolves non-relative internal imports through the Node `imports` field in `package.json` (`"#*": "./src/*"`) instead of the TypeScript `paths` alias (`@/*`), and every internal import — relative or `#`-prefixed — carries an explicit `.ts`/`.tsx` extension. `#` is reserved for **cross-feature** imports (a module reaching into a different top-level feature under `src/`); **feature-internal** imports stay relative (`./…`). This keeps source erasable and resolvable by one scheme across raw Node (the `node src/db/migrate.ts` scripts; relies on Node 24's native type-stripping, pinned via `engines.node`), vitest/vite, and Turbopack.
 

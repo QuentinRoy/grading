@@ -1,10 +1,9 @@
 # Investigation: Read-Write Separation and Schema-Change Resilience
 
-Status: Completed. Direction accepted and implemented (ADR 0007 and the completed extraction plans in §0); the remaining R-008 scope is now executed via `plans/2026-06-22-rubric-overview-projection-extraction.md`, which supersedes this document for execution. Retained as background/rationale.
-Date: 2026-05-18
-Last reviewed: 2026-06-22 (R-007 closed by PR #153, assessment completion consolidation; R-008 execution moved to `plans/2026-06-22-rubric-overview-projection-extraction.md` during grilling; investigation moved to Completed)
-Owner: Unassigned
-Related: #115 (closed), #117 (closed), #51 (closed), `plans/2026-05-17-reliability-hardening.md`, `plans/2026-06-22-rubric-overview-projection-extraction.md`
+- **Status:** Completed
+- **Created:** 2026-05-18
+- **Related:** #115 (closed), #117 (closed), #51 (closed), `plans/2026-05-17-reliability-hardening.md`, `plans/2026-06-22-rubric-overview-projection-extraction.md`
+- **Resolution:** Direction accepted and implemented (ADR 0007 and the completed extraction plans in §0); the remaining R-008 scope was executed via `plans/2026-06-22-rubric-overview-projection-extraction.md`. Retained as background/rationale.
 
 ## 0. Current Status and Ownership
 

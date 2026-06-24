@@ -2,13 +2,13 @@
 
 - **Status:** Active
 - **Created:** 2026-06-23
-- **Origin:** Gap analysis of this repo against current web best practices for agent-facing documentation; implements the "Still open" item in `docs/investigations/2026-05-19-repo-documentation-architecture.md` (AGENTS.md size tension) and a verification-enforcement gap.
+- **Origin:** Gap analysis of this repo against current web best practices for agent-facing documentation; tackles the "keep `AGENTS.md` minimal" principle in [`docs/guides/documentation-conventions.md`](../docs/guides/documentation-conventions.md) (the styling/code-style content is the always-loaded surface to trim) plus a verification-enforcement gap.
 - **Tracked by:** none yet
 
 ## Guidance consulted
 
 - `AGENTS.md` (the file being trimmed), `CONTEXT.md` (glossary checked — no domain-language change here), `docs/index.md`.
-- `docs/investigations/2026-05-19-repo-documentation-architecture.md` — rationale companion; its "Still open" section flags trimming styling/code-style out of `AGENTS.md`.
+- `docs/guides/documentation-conventions.md` — the "keep `AGENTS.md` minimal / progressive disclosure" principle this plan acts on.
 - `docs/investigations/2026-05-26-agent-instruction-architecture-audit.md` — accepted ownership: `AGENTS.md` is canonical for operational rules; tool-specific files are thin pointers; local skill-loading guidance lives in `AGENTS.md`.
 - `.agents/skills/simplify/SKILL.md` (post-edit pass), `docs/guides/issue-and-pr-conventions.md`, `docs/guides/commit-message-conventions.md`.
 - ADRs: none directly govern this; if "always-loaded `AGENTS.md` carries only operate/route/precedence/safety" is treated as a durable decision, a short ADR may be warranted (see Validation).

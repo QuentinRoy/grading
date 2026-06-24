@@ -1,10 +1,9 @@
 # Investigation: agent instruction architecture audit
 
-Status: Completed
-Date: 2026-05-26
-Resolution: Implemented by PR #119, which closes issue #97.
-Follow-up: None.
-Related: PR #71, PR #82, issue #97, PR #119, AGENTS.md, Copilot instructions, README workflow conventions
+- **Status:** Completed
+- **Created:** 2026-05-26
+- **Related:** PR #71, PR #82, issue #97, PR #119, AGENTS.md, Copilot instructions, README workflow conventions
+- **Resolution:** Implemented by PR #119, which closes issue #97.
 
 ## Question
 

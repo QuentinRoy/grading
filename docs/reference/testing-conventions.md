@@ -1,7 +1,5 @@
 # Testing conventions
 
-Status: Current reference
-
 This document records project-specific testing conventions that should remain stable across individual test files.
 
 ## Test file placement

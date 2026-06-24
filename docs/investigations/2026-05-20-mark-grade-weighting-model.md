@@ -1,6 +1,8 @@
 # Mark, grade and weighting investigation
 
-Related issue: #99
+- **Status:** Active
+- **Created:** 2026-05-20
+- **Related:** #99
 
 This document extracts investigation around grading outputs and aggregation.
 

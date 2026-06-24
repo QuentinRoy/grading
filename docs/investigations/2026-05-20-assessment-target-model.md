@@ -1,6 +1,8 @@
 # Assessment target model investigation
 
-Related issue: #99
+- **Status:** Active
+- **Created:** 2026-05-20
+- **Related:** #99
 
 This document captures current thinking about assessment targets, group terminology, and the relation between individual and grouped assessments.
 

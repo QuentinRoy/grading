@@ -1,6 +1,7 @@
 # Server-side logging uses a shared pino logger, scoped to unexpected/operational events
 
-Status: accepted
+- **Status:** Accepted
+- **Created:** 2026-06-20
 
 All server-side code that needs to report an unexpected or operational event it does not throw — a background failure, a recovered error, a startup/shutdown notice — logs through a scoped logger created from `src/utils/logger.ts`, not `console.*`. Biome's `noConsole` rule already forbids `console.*` outside that one exception; this ADR establishes what replaces it and when to use it.
 

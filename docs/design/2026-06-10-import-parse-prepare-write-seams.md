@@ -1,9 +1,10 @@
 # Import parse, prepare, and write seams
 
-Status: Active
-Date: 2026-06-10
-Resolution: Chosen design for restructuring the three import flows (assessments, questions, students) around explicit parse → prepare → write seams.
-Follow-up: Preview UI and configurable import policies belong to the import/product workflow investigation, not this design.
+- **Status:** Implemented
+- **Created:** 2026-06-10
+- **Related:** [plans/2026-06-10-import-parse-prepare-write-seams.md](../../plans/2026-06-10-import-parse-prepare-write-seams.md)
+
+Chosen design for restructuring the three import flows (assessments, questions, students) around explicit parse → prepare → write seams. Preview UI and configurable import policies belong to the import/product workflow investigation, not this design.
 
 ## Context
 
