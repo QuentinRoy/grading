@@ -172,7 +172,9 @@ Durable facts about the current system — lookup material so agents don't infer
 
 ### Guide (`docs/guides/`)
 
-Procedural how-to aimed more at humans than agents — this document is one. Examples: commit-message conventions, issue and PR conventions, running integration tests. Not date-prefixed. Procedural and concise.
+Durable how-to and conventions for performing a task in this repo — read by whoever does the task, human or agent (this document is one). Examples: commit-message conventions, issue and PR conventions, running integration tests. Not date-prefixed. Procedural and concise.
+
+**Guide vs skill.** The dividing line is *activation*, not audience. A guide is *navigated to* — a human browses it, or an agent loads it because the routing table pointed there. A skill (`.agents/skills/*`) *auto-activates* when the task matches its description. So agent-applied **coding conventions** that should kick in while writing a particular kind of code — TypeScript API shape, component styling — belong in a skill, not here: they want auto-activation, not a doc someone has to remember to open. Reserve `docs/guides/` for human/process workflows and durable explanations. (Migrating the existing coding-convention guides to skills is tracked in `plans/2026-06-23-agent-instruction-layer-hardening.md`.)
 
 > The `adr` / `design` / `reference` / `guides` split maps onto the [Diátaxis](https://diataxis.fr/) quadrants (explanation / — / reference / how-to). When unsure which folder fits, ask whether the reader wants to *understand*, *do*, or *look up*.
 

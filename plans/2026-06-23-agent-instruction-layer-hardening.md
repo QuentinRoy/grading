@@ -31,6 +31,7 @@ The repo's documentation architecture already matches or exceeds best practice (
 In scope:
 
 - Extract UI **Styling** conventions (and any clearly UI/DB-only blocks) out of `AGENTS.md` into a skill (or guide) and route to it.
+- Convert `docs/guides/typescript-api-design.md` to a skill — same rationale as the styling extraction: an agent-applied coding convention that should auto-activate when touching TS APIs, not a guide someone must remember to open. Record the skills-vs-guides boundary in `docs/guides/documentation-conventions.md` (done in PR #223).
 - Add a deterministic verification hook in project `.claude/settings.json`.
 
 Out of scope:
@@ -50,12 +51,13 @@ Out of scope:
 3. [ ] Replace the extracted section in `AGENTS.md` with a single entry in the **Guidance routing** table pointing to the new home.
 4. [ ] Re-check `AGENTS.md` for internal consistency (routing table, precedence list, no dead cross-references); confirm `CLAUDE.md` and `.github/copilot-instructions.md` still resolve (they point at `AGENTS.md`, so no change expected).
 5. [ ] (Optional, minor) Replace drift-prone raw `src/...` references in the routing table with the owning ADR/doc where one exists.
+6. [ ] Convert `docs/guides/typescript-api-design.md` → `.agents/skills/typescript-api-design/SKILL.md` with a description trigger; repoint the `AGENTS.md` routing entry at the skill; remove the guide and delist it from `docs/index.md`. (The skills-vs-guides boundary it relies on already landed in `docs/guides/documentation-conventions.md` via PR #223.)
 
 ### Workstream B — deterministic verification gate
 
-6. [ ] Implement the hook per decision 2 in project `.claude/settings.json` (committed), composing with existing global hooks.
-7. [ ] Keep the advisory `check` / `check-types` / tests line in `AGENTS.md` as the cross-tool fallback.
-8. [ ] Verify the hook fires: edit a file → confirm `biome` runs; trigger `Stop` → confirm `check-types` runs/gates. Capture evidence.
+7. [ ] Implement the hook per decision 2 in project `.claude/settings.json` (committed), composing with existing global hooks.
+8. [ ] Keep the advisory `check` / `check-types` / tests line in `AGENTS.md` as the cross-tool fallback.
+9. [ ] Verify the hook fires: edit a file → confirm `biome` runs; trigger `Stop` → confirm `check-types` runs/gates. Capture evidence.
 
 ## Validation
 
