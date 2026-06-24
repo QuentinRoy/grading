@@ -1,8 +1,8 @@
 # Plan: Repository Documentation Architecture Migration
 
-Status: Completed
-Date: 2026-05-20
-Related: docs/investigations/2026-05-19-repo-documentation-architecture.md
+- **Status:** Completed
+- **Created:** 2026-05-20
+- **Origin:** `docs/investigations/2026-05-19-repo-documentation-architecture.md`
 
 ## Goal
 
@@ -28,14 +28,14 @@ Out of scope:
 Completed:
 
 - Added documentation structure directories: `docs/adr/`, `docs/design/`, `docs/reference/`, and `docs/guides/`.
-- Added execution-plan directories: `plans/active/` and `plans/completed/`.
+- Added execution-plan directories: `plans/` and `plans/`.
 - Added `docs/index.md` as a lightweight documentation map.
 - Updated `docs/investigations/2026-05-19-repo-documentation-architecture.md` with new reflections on aborted plan documents.
 - **Performed plan triage:**
   - Audited all files in `docs/plans/` for status, structure, and relevance.
   - Removed most legacy plan files due to unclear status, lack of actionable content, or redundancy.
-  - Only retained known active and completed plans, moving them to `plans/active/` or `plans/completed/` as appropriate.
-  - Moved the reliability hardening tracker plan to `plans/completed/2026-05-17-reliability-hardening.md`.
+  - Only retained known active and completed plans, moving them to `plans/` or `plans/` as appropriate.
+  - Moved the reliability hardening tracker plan to `plans/2026-05-17-reliability-hardening.md`.
 - **Audited open GitHub issues:**
   - Cross-checked all removed plan files against open issues for references.
   - Found multiple open reliability issues referencing the old tracker plan.

@@ -1,9 +1,9 @@
 # Project route-context and path-helper cleanup
 
-Status: Completed
-Date: 2026-05-29
-Resolution: Landed in cb447a5 — "Extract project route-context and rename path helpers (#122)".
-Follow-up: None
+- **Status:** Completed
+- **Created:** 2026-05-29
+- **Tracked by:** #117
+- **Implemented by:** commit `cb447a5` (#122)
 
 Implements the remaining items from issue #117: "Extract a focused project route-context" and "Implement project route-context and path-helper cleanup as a small PR."
 

@@ -1,8 +1,9 @@
-Status: Implemented
-Date: 2026-05-29
-Resolution: Implemented and verified on docs/split-questions-plan-117 on 2026-06-01. All verification gates pass.
-
 # Split src/db/questions.ts Behavior-Preservingly (Issue #117)
+
+- **Status:** Completed
+- **Created:** 2026-05-29
+- **Tracked by:** #117
+- **Implemented by:** branch `docs/split-questions-plan-117`
 
 ## Purpose
 
@@ -16,7 +17,7 @@ This plan captures agreed decisions from planning discussions on 2026-05-29.
 - docs/index.md
 - docs/reference/testing-conventions.md
 - docs/investigations/2026-05-25-source-structure-and-tech-debt-audit.md
-- plans/completed/2026-05-17-reliability-hardening.md
+- plans/2026-05-17-reliability-hardening.md
 
 ## Scope
 

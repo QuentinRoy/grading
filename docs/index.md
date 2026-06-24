@@ -12,7 +12,7 @@ When adding or moving repository guidance, use the smallest document type that f
 - Durable architecture decisions belong in `docs/adr/`.
 - Chosen implementation designs belong in `docs/design/`.
 - Open-ended audits and option analysis belong in `docs/investigations/`.
-- Temporary execution plans belong in `plans/active/` until completed.
+- Temporary execution plans belong in `plans/`.
 
 ## Document lifecycle
 
@@ -20,17 +20,18 @@ Use date-prefixed filenames for time-bound documents:
 
 - `docs/investigations/YYYY-MM-DD-topic.md`
 - `docs/design/YYYY-MM-DD-topic.md` when the design is tied to a specific implementation effort
-- `plans/active/YYYY-MM-DD-topic.md`
-- `plans/completed/YYYY-MM-DD-topic.md`
+- `plans/YYYY-MM-DD-topic.md`
 
 Do not date-prefix stable canonical documents by default, such as guides, reference docs, and ADRs.
 
-Time-bound documents should include lifecycle metadata near the top:
+Investigations and designs should include lifecycle metadata near the top:
 
 - `Status: Active | Completed | Superseded | Archived`
 - `Date: YYYY-MM-DD`
 - `Resolution: ...`
 - `Follow-up: None | ...`
+
+Plans use a narrower metadata block — see [Plans](#plans) below.
 
 ## Investigations
 
@@ -46,15 +47,15 @@ Open-ended audits and option analysis. Investigations may contain hypotheses and
 ### Technical architecture investigations
 
 - [Offline support and local assessment storage](investigations/2026-05-19-offline-support.md)
-- [Repository documentation architecture](investigations/2026-05-19-repo-documentation-architecture.md)
 
 ### Completed investigations
 
-- [Read-write separation and schema-change resilience](investigations/2026-05-26-read-write-separation-and-schema-change-resilience.md) — direction accepted and implemented; remaining R-008 scope now executed via `plans/active/2026-06-22-rubric-overview-projection-extraction.md`.
+- [Read-write separation and schema-change resilience](investigations/2026-05-26-read-write-separation-and-schema-change-resilience.md) — direction accepted and implemented; remaining R-008 scope now executed via `plans/2026-06-22-rubric-overview-projection-extraction.md`.
 - [Source structure and technical debt audit](investigations/2026-05-25-source-structure-and-tech-debt-audit.md) — all 8 prioritized backlog items Done; remaining narrow items deferred to #136 or intentionally deprioritized.
 - [Caching and loading audit](investigations/2026-06-11-caching-loading-audit.md) — resolved; all 13 planned PRs landed, #59 closed.
 - [Investigation overlap audit](investigations/2026-05-25-investigation-overlap-audit.md) — coordinated #115/#117 sequencing; all related issues are now closed.
 - [Agent instruction architecture audit](investigations/2026-05-26-agent-instruction-architecture-audit.md)
+- [Repository documentation architecture](investigations/2026-05-19-repo-documentation-architecture.md) — docs-as-code structure adopted via PR #103; agent-instruction parts superseded by the agent instruction architecture audit (PR #119); retained as the rationale companion to this index.
 - [Commit message conventions](investigations/2026-05-20-commit-message-conventions.md)
 
 ## ADRs
@@ -99,13 +100,25 @@ Procedural how-to documentation for humans.
 - [TypeScript API design](guides/typescript-api-design.md)
 - Add new guides under `docs/guides/`.
 
-## Execution plans
+## Plans
 
-Temporary work artifacts for agent-assisted implementation.
+Temporary work artifacts for agent-assisted implementation, under `plans/`. Plans never move between directories — a plan's `Status` field is the single source of lifecycle truth, so links to a plan's path stay valid for its entire life.
 
-- Active plans live in `plans/active/`.
-- Completed plans move to `plans/completed/`.
+- [plans/index.md](../plans/index.md) lists every plan with `Status: Active`. Remove a plan's entry there (don't move the file) when it completes.
+- Completed and abandoned plans are not indexed; find them via `plans/`, git history, or the issue/PR they cite.
 - If a proposed plan is not actively being executed, prefer `docs/investigations/` until a concrete implementation plan is needed.
+
+Canonical plan metadata block, immediately below the title:
+
+```md
+- **Status:** Active | Completed | Abandoned
+- **Created:** YYYY-MM-DD
+- **Origin:** <investigation, design, ADR, risk ID, or parent plan this work comes from — optional>
+- **Tracked by:** <issue — optional>
+- **Implemented by:** <PR(s), branch, or commit — optional>
+```
+
+Only `Status` and `Created` are required. Use a substantive prose paragraph below the metadata (not a `Resolution`/`Follow-up` field) for anything that needs more than a one-line reference.
 
 ## Notes
 

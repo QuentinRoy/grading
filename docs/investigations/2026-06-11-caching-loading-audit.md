@@ -3,11 +3,11 @@
 Status: Resolved
 Date: 2026-06-11
 Last updated: 2026-06-20 (#59 closed; all 13 planned PRs landed)
-Related: #59 (closed), `docs/investigations/2026-05-25-source-structure-and-tech-debt-audit.md`, `docs/investigations/2026-05-26-read-write-separation-and-schema-change-resilience.md`, ADR 0007, ADR 0008, `docs/reference/cache-invalidation-map.md`, `plans/completed/2026-06-17-caching-loading-hardening.md`
+Related: #59 (closed), `docs/investigations/2026-05-25-source-structure-and-tech-debt-audit.md`, `docs/investigations/2026-05-26-read-write-separation-and-schema-change-resilience.md`, ADR 0007, ADR 0008, `docs/reference/cache-invalidation-map.md`, `plans/2026-06-17-caching-loading-hardening.md`
 
 ## Current status
 
-Resolved. All 13 PRs in the [suggested implementation PR order](#suggested-implementation-pr-order) landed (#168, #170, #171, #174, #176, #180, #181, #182, #184, #186, #187, #189, #193), tracked in `plans/completed/2026-06-17-caching-loading-hardening.md`. ADR 0008 (cache tags, lifetimes, and invalidation) was accepted and `docs/reference/cache-invalidation-map.md` now documents the live mutation-to-tag map this investigation's Finding 2 only sketched as a candidate. Umbrella issue #59 closed 2026-06-20.
+Resolved. All 13 PRs in the [suggested implementation PR order](#suggested-implementation-pr-order) landed (#168, #170, #171, #174, #176, #180, #181, #182, #184, #186, #187, #189, #193), tracked in `plans/2026-06-17-caching-loading-hardening.md`. ADR 0008 (cache tags, lifetimes, and invalidation) was accepted and `docs/reference/cache-invalidation-map.md` now documents the live mutation-to-tag map this investigation's Finding 2 only sketched as a candidate. Umbrella issue #59 closed 2026-06-20.
 
 Key outcomes against the original symptom (submission-overview navigation showing the loading skeleton more than the question-by-question workflow):
 
@@ -881,7 +881,7 @@ Acceptance criteria:
 
 ## Suggested implementation PR order
 
-All 13 PRs below landed; see `plans/completed/2026-06-17-caching-loading-hardening.md` for the per-PR tracking table and sub-issue numbers (#155-#167).
+All 13 PRs below landed; see `plans/2026-06-17-caching-loading-hardening.md` for the per-PR tracking table and sub-issue numbers (#155-#167).
 
 1. `cache: instrument grading loop and baseline #59` (tag-registration rule decided — never depend on propagation — not verified) — Done (#184)
 2. `cache: centralize tag factories` — Done (#168)

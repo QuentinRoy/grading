@@ -1,7 +1,8 @@
 # Replace SwipeableDrawer with standard Drawer
 
-**Date:** 2026-05-20
-**Status:** Implemented
+- **Status:** Completed
+- **Created:** 2026-05-20
+- **Tracked by:** #91
 
 ## Context
 

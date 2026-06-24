@@ -1,9 +1,8 @@
 # Plan: separate DB primitives from app orchestration (issue #138)
 
-Status: Execution plan — **complete** (see Progress below)
-Date: 2026-06-04
-Owner: Unassigned
-Issue: #138
+- **Status:** Completed (see Progress below)
+- **Created:** 2026-06-04
+- **Tracked by:** #138
 
 ## Progress (as of 2026-06-09)
 
@@ -26,7 +25,7 @@ Verification: `pnpm run check`, `pnpm run check-types`, full unit suite (69) and
 
 Decision of record: `docs/adr/0007-db-primitives-take-a-handle-wrappers-own-transactions-and-cache.md`
 Glossary: CONTEXT.md — **DB Primitive**, **App-Level Wrapper**
-Prior art: `plans/completed/2026-05-29-split-questions-db-module.md`, `plans/completed/2026-06-01-split-assessments-db-module.md`
+Prior art: `plans/2026-05-29-split-questions-db-module.md`, `plans/2026-06-01-split-assessments-db-module.md`
 
 ## Decision update (2026-06-09): uniform `{ db = defaultDb }` seam on read wrappers too
 

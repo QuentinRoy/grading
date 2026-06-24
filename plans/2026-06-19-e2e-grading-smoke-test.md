@@ -1,11 +1,10 @@
 # Execution plan: end-to-end grading workflow smoke test
 
-Status: Completed
-Date: 2026-06-19
-Resolution: All delivery steps landed on this PR — harness, fixtures, the spec, CI gating, and the testing-conventions update.
-Follow-up: None
+- **Status:** Completed
+- **Created:** 2026-06-19
+- **Tracked by:** #183
 
-Tracks issue #183.
+All delivery steps landed on this PR — harness, fixtures, the spec, CI gating, and the testing-conventions update.
 
 **No ADR by design.** The durable rationale (why a standalone runner, why a
 production build, why the test DB is safe to destroy) lives as comments **inside

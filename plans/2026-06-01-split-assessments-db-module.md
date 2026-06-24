@@ -1,8 +1,10 @@
-Status: Completed
-Date: 2026-06-01
-Primary Goal: Behavior-preservingly split src/db/assessments.ts, with two deliberate behavior changes agreed in the grill session: a unified optional-transaction save command, and a fix for the assessment-import cache staleness gap.
-
 # Split src/db/assessments.ts (Issue #117)
+
+- **Status:** Completed
+- **Created:** 2026-06-01
+- **Tracked by:** #117
+
+Behavior-preservingly split `src/db/assessments.ts`, with two deliberate behavior changes agreed in the grill session: a unified optional-transaction save command, and a fix for the assessment-import cache staleness gap.
 
 ## Purpose
 
@@ -21,8 +23,8 @@ This plan captures decisions agreed in the grill-with-docs session on 2026-06-01
 - docs/adr/0002-db-is-infrastructure-features-own-persistence.md
 - docs/adr/0004-avoid-barrel-files.md
 - docs/investigations/2026-05-25-source-structure-and-tech-debt-audit.md (Finding 6)
-- plans/completed/2026-05-29-split-questions-db-module.md (the precedent this mirrors)
-- plans/completed/2026-05-17-reliability-hardening.md
+- plans/2026-05-29-split-questions-db-module.md (the precedent this mirrors)
+- plans/2026-05-17-reliability-hardening.md
 
 ## Agreed Decisions (and why)
 

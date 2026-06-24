@@ -12,4 +12,4 @@ Project-scoped pages carry a cosmetic **Project Slug** segment alongside the aut
 
 ## Consequences
 
-This supersedes the per-page decision recorded in `plans/completed/2026-05-29-project-route-context-cleanup.md` ("redirect targets are page-specific"). The helper makes redirecting to the *wrong* canonical target a compile-time concern (kinds map 1:1 to `projectPaths` builders via an exhaustive switch), but it does not prevent a brand-new page from forgetting to canonicalise at all — only a layout or middleware could, and both were rejected above.
+This supersedes the per-page decision recorded in `plans/2026-05-29-project-route-context-cleanup.md` ("redirect targets are page-specific"). The helper makes redirecting to the *wrong* canonical target a compile-time concern (kinds map 1:1 to `projectPaths` builders via an exhaustive switch), but it does not prevent a brand-new page from forgetting to canonicalise at all — only a layout or middleware could, and both were rejected above.

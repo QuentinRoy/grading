@@ -1,11 +1,10 @@
 # Execution plan: import parse/prepare/write seams
 
-Status: Completed
-Date: 2026-06-10
-Resolution: Done — three PRs (assessments, questions, students), each implemented test-first.
-Follow-up: Preview UI and configurable policies deferred to the import/product workflow investigation.
+- **Status:** Completed
+- **Created:** 2026-06-10
+- **Origin:** [Import parse, prepare, and write seams](../docs/design/2026-06-10-import-parse-prepare-write-seams.md) — all policy and structure decisions live there; this plan only tracks delivery.
 
-Design: [Import parse, prepare, and write seams](../../docs/design/2026-06-10-import-parse-prepare-write-seams.md). All policy and structure decisions live there; this plan only tracks delivery.
+Done — three PRs (assessments, questions, students), each implemented test-first. Follow-up: preview UI and configurable policies deferred to the import/product workflow investigation.
 
 ## Method: TDD
 
@@ -60,7 +59,7 @@ Same method. Cycles:
 - [x] Created vs updated classification for students and submissions (new plan data; success message reports both).
 - [x] Team membership change reflected in the plan.
 - [x] Integration cutover: wrapper composes stages in one transaction; existing suite stays green (no blocking diagnostics in this flow).
-- [x] Refactor while green: extraction + simplify pass; tracker update; move this plan to `plans/completed/`.
+- [x] Refactor while green: extraction + simplify pass; tracker update; move this plan to `plans/`.
 
 ## Checks per PR
 

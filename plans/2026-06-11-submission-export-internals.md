@@ -1,9 +1,10 @@
 # Submission export internals
 
-Status: Completed
-Date: 2026-06-11
-Source: `docs/investigations/2026-05-25-source-structure-and-tech-debt-audit.md` Priority 4 (Findings 8, 10, 18; #32)
-PRs: #151 (Ordinal Marks Minimum), #152 (export internals)
+- **Status:** Completed
+- **Created:** 2026-06-11
+- **Origin:** `docs/investigations/2026-05-25-source-structure-and-tech-debt-audit.md` Priority 4, Findings 8/10/18
+- **Tracked by:** #32
+- **Implemented by:** #151 (Ordinal Marks Minimum), #152 (export internals)
 
 ## Guidance consulted
 
