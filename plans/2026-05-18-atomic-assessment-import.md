@@ -1,9 +1,8 @@
 # R-001 Atomic Assessment Import: Implementation Plan
 
-Status: Implemented (local verification complete)
-Date: 2026-05-18
-Owner: Copilot
-Related tracker: docs/plans/2026-05-18-reliability-hardening-tracker.md (R-001)
+- **Status:** Completed
+- **Created:** 2026-05-18
+- **Origin:** `plans/2026-05-17-reliability-hardening.md` (risk R-001)
 
 ## Objective
 

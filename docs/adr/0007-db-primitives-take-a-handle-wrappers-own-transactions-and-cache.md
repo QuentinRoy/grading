@@ -1,6 +1,7 @@
 # DB primitives take a required handle; app wrappers own transactions and cache
 
-Status: accepted
+- **Status:** Accepted
+- **Created:** 2026-06-05
 
 A feature's persistence is split into two layers. A **DB Primitive** performs database work only and accepts a required `Kysely<DB>` handle, either the global client or a caller-supplied transaction. An **App-Level Wrapper** owns the global `db`, the transaction boundary, and cache invalidation, delegating database work to one or more primitives. The wrapper that owns a transaction invalidates cache tags after it commits. A primitive never opens a transaction and never invalidates cache.
 

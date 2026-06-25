@@ -1,9 +1,8 @@
 # Project Identifier Normalization Plan (Issue #51)
 
-Status: Completed
-Last Updated: 2026-05-27
-Owner: Unassigned
-Related Issue: https://github.com/QuentinRoy/grading/issues/51
+- **Status:** Completed
+- **Created:** 2026-05-27
+- **Tracked by:** #51
 
 ## Takeover Update (2026-05-27)
 

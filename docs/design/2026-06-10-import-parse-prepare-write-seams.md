@@ -1,13 +1,14 @@
 # Import parse, prepare, and write seams
 
-Status: Active
-Date: 2026-06-10
-Resolution: Chosen design for restructuring the three import flows (assessments, questions, students) around explicit parse → prepare → write seams.
-Follow-up: Preview UI and configurable import policies belong to the import/product workflow investigation, not this design.
+- **Status:** Implemented
+- **Created:** 2026-06-10
+- **Related:** [plans/2026-06-10-import-parse-prepare-write-seams.md](../../plans/2026-06-10-import-parse-prepare-write-seams.md)
+
+Chosen design for restructuring the three import flows (assessments, questions, students) around explicit parse → prepare → write seams. Preview UI and configurable import policies belong to the import/product workflow investigation, not this design.
 
 ## Context
 
-[Finding 11 of the source structure audit](../investigations/2026-05-25-source-structure-and-tech-debt-audit.md#finding-11-import-flows-should-expose-parse-prepare-and-write-seams) flags that imports parse, prepare, and write in one server-action flow, and that unmatched submissions are silently skipped. The [reliability plan](../../plans/completed/2026-05-17-reliability-hardening.md) lists extracting a pure preparation phase as a testability refactor candidate. This design records the decisions made when stress-testing that finding (2026-06-10 grilling session).
+[Finding 11 of the source structure audit](../investigations/2026-05-25-source-structure-and-tech-debt-audit.md#finding-11-import-flows-should-expose-parse-prepare-and-write-seams) flags that imports parse, prepare, and write in one server-action flow, and that unmatched submissions are silently skipped. The [reliability plan](../../plans/2026-05-17-reliability-hardening.md) lists extracting a pure preparation phase as a testability refactor candidate. This design records the decisions made when stress-testing that finding (2026-06-10 grilling session).
 
 Domain terms used here — **Import Plan**, **Blocking Diagnostic**, **Ignored Column** — are defined in [CONTEXT.md](../../CONTEXT.md).
 

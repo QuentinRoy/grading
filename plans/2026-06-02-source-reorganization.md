@@ -1,9 +1,9 @@
 # Plan: reorganize source ownership before further splitting
 
-Status: Completed
-Date: 2026-06-02
-Completed: 2026-06-02
-Related: #115, ADR 0002, docs/investigations/2026-05-25-source-structure-and-tech-debt-audit.md
+- **Status:** Completed
+- **Created:** 2026-06-02
+- **Origin:** ADR 0002; `docs/investigations/2026-05-25-source-structure-and-tech-debt-audit.md`
+- **Tracked by:** #115
 
 ## Outcome
 

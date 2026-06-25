@@ -1,7 +1,5 @@
 # Running integration tests
 
-Status: Current guide
-
 Integration tests provision their own Postgres with
 [Testcontainers](https://node.testcontainers.org/), the same way locally and in
 CI. Docker must be available in both environments.

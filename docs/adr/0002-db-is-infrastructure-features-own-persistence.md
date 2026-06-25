@@ -1,6 +1,7 @@
 # `src/db` is database infrastructure; features own their persistence and validation
 
-Status: accepted
+- **Status:** Accepted
+- **Created:** 2026-06-01
 
 `src/db` is database **infrastructure only** — the kysely client, generated DB schema types, migrations, and cache-tag plumbing — and must not import from any feature folder (`src/{assessment,export,import,projects,questions,rubrics,submissions}`), not even type-only. All feature-specific persistence — read models, write commands, **Domain Types**, and **Validation Schemas** — lives in the owning feature folder. A write command's accepted input is the **Derived Input Type** (`z.output` of its Validation Schema), never a hand-maintained parallel type, and the command is co-located with the schema it consumes.
 

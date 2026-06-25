@@ -1,8 +1,8 @@
 # R-003 Save Managed Question Hardening Plan
 
-Status: Completed
-Date: 2026-05-18
-Scope: Reliability issue R-003 (`src/db/questions.ts`)
+- **Status:** Completed
+- **Created:** 2026-05-18
+- **Origin:** Reliability risk R-003 (`src/db/questions.ts`)
 
 ## Goal
 Add integration coverage for `saveManagedQuestion` and related delete/reconcile paths to reduce risk of silent data breakage in question/rubric mutation workflows.
@@ -23,7 +23,7 @@ Add integration coverage for `saveManagedQuestion` and related delete/reconcile 
    - ordinal value replacement removes removed labels and upserts retained/new labels
    - delete impact/cascade removes question-linked assessments and returns impact counts
 4. Validate with `pnpm run check --fix`, `pnpm run check-types`, and `pnpm run test:integration`.
-5. Update tracker `docs/plans/2026-05-18-reliability-hardening-tracker.md` with R-003 status/evidence and changelog entries.
+5. Update tracker `plans/2026-05-17-reliability-hardening.md` with R-003 status/evidence and changelog entries.
 
 ## Non-Goals
 - Concurrency behavior hardening (R-004).

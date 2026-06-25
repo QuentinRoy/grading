@@ -1,11 +1,10 @@
 # Investigation: source structure and technical debt audit
 
-Status: Completed
-Date: 2026-05-25
-Last updated: 2026-06-22 (Finding 14 / Priority 7 done — #197 merged, `plans/completed/2026-06-21-grading-client-extractions.md`; 2026-06-20: Finding 13 / Priority 6 and Finding 4 / Priority 8 resolved after #59 closed)
-Related: #99, #59, #68, #110, #24, #26, #32; #115 (closed umbrella), #51 (closed)
-Resolution: All 8 prioritized backlog items are Done (see [status table](#status-at-a-glance) and [Prioritized rewrite backlog](#prioritized-rewrite-backlog)). The two findings still marked "mostly resolved" (Finding 7, Finding 12) have no remaining work owned by this document: Finding 7's narrow remainder is deferred to #136; Finding 12's remainder is intentionally deprioritized until export options grow. No further audit pass is planned.
-Follow-up: None — pick up Finding 7's remainder under #136 if/when that issue is worked; pick up Finding 12's remainder only if export options grow beyond two checkboxes.
+- **Status:** Completed
+- **Created:** 2026-05-25
+- **Related:** #99, #59, #68, #110, #24, #26, #32; #115 (closed umbrella), #51 (closed)
+- **Resolution:** All 8 prioritized backlog items are Done (see [status table](#status-at-a-glance) and [Prioritized rewrite backlog](#prioritized-rewrite-backlog)). The two findings still marked "mostly resolved" (Finding 7, Finding 12) have no remaining work owned by this document: Finding 7's narrow remainder is deferred to #136; Finding 12's remainder is intentionally deprioritized until export options grow. No further audit pass is planned.
+- **Follow-up:** Pick up Finding 7's remainder under #136 if/when that issue is worked; pick up Finding 12's remainder only if export options grow beyond two checkboxes.
 
 ## Table of contents
 
@@ -53,16 +52,16 @@ Resolved or largely resolved since the first audit:
 4. stale project-slug correction is handled client-side in the project-scoped layout via `CosmeticSlugReplacement` (ADR 0005), replacing the removed server-side `canonicalProjectRedirect`;
 5. question definition reads and mutations have been split;
 6. assessment reads and assessment writes have been split, with a transaction-friendly write API;
-7. the ADR 0002 source reorganization has landed: feature-owned persistence, read models, and feature-facing types now live in `src/projects`, `src/submissions`, `src/questions`, `src/assessments`, and `src/rubrics`; `src/db/types.ts` was deleted; `src/db` is database infrastructure only; and the historical `src/shared` bucket was renamed to a flat `src/ui` (see `plans/completed/2026-06-02-source-reorganization.md`).
+7. the ADR 0002 source reorganization has landed: feature-owned persistence, read models, and feature-facing types now live in `src/projects`, `src/submissions`, `src/questions`, `src/assessments`, and `src/rubrics`; `src/db/types.ts` was deleted; `src/db` is database infrastructure only; and the historical `src/shared` bucket was renamed to a flat `src/ui` (see `plans/2026-06-02-source-reorganization.md`).
 8. submission overview assessment loading is consolidated: `loadSubmissionAssessments` (#145) returns every question's rubric values for a submission in one query, replacing the per-question `loadAssessment` calls on the submission overview page; assessment reads are also now scoped by Project ID and `assessmentCacheTag` supports a nested submission/question scope.
-9. all three import flows (assessments, questions, students) have been restructured around explicit parse → load context → prepare → write seams, per the [import parse/prepare/write design](../design/2026-06-10-import-parse-prepare-write-seams.md) and `plans/completed/2026-06-10-import-parse-prepare-write-seams.md` (#146, #147, #148);
+9. all three import flows (assessments, questions, students) have been restructured around explicit parse → load context → prepare → write seams, per the [import parse/prepare/write design](../design/2026-06-10-import-parse-prepare-write-seams.md) and `plans/2026-06-10-import-parse-prepare-write-seams.md` (#146, #147, #148);
 10. ADR 0007 now fixes the persistence layering this document previously left open: DB primitives take a required `Kysely<DB>` handle and do database work only; app-level wrappers own the global client, the transaction boundary, and post-commit cache invalidation. The 2026-06-09 primitives-vs-wrappers pass (#142, #143) applied it across feature persistence;
 11. assessment mutation internals were reviewed (former Priority 4) and need no further split: `assessmentMutations.ts` is a single ADR 0007 primitive plus wrapper, integration-tested, with subtype writes as local helpers;
 12. server action contracts (Finding 15) follow a consistent parse → wrapper → map-errors → typed-state pattern, with ADR 0007 owning the layering underneath;
 13. the app shell (Finding 12) has been decomposed (`AppShell`, `AppShellTopBar`, `AppShellDrawerContent`, `AppShellNavigationShell`, `AppShellLoadingShell`, `AppShell.shared.ts`); only export-options extraction remains optional;
 14. submission export internals (#152) are restructured: row grouping is a pure, unit-tested `submissionExportGrouping.ts` module; `ExportQuestionPlan` is derived from `loadQuestionRowsFromDb` via a stricter `toRubric` instead of a duplicated assembly; `createSubmissionExport` / `createCsvSubmissionExport` take a `Kysely<DB>` handle per ADR 0007; and both export routes share a `buildDatedFilename` helper for `YYYY-MM-DD` filenames.
-15. assessment completion semantics are consolidated (#24 closed; `plans/completed/2026-06-11-assessment-completion-consolidation.md`): **Assessment Completion** is documented once in `CONTEXT.md` and implemented once in `buildAssessmentCompletion`, with `loadAssessmentCompletion.ts` replacing `assessmentsProgress.ts` / `submissionProgress.ts` and the client-side `summarizeQuestionSections` aligned with the same rule.
-16. grading-client duplication is extracted (#197; `plans/completed/2026-06-21-grading-client-extractions.md`): `useSubmissionQuickJump` owns the Cmd/Ctrl+K listener and dialog open/close state, and both clients route their current-submission lookup through `getSubmissionNavigation`; the save-error payload stays inline per the WET-before-DRY decision.
+15. assessment completion semantics are consolidated (#24 closed; `plans/2026-06-11-assessment-completion-consolidation.md`): **Assessment Completion** is documented once in `CONTEXT.md` and implemented once in `buildAssessmentCompletion`, with `loadAssessmentCompletion.ts` replacing `assessmentsProgress.ts` / `submissionProgress.ts` and the client-side `summarizeQuestionSections` aligned with the same rule.
+16. grading-client duplication is extracted (#197; `plans/2026-06-21-grading-client-extractions.md`): `useSubmissionQuickJump` owns the Cmd/Ctrl+K listener and dialog open/close state, and both clients route their current-submission lookup through `getSubmissionNavigation`; the save-error payload stays inline per the WET-before-DRY decision.
 
 Numeric rubric editing (#68; former item 1), cache-tag hygiene (former cache item), and the question-specific grading page cache-boundary review (former item 4) are resolved; see Findings 13, 4, and 16.
 
@@ -82,12 +81,12 @@ This table is the single source of truth for each finding's status. The per-find
 | 6. Assessment reads and writes split and relocated | Resolved; follow-up review done, no further split | ADR 0002, ADR 0007, #137 |
 | 7. Raw database types versus feature-facing types | Mostly resolved; submission type boundary remains | ADR 0002, #137 |
 | 8. Question/rubric read-model assembly duplicated | Resolved | #152 |
-| 9. Assessment completion semantics duplicated | Resolved; #26 stays open | `plans/completed/2026-06-11-assessment-completion-consolidation.md`, #24, #26, #59 (closed) |
-| 10. Export submissions state machine needs smaller seams | Resolved | `plans/completed/2026-06-11-submission-export-internals.md`, #152 |
-| 11. Import parse/prepare/write seams | Resolved | [design](../design/2026-06-10-import-parse-prepare-write-seams.md), `plans/completed/2026-06-10-import-parse-prepare-write-seams.md`, #146, #147, #148 |
+| 9. Assessment completion semantics duplicated | Resolved; #26 stays open | `plans/2026-06-11-assessment-completion-consolidation.md`, #24, #26, #59 (closed) |
+| 10. Export submissions state machine needs smaller seams | Resolved | `plans/2026-06-11-submission-export-internals.md`, #152 |
+| 11. Import parse/prepare/write seams | Resolved | [design](../design/2026-06-10-import-parse-prepare-write-seams.md), `plans/2026-06-10-import-parse-prepare-write-seams.md`, #146, #147, #148 |
 | 12. App shell navigation mixes concerns | Mostly resolved; optional export-options extraction | Finding body |
 | 13. Numeric rubric editing parses too eagerly | Resolved | Priority 6, #68 |
-| 14. Grading clients duplicate workflow behavior | Resolved | Priority 7, #197, `plans/completed/2026-06-21-grading-client-extractions.md` |
+| 14. Grading clients duplicate workflow behavior | Resolved | Priority 7, #197, `plans/2026-06-21-grading-client-extractions.md` |
 | 15. Server action contract boundaries | Resolved | ADR 0007, finding body |
 | 16. Cache tags and invalidation scattered | Resolved | Priority 5, #59 (closed) |
 | 17. `shared` bucket renamed to `src/ui` | Resolved | #137 |
@@ -412,7 +411,7 @@ Both share row-loading and rubric-value mapping helpers. `assessmentCacheTag` (i
 
 Status in the [status table](#status-at-a-glance).
 
-Resolved. #59 closed 2026-06-20 (`docs/investigations/2026-06-11-caching-loading-audit.md`, `plans/completed/2026-06-17-caching-loading-hardening.md`). The structural question this finding deferred to #59 — are the current cached sections the intended boundary — was answered in PR9 (#182, "avoid duplicate submission progress reads"): after sharing question rows (PR6) and removing the duplicate submissions reload, the page's two sections were re-checked and kept as-is, with no monolithic route loader introduced. The hand-built cache tag strings noted below were fixed in PR2 (#168, cache-tag centralization), tracked under Finding 16.
+Resolved. #59 closed 2026-06-20 (`docs/investigations/2026-06-11-caching-loading-audit.md`, `plans/2026-06-17-caching-loading-hardening.md`). The structural question this finding deferred to #59 — are the current cached sections the intended boundary — was answered in PR9 (#182, "avoid duplicate submission progress reads"): after sharing question rows (PR6) and removing the duplicate submissions reload, the page's two sections were re-checked and kept as-is, with no monolithic route loader introduced. The hand-built cache tag strings noted below were fixed in PR2 (#168, cache-tag centralization), tracked under Finding 16.
 
 ### Current behavior
 
@@ -572,9 +571,9 @@ Do not force every consumer to share one giant type, and do not migrate the impo
 
 Status in the [status table](#status-at-a-glance).
 
-Resolved 2026-06-11 (`plans/completed/2026-06-11-assessment-completion-consolidation.md`, closes #24). The **Assessment Completion** rule is now defined once in `CONTEXT.md` and implemented once in the pure builder `buildAssessmentCompletion` (`src/assessments/assessmentCompletion.ts`). `loadAssessmentCompletion.ts` replaces `assessmentsProgress.ts` and `submissionProgress.ts` with a shared `loadAssessmentCompletionRowsFromDb` primitive and three thin loaders mapped through the builder: `loadAssessmentCompletionSummary` (was `loadGlobalAssessmentProgress`), `loadAssessmentCompletionBySubmission` (was `loadSubmissionOverviewProgress`), and `loadAssessedRubricCountsBySubmission` (was `loadSubmissionQuestionProgress`, sharing the least and keeping its own queries). Zero-rubric questions and empty-grouping vacuous truth are now handled identically across the summary, by-submission, and client-side `summarizeQuestionSections` projections. The original behavior described below is kept for context; its evidence path `src/assessment/progressAggregator.ts` was already stale.
+Resolved 2026-06-11 (`plans/2026-06-11-assessment-completion-consolidation.md`, closes #24). The **Assessment Completion** rule is now defined once in `CONTEXT.md` and implemented once in the pure builder `buildAssessmentCompletion` (`src/assessments/assessmentCompletion.ts`). `loadAssessmentCompletion.ts` replaces `assessmentsProgress.ts` and `submissionProgress.ts` with a shared `loadAssessmentCompletionRowsFromDb` primitive and three thin loaders mapped through the builder: `loadAssessmentCompletionSummary` (was `loadGlobalAssessmentProgress`), `loadAssessmentCompletionBySubmission` (was `loadSubmissionOverviewProgress`), and `loadAssessedRubricCountsBySubmission` (was `loadSubmissionQuestionProgress`, sharing the least and keeping its own queries). Zero-rubric questions and empty-grouping vacuous truth are now handled identically across the summary, by-submission, and client-side `summarizeQuestionSections` projections. The original behavior described below is kept for context; its evidence path `src/assessment/progressAggregator.ts` was already stale.
 
-#26 (rubric overview analytics) remains open and was not changed by this consolidation. #59 (caching audit) was open at the time but has since closed, addressed separately by `plans/completed/2026-06-17-caching-loading-hardening.md`.
+#26 (rubric overview analytics) remains open and was not changed by this consolidation. #59 (caching audit) was open at the time but has since closed, addressed separately by `plans/2026-06-17-caching-loading-hardening.md`.
 
 ### Original behavior
 
@@ -598,7 +597,7 @@ The naming should avoid implying that a submission “has progress”. A submiss
 
 Status in the [status table](#status-at-a-glance).
 
-Resolved. The 2026-05-28 export stream refactor (`plans/completed/2026-05-28-submission-export-stream-refactor.md`) made CSV header/record building a pure, unit-tested module (`src/export/submissionExportCsv.ts`) with option parsing living with the route (`exportOptions.ts`). The 2026-06-11 internals refactor (#152, `plans/completed/2026-06-11-submission-export-internals.md`) closed the remaining seams:
+Resolved. The 2026-05-28 export stream refactor (`plans/2026-05-28-submission-export-stream-refactor.md`) made CSV header/record building a pure, unit-tested module (`src/export/submissionExportCsv.ts`) with option parsing living with the route (`exportOptions.ts`). The 2026-06-11 internals refactor (#152, `plans/2026-06-11-submission-export-internals.md`) closed the remaining seams:
 
 - the row-grouping state machine is now a pure async-generator transform, `groupSubmissionRows` in `src/export/submissionExportGrouping.ts`, unit-tested over an input row iterable without a database (`submissionExportGrouping.test.ts`);
 - `ExportQuestionPlan` is derived from `loadQuestionRowsFromDb` instead of a duplicated `loadQuestionPlan` assembly (Finding 8);
@@ -624,7 +623,7 @@ Include-options effects on headers/rows and marks-only export safeguards remain 
 
 Status in the [status table](#status-at-a-glance).
 
-Decisions are captured in [Import parse, prepare, and write seams](../design/2026-06-10-import-parse-prepare-write-seams.md); delivery is tracked in `plans/completed/2026-06-10-import-parse-prepare-write-seams.md` (#146 assessments, #147 questions, #148 students). The original finding and candidate rewrite below are kept for context.
+Decisions are captured in [Import parse, prepare, and write seams](../design/2026-06-10-import-parse-prepare-write-seams.md); delivery is tracked in `plans/2026-06-10-import-parse-prepare-write-seams.md` (#146 assessments, #147 questions, #148 students). The original finding and candidate rewrite below are kept for context.
 
 ### Current behavior
 
@@ -706,7 +705,7 @@ The root cause was not the keystroke-level parsing itself but the field being a 
 
 Status in the [status table](#status-at-a-glance).
 
-Resolved 2026-06-22 in #197 (`plans/completed/2026-06-21-grading-client-extractions.md`): extracted only the quick-jump hook and removed the redundant current-submission lookup; the save-error payload stays inline. Two deliberate changes from the candidate list below — the hook is named `useSubmissionQuickJump` because it owns the dialog open/close state (not just the shortcut), and `buildSaveErrorContext` was dropped because it reduces to an object literal and the WET-before-DRY principle favors leaving it inline.
+Resolved 2026-06-22 in #197 (`plans/2026-06-21-grading-client-extractions.md`): extracted only the quick-jump hook and removed the redundant current-submission lookup; the save-error payload stays inline. Two deliberate changes from the candidate list below — the hook is named `useSubmissionQuickJump` because it owns the dialog open/close state (not just the shortcut), and `buildSaveErrorContext` was dropped because it reduces to an object literal and the WET-before-DRY principle favors leaving it inline.
 
 ### Current behavior (as of the 2026-06-10 re-audit, before the fix)
 
@@ -756,7 +755,7 @@ No further work is planned. The standing rule for new actions: keep heavy busine
 
 ### Current status
 
-Resolved. `src/db/cacheTags.ts` is now the only tag-string factory (PR2, #168), the never-invalidated `questions:${questionId}` tag's fate was decided and applied, and the mutation-to-tag map is documented in `docs/reference/cache-invalidation-map.md` per ADR 0008 rule 7 (PR3, #170). See `docs/investigations/2026-06-11-caching-loading-audit.md` Finding 1/2/17 and `plans/completed/2026-06-17-caching-loading-hardening.md`.
+Resolved. `src/db/cacheTags.ts` is now the only tag-string factory (PR2, #168), the never-invalidated `questions:${questionId}` tag's fate was decided and applied, and the mutation-to-tag map is documented in `docs/reference/cache-invalidation-map.md` per ADR 0008 rule 7 (PR3, #170). See `docs/investigations/2026-06-11-caching-loading-audit.md` Finding 1/2/17 and `plans/2026-06-17-caching-loading-hardening.md`.
 
 ### Current behavior
 
@@ -854,7 +853,7 @@ A file can be in the right place but need splitting later. A file can also be in
 
 ### Current status
 
-Status in the [status table](#status-at-a-glance). Tracked and executed in `plans/completed/2026-06-02-source-reorganization.md`.
+Status in the [status table](#status-at-a-glance). Tracked and executed in `plans/2026-06-02-source-reorganization.md`.
 
 The behavior-preserving relocation described below has landed: project, submission, question, and assessment persistence and read models moved out of `src/db` into their owning feature folders, feature-facing types moved out of `src/db/types.ts` (which was deleted), and `src/shared` was renamed to `src/ui`. `src/db` is now database infrastructure only. The original finding and candidate direction are kept below for historical context.
 
@@ -951,7 +950,7 @@ The immediate value is to make ownership match ADR 0002 so that future splitting
 
 ## Prioritized rewrite backlog
 
-This is the single actionable list for the open findings. It carries the sequencing the [status table](#status-at-a-glance) does not. The #115 umbrella issue is closed, so an item that gets picked up needs its own implementation issue; each entry's `Related` line lists the issues it should link to. When an item is actively picked up, create a dated `plans/active/` plan for it (as the resolved findings already did) rather than tracking execution detail here.
+This is the single actionable list for the open findings. It carries the sequencing the [status table](#status-at-a-glance) does not. The #115 umbrella issue is closed, so an item that gets picked up needs its own implementation issue; each entry's `Related` line lists the issues it should link to. When an item is actively picked up, create a dated `plans/` plan for it (as the resolved findings already did) rather than tracking execution detail here.
 
 Priorities were renumbered in the 2026-06-10 re-audit: the former Priority 4 (assessment mutation split) closed with no action needed, the former Priority 6 (question/rubric read-model reuse) folded into the export work, and the former Priority 9 (app shell split) was dropped because the shell is already decomposed (Finding 12).
 
@@ -973,7 +972,7 @@ Related: #59, #115, #145.
 
 ### Priority 2: assessment import parse/prepare/write boundaries — Done
 
-Completed 2026-06-10 in #146 (assessments), #147 (questions), and the student import restructure (`plans/completed/2026-06-10-import-parse-prepare-write-seams.md`).
+Completed 2026-06-10 in #146 (assessments), #147 (questions), and the student import restructure (`plans/2026-06-10-import-parse-prepare-write-seams.md`).
 
 Delivered:
 
@@ -988,7 +987,7 @@ Related: [design](../design/2026-06-10-import-parse-prepare-write-seams.md), #11
 
 ### Priority 3: ADR 0002 source reorganization — Done
 
-Completed 2026-06-02 in `plans/completed/2026-06-02-source-reorganization.md`.
+Completed 2026-06-02 in `plans/2026-06-02-source-reorganization.md`.
 
 Delivered:
 
@@ -1003,11 +1002,11 @@ Delivered:
 
 The remaining priorities below are the local seam cleanups that this reorganization unblocked.
 
-Related: ADR 0002, #115, `plans/completed/2026-06-02-source-reorganization.md`.
+Related: ADR 0002, #115, `plans/2026-06-02-source-reorganization.md`.
 
 ### Priority 4: submission export remaining seams — Done
 
-Completed 2026-06-11 in #152 (`plans/completed/2026-06-11-submission-export-internals.md`).
+Completed 2026-06-11 in #152 (`plans/2026-06-11-submission-export-internals.md`).
 
 Delivered:
 
@@ -1021,7 +1020,7 @@ Related: Findings 8, 10, 18; #32, #152.
 
 ### Priority 4: assessment completion consolidation — Done
 
-Completed 2026-06-11 (`plans/completed/2026-06-11-assessment-completion-consolidation.md`, closes #24).
+Completed 2026-06-11 (`plans/2026-06-11-assessment-completion-consolidation.md`, closes #24).
 
 Delivered:
 
@@ -1038,7 +1037,7 @@ Related: Finding 9; #24, #26, #59.
 
 ### Priority 5: cache-tag hygiene — Done
 
-Completed 2026-06-20 in #168/#170, as part of `plans/completed/2026-06-17-caching-loading-hardening.md` (#59).
+Completed 2026-06-20 in #168/#170, as part of `plans/2026-06-17-caching-loading-hardening.md` (#59).
 
 Delivered:
 
@@ -1063,7 +1062,7 @@ Related: Finding 13; #68.
 
 ### Priority 7: grading-client extractions — Done
 
-Completed 2026-06-22 in #197 (`plans/completed/2026-06-21-grading-client-extractions.md`).
+Completed 2026-06-22 in #197 (`plans/2026-06-21-grading-client-extractions.md`).
 
 Delivered:
 
@@ -1077,7 +1076,7 @@ Related: Finding 14; #197.
 
 ### Priority 8: question-specific grading page cache-boundary review — Done
 
-Completed 2026-06-20 in #182, as part of `plans/completed/2026-06-17-caching-loading-hardening.md` (#59).
+Completed 2026-06-20 in #182, as part of `plans/2026-06-17-caching-loading-hardening.md` (#59).
 
 Delivered:
 

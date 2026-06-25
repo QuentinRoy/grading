@@ -1,9 +1,10 @@
-Status: Done — #210
-Date: 2026-06-22
-Source: `docs/investigations/2026-05-26-read-write-separation-and-schema-change-resilience.md` §0/§5 (remaining Phase C scope); `plans/completed/2026-05-17-reliability-hardening.md` R-008
-PRs: closes #26, implemented in #210
-
 # Rubric overview projection extraction (R-008)
+
+- **Status:** Completed
+- **Created:** 2026-06-22
+- **Origin:** `docs/investigations/2026-05-26-read-write-separation-and-schema-change-resilience.md` §0/§5; `plans/2026-05-17-reliability-hardening.md` (risk R-008)
+- **Tracked by:** #26
+- **Implemented by:** #210
 
 ## Purpose
 
@@ -25,9 +26,9 @@ This plan corrects that gap as well as the test matrix.
 - `AGENTS.md`, `CONTEXT.md`
 - `docs/adr/0007-db-primitives-take-a-handle-wrappers-own-transactions-and-cache.md` (the shape being adopted)
 - `docs/reference/testing-conventions.md` (co-located tests, integration tier via Testcontainers)
-- `plans/completed/2026-06-11-assessment-completion-consolidation.md` (the R-007 precedent this mirrors)
+- `plans/2026-06-11-assessment-completion-consolidation.md` (the R-007 precedent this mirrors)
 - `docs/investigations/2026-05-26-read-write-separation-and-schema-change-resilience.md`
-- `plans/completed/2026-05-17-reliability-hardening.md` (R-008 row)
+- `plans/2026-05-17-reliability-hardening.md` (R-008 row)
 
 ## Agreed Decisions (and why)
 
@@ -230,9 +231,9 @@ This plan corrects that gap as well as the test matrix.
 10. Run `pnpm run check --fix`, `pnpm run check-types`,
     `pnpm test:unit rubricOverviewBuilder loadRubricOverview`,
     `pnpm test src/assessments/loadRubricOverview.integration.test.ts`.
-11. Update R-008 in `plans/completed/2026-05-17-reliability-hardening.md` to
+11. Update R-008 in `plans/2026-05-17-reliability-hardening.md` to
     Verified with evidence links; add a Change Log entry; move this plan to
-    `plans/completed/`.
+    `plans/`.
 
 Note: the investigation closure (decision 8: `docs/index.md` + the
 investigation's Status line) was already done during the grilling session that

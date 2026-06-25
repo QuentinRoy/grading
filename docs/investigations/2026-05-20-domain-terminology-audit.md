@@ -1,6 +1,8 @@
 # Domain terminology investigation
 
-Related issue: #99
+- **Status:** Active
+- **Created:** 2026-05-20
+- **Related:** #99
 
 ## Document role
 

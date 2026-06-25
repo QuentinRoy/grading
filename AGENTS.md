@@ -34,6 +34,7 @@ Use this table to find the canonical guidance instead of copying rules into this
 
 - Domain terminology, project identifiers, public/API contracts, database boundaries, import/export formats → `CONTEXT.md`.
 - Documentation placement and lifecycle → `docs/index.md`.
+- Documentation conventions, per-type templates, metadata, and status vocabulary → `docs/guides/documentation-conventions.md`.
 - GitHub issues, pull requests, labels, templates, and collaboration workflow → `docs/guides/issue-and-pr-conventions.md`.
 - Commit titles and squash merge titles → `docs/guides/commit-message-conventions.md`.
 - TypeScript public/helper APIs and function parameter design → `docs/guides/typescript-api-design.md`.
@@ -46,7 +47,7 @@ Use this table to find the canonical guidance instead of copying rules into this
 - Accepted architecture decisions → `docs/adr/`.
 - Chosen implementation designs → `docs/design/`.
 - Open-ended audits, comparisons, and option analysis → `docs/investigations/`.
-- Temporary execution plans → `plans/active/`.
+- Temporary execution plans → `plans/`; see `plans/index.md` for what's currently active.
 
 ## Skills
 
@@ -67,7 +68,7 @@ When guidance conflicts, use this order:
 6. `docs/design/` and `docs/reference/`.
 7. `docs/guides/` and `README.md`.
 8. `docs/investigations/`.
-9. `plans/active/`.
+9. `plans/`.
 10. Existing implementation.
 
 Investigations and active plans can guide work, but they do not override higher-priority decisions.
@@ -79,7 +80,7 @@ Investigations and active plans can guide work, but they do not override higher-
 - Use `docs/adr/` for durable architectural decisions.
 - Use `docs/design/` for chosen implementation designs.
 - Use `docs/reference/` for durable facts about current system behavior, formats, and contracts.
-- Use `plans/active/` for temporary execution plans and `plans/completed/` for archived plans. See `docs/index.md` for the canonical doc map.
+- Use `plans/` for execution plans. Track lifecycle with the plan's `Status` field (`Active` | `Completed` | `Abandoned`); list active plans in `plans/index.md`. See `docs/index.md` for the canonical doc map.
 - Keep agent instructions short and navigational. Prefer linking to focused docs over copying long guidance here.
 
 ## Styling

@@ -1,7 +1,5 @@
 # Database migrations
 
-Status: Current reference
-
 This document records project-specific conventions for database migrations.
 
 ## Principles

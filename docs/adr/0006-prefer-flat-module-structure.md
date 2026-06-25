@@ -1,6 +1,7 @@
 # Prefer flat module structure; split owners before nesting
 
-Status: accepted
+- **Status:** Accepted
+- **Created:** 2026-06-04
 
 Inside a feature folder (`src/{assessments,export,import,projects,questions,rubrics,submissions}`) and `src/ui`, default to a flat file layout. Use filename suffixes such as `*.action.ts`, `*.repository.ts`, `*.service.ts`, `*.types.ts`, `*.schema.ts`, and `*.test.ts` to show a file's role. Do not create technical category subfolders such as `repository/`, `service/`, `domain/`, `ui/`, `components/`, or `hooks/`.
 

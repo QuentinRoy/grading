@@ -1,13 +1,14 @@
 # Centralise project slug canonicalisation
 
-Status: Completed
-Date: 2026-05-29
-Resolution: Implemented and verified (biome, type-check, unit tests green) on branch `centralise-slug-canonicalisation`. All 9 pages call the helper; the overview and assessments wrong-target redirects are fixed.
-Follow-up: Moving the client-side route parser (`getProjectRouteContext`) out of `shared/` is deferred to the drawer rework (architecture-review candidate #6).
+- **Status:** Completed
+- **Created:** 2026-05-29
+- **Implemented by:** branch `centralise-slug-canonicalisation`
+
+Verified (biome, type-check, unit tests green). All 9 pages call the helper; the overview and assessments wrong-target redirects are fixed. Follow-up: moving the client-side route parser (`getProjectRouteContext`) out of `shared/` is deferred to the drawer rework (architecture-review candidate #6).
 
 Implements architecture-review candidate #1: replace the slug-canonicalisation redirect copied across 9 project-scoped pages with a single helper, so the Canonical Project URL is decided in one place.
 
-Reverses the per-page decision recorded in `plans/completed/2026-05-29-project-route-context-cleanup.md` ("redirect targets are page-specific"). See `docs/adr/0001-centralise-slug-canonicalisation.md` and the new `CONTEXT.md` terms **Project Slug** / **Canonical Project URL**.
+Reverses the per-page decision recorded in `plans/2026-05-29-project-route-context-cleanup.md` ("redirect targets are page-specific"). See `docs/adr/0001-centralise-slug-canonicalisation.md` and the new `CONTEXT.md` terms **Project Slug** / **Canonical Project URL**.
 
 ## Motivation
 

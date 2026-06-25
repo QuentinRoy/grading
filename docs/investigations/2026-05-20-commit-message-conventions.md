@@ -1,10 +1,9 @@
 # Investigation: commit message conventions
 
-Status: Completed
-Date: 2026-05-20
-Resolution: Adopted lightweight area-prefixed commit messages in `docs/guides/commit-message-conventions.md`.
-Follow-up: None
-Related: README workflow conventions, AGENTS.md, PR #71, PR #95
+- **Status:** Completed
+- **Created:** 2026-05-20
+- **Related:** AGENTS.md, PR #71, PR #95
+- **Resolution:** Adopted lightweight area-prefixed commit messages in `docs/guides/commit-message-conventions.md`.
 
 ## Question
 

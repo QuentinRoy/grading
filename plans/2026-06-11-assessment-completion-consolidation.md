@@ -1,9 +1,9 @@
 # Assessment completion consolidation
 
-Status: Completed
-Date: 2026-06-11
-Source: `docs/investigations/2026-05-25-source-structure-and-tech-debt-audit.md` Priority 4 (Finding 9; #24, #26, #59)
-PRs: closes #24
+- **Status:** Completed
+- **Created:** 2026-06-11
+- **Origin:** `docs/investigations/2026-05-25-source-structure-and-tech-debt-audit.md` Priority 4, Finding 9
+- **Tracked by:** #24, #26, #59
 
 ## Guidance consulted
 
@@ -89,7 +89,7 @@ Each step is RED → GREEN unless marked refactor (under green).
 ### Wrap-up
 
 15. Simplify pass over modified code; `pnpm run check --fix`; `pnpm run check-types`; `pnpm test:unit assessmentCompletion assessmentSummary`; `pnpm test src/assessments/`.
-16. Update Finding 9 status (body + status table) in the investigation; move this plan to `plans/completed/`; file the onboarding follow-up issue; PR closes #24 noting the stale evidence path.
+16. Update Finding 9 status (body + status table) in the investigation; move this plan to `plans/`; file the onboarding follow-up issue; PR closes #24 noting the stale evidence path.
 
 ## Non-goals
 

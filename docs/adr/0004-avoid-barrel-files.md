@@ -1,6 +1,7 @@
 # Avoid barrel files; import from the module that owns the implementation
 
-Status: accepted
+- **Status:** Accepted
+- **Created:** 2026-06-01
 
 A **barrel file** is a module whose main purpose is to re-export symbols from sibling modules (the classic `index.ts` aggregator, or `src/db/questions.ts` re-exporting from `questionsRead.ts`/`questionsManaged.ts`/`questionsCommands.ts`). We avoid them: callers import from the concrete module that owns the implementation, so ownership is visible at the import site. A file named after a concept — `questions.ts` containing the actual question read implementation — is fine; what we reject is the re-export facade.
 
