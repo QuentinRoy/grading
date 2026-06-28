@@ -1,9 +1,57 @@
 ---
 name: react-patterns
-description: React/Next.js DOM-id (`useId`) and page-composition conventions for this repository. Use whenever generating DOM ids for `aria-controls`/label pairs, or deciding whether code belongs in an `app/` route file versus a reusable `src/` component.
+description: React/Next.js DOM-id (`useId`) and page-composition conventions for this repository, plus the "no outer margin" rule for component spacing. Use whenever generating DOM ids for `aria-controls`/label pairs, deciding whether code belongs in an `app/` route file versus a reusable `src/` component, or writing/reviewing a component that applies `margin`/`mb`/`mt`/`my` (including in an `sx` prop) to its own outermost element.
 ---
 
 # React patterns
+
+## No outer margin
+
+A component must never apply margin to its own outermost element. External spacing (the gap between a component and its siblings) is the parent's responsibility, not the component's — see [Kyle Shevlin, "No Outer Margin"](https://kyleshevlin.com/no-outer-margin/). A component that sets its own outer margin breaks encapsulation: it assumes a layout context it doesn't control, and every place that reuses it in a different context (a different sibling order, a grid instead of a stack) needs a compensating override to undo it.
+
+- A component's root element should only carry *internal* spacing (`p`, `px`, `py`) — never `m`, `mt`, `mb`, `my`, or a hardcoded `margin`, on its own root.
+- Let the parent control spacing between siblings, normally via `gap` on a flex/grid container (see `.agents/skills/ui-styling/SKILL.md`'s "prefer `gap` over margins on children").
+- If a component is rendered inside something that does not support `gap` (e.g. plain text flow), the *call site* — not the component — adds the spacing, for example by wrapping the usage in a `Box` with `mb`.
+
+```tsx
+// Bad: SubmissionCard owns its own outer margin.
+function SubmissionCard({ submission }: SubmissionCardProps) {
+	return (
+		<Card sx={{ mb: 2 }}>
+			<CardContent>{submission.title}</CardContent>
+		</Card>
+	);
+}
+
+// Every caller that doesn't want that margin has to compensate:
+<SubmissionCard submission={first} sx={{ mb: 0 }} /> // a compensating prop just to undo it
+```
+
+```tsx
+// Good: SubmissionCard only manages its own internal spacing.
+function SubmissionCard({ submission }: SubmissionCardProps) {
+	return (
+		<Card>
+			<CardContent>{submission.title}</CardContent>
+		</Card>
+	);
+}
+
+// The parent that lays out multiple cards owns the spacing between them:
+<Stack gap={2}>
+	{submissions.map((submission) => (
+		<SubmissionCard key={submission.id} submission={submission} />
+	))}
+</Stack>
+```
+
+```tsx
+// Good: a one-off usage in prose, where the parent isn't a gap container,
+// adds spacing at the call site instead of inside the component.
+<Box sx={{ mb: 2 }}>
+	<SubmissionCard submission={submission} />
+</Box>
+```
 
 ## DOM IDs
 
