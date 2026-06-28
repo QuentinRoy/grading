@@ -12,7 +12,7 @@ description: Material UI spacing and design-token conventions for this repo. Use
 - Prefer Material UI theme mechanisms and design-system tokens over custom styling where practical.
 
 - Prefer Material UI spacing and design tokens over hard-coded pixel values.
-  - Prefer `p`, `px`, `py`, `m`, `mb`, `gap`, and `theme.spacing()` instead of arbitrary pixel values.
+  - Prefer `p`, `px`, `py`, `mb`, `gap`, and `theme.spacing()` instead of arbitrary pixel values.
   - Prefer theme typography, palette, breakpoints, and sizing tokens when available.
   - Avoid exact pixel dimensions unless they represent a real fixed constraint (for example image dimensions, touch targets, canvas sizes, or third-party integration requirements).
   - Avoid arbitrary values such as `marginTop: "13px"` or `width: "237px"` when a theme-derived value would work.
