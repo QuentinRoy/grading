@@ -2,9 +2,8 @@ import type { ReactNode } from "react";
 
 import "../styles/globals.css";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
-import { SaveErrorsDisplay } from "#design-system/SaveErrorsDisplay.tsx";
 import { SaveErrorsProvider } from "#design-system/SaveErrorsProvider.tsx";
-import { projectAssessmentSubmissionQuestionPath } from "#projects/projectPaths.ts";
+import SaveErrorsDisplayContainer from "./SaveErrorsDisplayContainer.tsx";
 
 export const metadata = {
 	title: "Assessment",
@@ -20,16 +19,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
 				<AppRouterCacheProvider>
 					<SaveErrorsProvider>
 						{children}
-						<SaveErrorsDisplay
-							buildErrorHref={(error) =>
-								projectAssessmentSubmissionQuestionPath(
-									error.projectId,
-									error.projectSlug,
-									error.submissionId,
-									error.questionId,
-								)
-							}
-						/>
+						<SaveErrorsDisplayContainer />
 					</SaveErrorsProvider>
 				</AppRouterCacheProvider>
 			</body>
