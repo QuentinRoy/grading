@@ -17,12 +17,12 @@ import {
 	projectCacheTag,
 	questionListCacheTag,
 } from "#db/cacheTags.ts";
+import MuiNextLink from "#design-system/MuiNextLink.tsx";
 import { projectAssessmentsPath } from "#projects/projectPaths.ts";
 import { loadProjectByPublicId } from "#projects/projects.ts";
 import { loadQuestion } from "#questions/questions.ts";
 import { attachAssessment } from "#rubrics/rubric.ts";
 import { loadSubmissions } from "#submissions/submissions.ts";
-import MuiNextLink from "#ui/MuiNextLink.tsx";
 
 type PageParams = {
 	projectId: string;
