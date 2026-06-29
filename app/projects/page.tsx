@@ -11,10 +11,10 @@ import {
 	Typography,
 } from "@mui/material";
 import { redirect } from "next/navigation";
+import AppShell from "#app-shell/AppShell.tsx";
 import { toCreateProjectErrorMessage } from "#projects/createProjectErrorMessage.ts";
 import { projectDashboardPath } from "#projects/projectPaths.ts";
 import { createProject, loadProjects } from "#projects/projects.ts";
-import AppShell from "#ui/AppShell.tsx";
 
 function isNextRedirectError(error: unknown): boolean {
 	if (typeof error !== "object" || error == null || !("digest" in error)) {

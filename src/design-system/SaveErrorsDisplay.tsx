@@ -4,10 +4,14 @@ import MuiAlert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Link from "@mui/material/Link";
 import NextLink from "next/link";
-import { projectAssessmentSubmissionQuestionPath } from "#projects/projectPaths.ts";
+import type { SaveError } from "./SaveErrorsProvider.tsx";
 import { useSaveErrors } from "./SaveErrorsProvider.tsx";
 
-export function SaveErrorsDisplay() {
+export type SaveErrorsDisplayProps = {
+	buildErrorHref: (error: SaveError) => string;
+};
+
+export function SaveErrorsDisplay({ buildErrorHref }: SaveErrorsDisplayProps) {
 	const { errors, dismissError } = useSaveErrors();
 
 	if (errors.length === 0) return null;
@@ -36,12 +40,7 @@ export function SaveErrorsDisplay() {
 					Failed to save assessment for{" "}
 					<Link
 						component={NextLink}
-						href={projectAssessmentSubmissionQuestionPath(
-							error.projectId,
-							error.projectSlug,
-							error.submissionId,
-							error.questionId,
-						)}
+						href={buildErrorHref(error)}
 						color="inherit"
 						sx={{ fontWeight: "bold" }}
 					>

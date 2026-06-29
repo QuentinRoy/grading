@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import AppShell from "#app-shell/AppShell.tsx";
+import CosmeticSlugReplacement from "#app-shell/CosmeticSlugReplacement.tsx";
 import { loadProjectByPublicId } from "#projects/projects.ts";
-import AppShell from "#ui/AppShell.tsx";
-import CosmeticSlugReplacement from "#ui/CosmeticSlugReplacement.tsx";
 
 type ProjectScopedLayoutProps = {
 	children: ReactNode;

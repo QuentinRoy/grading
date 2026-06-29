@@ -1,14 +1,6 @@
 [
 	{
 		"type": "dependency",
-		"from": "src/ui/SaveErrorsDisplay.tsx",
-		"to": "src/projects/projectPaths.ts",
-		"unresolvedTo": "#projects/projectPaths.ts",
-		"dependencyTypes": ["aliased", "aliased-subpath-import", "local", "import"],
-		"rule": { "severity": "error", "name": "design-system-no-up" }
-	},
-	{
-		"type": "dependency",
 		"from": "src/assessments/loadRubricOverview.ts",
 		"to": "src/questions/questions.ts",
 		"unresolvedTo": "#questions/questions.ts",
@@ -41,22 +33,6 @@
 			"type-only",
 			"import"
 		],
-		"rule": { "severity": "error", "name": "no-cross-vertical" }
-	},
-	{
-		"type": "dependency",
-		"from": "src/assessments/SubmissionAssessmentClient.tsx",
-		"to": "src/ui/SaveErrorsProvider.tsx",
-		"unresolvedTo": "#ui/SaveErrorsProvider.tsx",
-		"dependencyTypes": ["aliased", "aliased-subpath-import", "local", "import"],
-		"rule": { "severity": "error", "name": "no-cross-vertical" }
-	},
-	{
-		"type": "dependency",
-		"from": "src/assessments/SubmissionOverviewAssessmentClient.tsx",
-		"to": "src/ui/SaveErrorsProvider.tsx",
-		"unresolvedTo": "#ui/SaveErrorsProvider.tsx",
-		"dependencyTypes": ["aliased", "aliased-subpath-import", "local", "import"],
 		"rule": { "severity": "error", "name": "no-cross-vertical" }
 	},
 	{
@@ -122,22 +98,6 @@
 		"from": "src/import/saveAssessments.ts",
 		"to": "src/assessments/assessmentMutations.ts",
 		"unresolvedTo": "#assessments/assessmentMutations.ts",
-		"dependencyTypes": ["aliased", "aliased-subpath-import", "local", "import"],
-		"rule": { "severity": "error", "name": "no-cross-vertical" }
-	},
-	{
-		"type": "dependency",
-		"from": "src/questions/BooleanRubricEditorPaper.tsx",
-		"to": "src/ui/NumberField.tsx",
-		"unresolvedTo": "#ui/NumberField.tsx",
-		"dependencyTypes": ["aliased", "aliased-subpath-import", "local", "import"],
-		"rule": { "severity": "error", "name": "no-cross-vertical" }
-	},
-	{
-		"type": "dependency",
-		"from": "src/questions/NumericalRubricEditorPaper.tsx",
-		"to": "src/ui/NumberField.tsx",
-		"unresolvedTo": "#ui/NumberField.tsx",
 		"dependencyTypes": ["aliased", "aliased-subpath-import", "local", "import"],
 		"rule": { "severity": "error", "name": "no-cross-vertical" }
 	},

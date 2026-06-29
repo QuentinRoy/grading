@@ -2,7 +2,7 @@
 
 import { Stack, Switch, Typography } from "@mui/material";
 import type { ReactElement } from "react";
-import NumberField from "#ui/NumberField.tsx";
+import NumberField from "#design-system/NumberField.tsx";
 import type { QuestionRubricFieldErrors } from "./errors.ts";
 import RubricEditorPaper from "./RubricEditorPaper.tsx";
 import type { RubricEditorValue } from "./types.ts";

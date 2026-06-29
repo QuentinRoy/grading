@@ -9,6 +9,7 @@ import { Suspense } from "react";
 import { loadSubmissionAssessments } from "#assessments/assessments.ts";
 import { loadAssessmentCompletionBySubmission } from "#assessments/loadAssessmentCompletion.ts";
 import SubmissionOverviewAssessmentClient from "#assessments/SubmissionOverviewAssessmentClient.tsx";
+import MuiNextLink from "#design-system/MuiNextLink.tsx";
 import { projectAssessmentsPath } from "#projects/projectPaths.ts";
 import { loadProjectByPublicId } from "#projects/projects.ts";
 import { loadQuestionGrid } from "#questions/questions.ts";
@@ -16,7 +17,6 @@ import { attachAssessment } from "#rubrics/rubric.ts";
 import { getSubmissionLabel } from "#submissions/getSubmissionLabel.ts";
 import { loadSubmissions } from "#submissions/submissions.ts";
 import type { Submission } from "#submissions/types.ts";
-import MuiNextLink from "#ui/MuiNextLink.tsx";
 
 type PageParams = {
 	projectId: string;
