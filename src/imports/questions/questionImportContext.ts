@@ -1,8 +1,8 @@
 import "server-only";
 import type { Kysely } from "kysely";
 import type { DB } from "#db/generated/db.ts";
+import type { ImportedQuestions } from "#imports/types.ts";
 import type { QuestionImportContext } from "./prepareQuestionImport.ts";
-import type { ImportedQuestions } from "./types.ts";
 
 // `db` may be the global client or a caller-supplied transaction. Fetches
 // everything prepareQuestionImport() needs, driven by the parsed questions.

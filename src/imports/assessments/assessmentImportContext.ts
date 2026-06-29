@@ -1,13 +1,13 @@
 import "server-only";
 import type { Kysely } from "kysely";
 import type { DB } from "#db/generated/db.ts";
+import type { ImportedAssessmentRow } from "#imports/types.ts";
 import {
 	type AssessmentImportContext,
 	type AssessmentImportRubric,
 	assessedRubricKey,
 	submissionLookupKey,
 } from "./prepareAssessmentImport.ts";
-import type { ImportedAssessmentRow } from "./types.ts";
 
 async function loadRubricsByColumn(
 	db: Kysely<DB>,

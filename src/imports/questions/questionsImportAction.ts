@@ -1,7 +1,7 @@
 "use server";
 
-import { toImportErrorState } from "./actionUtils.ts";
-import type { ImportState } from "./importState.ts";
+import { toImportErrorState } from "#imports/actionUtils.ts";
+import type { ImportState } from "#imports/importState.ts";
 import { parseQuestionsYaml } from "./parseQuestions.ts";
 import { saveQuestions } from "./saveQuestions.ts";
 

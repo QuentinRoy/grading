@@ -1,4 +1,4 @@
-import type { ImportState } from "#import/importState.ts";
+import type { ImportState } from "#imports/importState.ts";
 import type { QuestionsFieldErrors } from "./errors.ts";
 
 export type QuestionsActionState = Omit<ImportState, "errors"> & {

@@ -1,9 +1,10 @@
 /** @type {import('dependency-cruiser').IConfiguration} */
 // All vertical folder names, current AND target, so the rule survives renames.
 const VERTICALS =
-	"questions|import|export|" + // current
+	"questions|export|" + // current
 	"assessment-capture|assessment-completion|rubric-analytics|question-management|imports|app-shell"; // target
-const NON_SHARED = `questions|import|export|assessment-capture|assessment-completion|rubric-analytics|question-management|imports|app-shell`;
+const NON_SHARED = `questions|export|assessment-capture|assessment-completion|rubric-analytics|question-management|imports|app-shell`;
+const SHARED_DOMAIN = "rubrics|submissions|projects|assessment-persistence";
 
 export default {
 	forbidden: [
@@ -16,9 +17,9 @@ export default {
 		{
 			name: "shared-domain-no-up",
 			comment:
-				"rubrics/submissions/projects import only design-system + infra (+ intra shared-domain)",
+				"rubrics/submissions/projects/assessment-persistence import only design-system + infra (+ intra shared-domain)",
 			severity: "error",
-			from: { path: "^src/(rubrics|submissions|projects)/" },
+			from: { path: `^src/(${SHARED_DOMAIN})/` },
 			to: { path: `^src/(${NON_SHARED})/` },
 		},
 		{
@@ -29,7 +30,7 @@ export default {
 				path: "^src/design-system/(CodeSnippet|MuiNextLink|NumberField|shiki-setup|SaveErrors)",
 			},
 			to: {
-				path: `^src/(rubrics|submissions|projects|${NON_SHARED})/`,
+				path: `^src/(${SHARED_DOMAIN}|${NON_SHARED})/`,
 				pathNot: "^src/design-system/",
 			},
 		},

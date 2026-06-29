@@ -1,9 +1,9 @@
 import { expect, test } from "vitest";
+import type { ImportedQuestions } from "#imports/types.ts";
 import {
 	prepareQuestionImport,
 	type QuestionImportContext,
 } from "./prepareQuestionImport.ts";
-import type { ImportedQuestions } from "./types.ts";
 
 function buildContext(
 	overrides: Partial<QuestionImportContext> = {},

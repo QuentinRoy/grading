@@ -11,7 +11,7 @@ The layers, top to bottom, with imports pointing downward only and no cycles:
 
 - **app** (`app/`): route composition. Framework-owned; unchanged.
 - **verticals** (`src/<vertical>`): coherent product capabilities — `assessment-capture`, `assessment-completion`, `rubric-analytics`, `question-management`, `imports`, `export`, `app-shell`. A vertical owns the UI, client behaviour, server boundaries, reads, mutations, local types, tests, and helpers for its capability. Verticals are peers: none may import another vertical's internals.
-- **shared-domain** (`src/{rubrics,submissions,projects}`): core domain entities and primitives many verticals reference. May import only design-system and infrastructure — never a vertical.
+- **shared-domain** (`src/{rubrics,submissions,projects,assessment-persistence}`): core domain entities and primitives many verticals reference. May import only design-system and infrastructure — never a vertical. `assessment-persistence` holds `saveAssessmentInDb`, the ADR 0007 write primitive `assessment-capture`'s save wrapper and `imports`' bulk-save both compose downward (added PR4 of #201; promoted per rule 5 — two real consumers, not speculative).
 - **design-system** (`src/<presentational primitives>`): reusable, workflow-agnostic UI — `CodeSnippet`, `MuiNextLink`, `NumberField`, the shiki setup, and the save-error surface.
 - **infrastructure (leaf)** (`src/{db,utils,test}`): `db` per ADR 0002; runtime helpers and test fixtures.
 

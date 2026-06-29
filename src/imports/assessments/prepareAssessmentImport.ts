@@ -1,6 +1,6 @@
+import type { ImportedAssessmentRow } from "#imports/types.ts";
 import type { AssessmentRubricValue, RubricType } from "#rubrics/types.ts";
 import type { SubmissionType } from "#submissions/types.ts";
-import type { ImportedAssessmentRow } from "./types.ts";
 
 // Column names match the snake_case headers produced by the assessment export.
 const SUBMISSION_TYPE_COLUMN = "submission_type";

@@ -1,11 +1,11 @@
 import { expect, test } from "vitest";
+import type { ImportedAssessmentRow } from "#imports/types.ts";
 import {
 	type AssessmentImportContext,
 	assessedRubricKey,
 	prepareAssessmentImport,
 	submissionLookupKey,
 } from "./prepareAssessmentImport.ts";
-import type { ImportedAssessmentRow } from "./types.ts";
 
 function buildContext(
 	overrides: Partial<AssessmentImportContext> = {},

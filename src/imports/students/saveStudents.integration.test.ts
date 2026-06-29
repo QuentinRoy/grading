@@ -1,12 +1,12 @@
 import { revalidateTag } from "next/cache";
 import { beforeEach, expect, test, vi } from "vitest";
+import type { NormalizedImportedSubmission } from "#imports/types.ts";
 import { runForcedInterleaving } from "#test/concurrency.ts";
 import { createTestDb } from "#test/dbIntegration.ts";
 import { createProject } from "#test/projects.ts";
 import { prepareStudentImport } from "./prepareStudentImport.ts";
 import { saveStudentImportPlanInDb, saveStudents } from "./saveStudents.ts";
 import { loadStudentImportContextFromDb } from "./studentImportContext.ts";
-import type { NormalizedImportedSubmission } from "./types.ts";
 
 vi.mock("next/cache", () => ({ revalidateTag: vi.fn() }));
 

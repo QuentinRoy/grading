@@ -1,10 +1,10 @@
 import { cacheTag } from "next/cache";
 import { expect, test, vi } from "vitest";
+import { saveAssessmentInDb } from "#assessment-persistence/assessmentMutations.ts";
 import { createAssessmentFixture } from "#test/assessments.ts";
 import { createTestDb } from "#test/dbIntegration.ts";
 import { createProject } from "#test/projects.ts";
 import { createBooleanQuestionFixture } from "#test/questions.ts";
-import { saveAssessmentInDb } from "./assessmentMutations.ts";
 import {
 	loadQuestionAssessment,
 	loadQuestionAssessmentFromDb,

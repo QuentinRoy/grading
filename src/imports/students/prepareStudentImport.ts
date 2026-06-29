@@ -1,4 +1,4 @@
-import type { NormalizedImportedSubmission } from "./types.ts";
+import type { NormalizedImportedSubmission } from "#imports/types.ts";
 
 export type ExistingStudentImportRecord = {
 	lastName: string;
