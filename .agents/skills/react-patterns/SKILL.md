@@ -11,8 +11,7 @@ description: React/Next.js DOM-id (`useId`) and page-composition conventions for
 
 This covers two things on a component's outermost element:
 
-- **Outer spacing.** Never `margin`, and never `padding` unless that element has a visible `border` or `background-color`. Padding on an otherwise invisible root behaves identically to margin from the outside, so it's the same violation.
-  - A component's root should only carry spacing contained inside a visible boundary. `padding` is fine on an element with a `border` or `background-color` — it's genuinely internal. Never `m`, `mt`, `mb`, `my`, or a hardcoded `margin` on the root, and never `padding` on a transparent/borderless root.
+- **Outer spacing.** Keep spacing inside the component's boundary. `padding` is fine on a root with a visible `border` or `background-color` — it's genuinely internal. But never `m`, `mt`, `mb`, `my`, or a hardcoded `margin` on the root, and never `padding` on a transparent/borderless root, which behaves identically to outer margin from the outside.
   - Let the parent control spacing between siblings, normally via `gap` on a flex/grid container (see `.agents/skills/ui-styling/SKILL.md`'s "prefer `gap` over margins on children").
   - If a component is rendered inside something that does not support `gap` (e.g. plain text flow), the *call site* — not the component — adds the spacing, for example by wrapping the usage in a `Box` with `mb`.
 
