@@ -149,9 +149,10 @@ Then:
 
 ## State (handoff)
 
-- **Committed on branch `claude/elastic-albattani-46374e`, pushed, open as draft [PR #227](https://github.com/QuentinRoy/grading/pull/227):** ADR 0010 (+ ADR 0006 marked superseded), the investigation, this plan, and the `docs/index.md` / `AGENTS.md` / `plans/index.md` routing updates. Commits `6df9780` (docs) and `56f04d9` (decisions). The branch is fast-forwarded onto `origin/main` through #226.
-- **Not started:** PR0–PR5 above. No `src/` code or tooling changed yet; `pnpm check` is green on the docs-only diff.
-- **Start at PR0** — it has no dependencies and needs no further input. PR1–PR5 run in order, each depending only on the prior. The single mid-flight design choice is PR4 §1 (shared-domain home for `saveAssessmentInDb`), which has a stated default.
+- **Merged:** ADR 0010 (+ ADR 0006 marked superseded), the investigation, this plan, and the `docs/index.md` / `AGENTS.md` / `plans/index.md` routing updates — [PR #227](https://github.com/QuentinRoy/grading/pull/227).
+- **PR0 — Done — [PR #228](https://github.com/QuentinRoy/grading/pull/228):** `dependency-cruiser` + `.dependency-cruiser.js` (ESM, not `.cjs` — this repo is `"type": "module"`) with the four rules, generated baseline (22 known violations), `lint:boundaries` script, and a separate CI step. `options.parser: "tsc"` was required beyond the plan's starting config — the default parser silently drops `import type` edges, which would have hidden most of the real violations including the `rubrics <-> assessments` proof-of-resolution cycle.
+- **Not started:** PR1–PR5 above.
+- **Next: PR1** — fix the `rubrics <-> assessments` cycle. PR2–PR5 run in order after, each depending only on the prior. The single mid-flight design choice is PR4 §1 (shared-domain home for `saveAssessmentInDb`), which has a stated default.
 
 ## Out of scope
 
