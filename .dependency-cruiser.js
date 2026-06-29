@@ -1,9 +1,9 @@
 /** @type {import('dependency-cruiser').IConfiguration} */
 // All vertical folder names, current AND target, so the rule survives renames.
 const VERTICALS =
-	"assessments|questions|import|export|" + // current
+	"questions|import|export|" + // current
 	"assessment-capture|assessment-completion|rubric-analytics|question-management|imports|app-shell"; // target
-const NON_SHARED = `assessments|questions|import|export|assessment-capture|assessment-completion|rubric-analytics|question-management|imports|app-shell`;
+const NON_SHARED = `questions|import|export|assessment-capture|assessment-completion|rubric-analytics|question-management|imports|app-shell`;
 
 export default {
 	forbidden: [
@@ -26,7 +26,7 @@ export default {
 			comment: "design-system imports infra only",
 			severity: "error",
 			from: {
-				path: "^src/design-system/(CodeSnippet|MuiNextLink|NumberField|shiki-setup|SaveErrors)",
+				path: "^src/design-system/(CodeSnippet|MuiNextLink|NumberField|shiki-setup|SaveErrors|AssessmentProgressSummary|CompletionProgress)",
 			},
 			to: {
 				path: `^src/(rubrics|submissions|projects|${NON_SHARED})/`,
