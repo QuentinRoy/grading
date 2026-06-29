@@ -1,10 +1,11 @@
 import { revalidateTag, updateTag } from "next/cache";
 import { beforeEach, expect, test, vi } from "vitest";
+import { saveAssessmentInDb } from "#assessment-persistence/assessmentMutations.ts";
 import { createAssessmentFixture } from "#test/assessments.ts";
 import { runForcedInterleaving } from "#test/concurrency.ts";
 import { buildTestId, createTestDb } from "#test/dbIntegration.ts";
 import { createProject } from "#test/projects.ts";
-import { saveAssessment, saveAssessmentInDb } from "./assessmentMutations.ts";
+import { saveAssessment } from "./assessmentMutations.ts";
 import { loadQuestionAssessmentFromDb } from "./assessments.ts";
 
 vi.mock("next/cache", () => ({

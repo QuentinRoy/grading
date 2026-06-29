@@ -2,10 +2,10 @@ import type { Kysely } from "kysely";
 import { revalidateTag } from "next/cache";
 import { beforeEach, expect, test, vi } from "vitest";
 import type { DB } from "#db/generated/db.ts";
+import type { ImportedAssessmentRow } from "#imports/types.ts";
 import { buildTestId, createTestDb } from "#test/dbIntegration.ts";
 import { createProject } from "#test/projects.ts";
 import { saveAssessments } from "./saveAssessments.ts";
-import type { ImportedAssessmentRow } from "./types.ts";
 
 vi.mock("next/cache", () => ({ revalidateTag: vi.fn() }));
 

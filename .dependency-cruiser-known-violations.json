@@ -37,7 +37,7 @@
 	},
 	{
 		"type": "dependency",
-		"from": "src/import/prepareAssessmentImport.integration.test.ts",
+		"from": "src/imports/assessments/prepareAssessmentImport.integration.test.ts",
 		"to": "src/export/submissionExport.ts",
 		"unresolvedTo": "#export/submissionExport.ts",
 		"dependencyTypes": ["aliased", "aliased-subpath-import", "local", "import"],
@@ -45,7 +45,7 @@
 	},
 	{
 		"type": "dependency",
-		"from": "src/import/prepareAssessmentImport.integration.test.ts",
+		"from": "src/imports/assessments/prepareAssessmentImport.integration.test.ts",
 		"to": "src/export/submissionExportCsv.ts",
 		"unresolvedTo": "#export/submissionExportCsv.ts",
 		"dependencyTypes": [
@@ -59,17 +59,9 @@
 	},
 	{
 		"type": "dependency",
-		"from": "src/import/saveAssessments.ts",
-		"to": "src/assessment-capture/assessmentMutations.ts",
-		"unresolvedTo": "#assessment-capture/assessmentMutations.ts",
-		"dependencyTypes": ["aliased", "aliased-subpath-import", "local", "import"],
-		"rule": { "severity": "error", "name": "no-cross-vertical" }
-	},
-	{
-		"type": "dependency",
 		"from": "src/questions/state.ts",
-		"to": "src/import/importState.ts",
-		"unresolvedTo": "#import/importState.ts",
+		"to": "src/imports/importState.ts",
+		"unresolvedTo": "#imports/importState.ts",
 		"dependencyTypes": [
 			"aliased",
 			"aliased-subpath-import",

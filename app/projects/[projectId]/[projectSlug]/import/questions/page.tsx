@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import QuestionsImportForm from "#import/QuestionsImportForm.tsx";
-import { questionsImportAction } from "#import/questionsImportAction.ts";
+import QuestionsImportForm from "#imports/questions/QuestionsImportForm.tsx";
+import { questionsImportAction } from "#imports/questions/questionsImportAction.ts";
 import { loadProjectByPublicId } from "#projects/projects.ts";
 
 type ProjectImportQuestionsPageProps = {

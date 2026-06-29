@@ -3,12 +3,12 @@ import type { Kysely } from "kysely";
 import { invalidateStudentImport } from "#db/cacheInvalidation.ts";
 import type { DB } from "#db/generated/db.ts";
 import { db as defaultDb } from "#db/kysely.ts";
+import type { NormalizedImportedSubmission } from "#imports/types.ts";
 import {
 	prepareStudentImport,
 	type StudentImportPlan,
 } from "./prepareStudentImport.ts";
 import { loadStudentImportContextFromDb } from "./studentImportContext.ts";
-import type { NormalizedImportedSubmission } from "./types.ts";
 
 export type StudentImportWriteResult = {
 	createdStudentCount: number;

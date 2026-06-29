@@ -1,5 +1,5 @@
+import type { ImportedQuestions } from "#imports/types.ts";
 import type { RubricType } from "#rubrics/types.ts";
-import type { ImportedQuestions } from "./types.ts";
 
 export type ExistingQuestionImportRubric = {
 	type: RubricType;

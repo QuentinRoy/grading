@@ -3,14 +3,14 @@ import type { Kysely } from "kysely";
 import { invalidateQuestionImport } from "#db/cacheInvalidation.ts";
 import type { DB } from "#db/generated/db.ts";
 import { db as defaultDb } from "#db/kysely.ts";
-import { ImportBlockedError } from "./importErrors.ts";
+import { ImportBlockedError } from "#imports/importErrors.ts";
+import type { ImportedQuestions } from "#imports/types.ts";
 import {
 	prepareQuestionImport,
 	type QuestionImportBlockingDiagnostic,
 	type QuestionImportPlan,
 } from "./prepareQuestionImport.ts";
 import { loadQuestionImportContextFromDb } from "./questionImportContext.ts";
-import type { ImportedQuestions } from "./types.ts";
 
 function formatBlockingDiagnostic(
 	diagnostic: QuestionImportBlockingDiagnostic,
