@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 
 import "../styles/globals.css";
+import Box from "@mui/material/Box";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
-import SaveErrorsDisplayContainer from "#app-shell/SaveErrorsDisplayContainer.tsx";
+import { SaveErrorsDisplay } from "#app-shell/SaveErrorsDisplay.tsx";
 import { SaveErrorsProvider } from "#design-system/SaveErrorsProvider.tsx";
 
 export const metadata = {
@@ -19,7 +20,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
 				<AppRouterCacheProvider>
 					<SaveErrorsProvider>
 						{children}
-						<SaveErrorsDisplayContainer />
+						<Box sx={{ position: "fixed", bottom: 16, left: 16, zIndex: 2000 }}>
+							<SaveErrorsDisplay />
+						</Box>
 					</SaveErrorsProvider>
 				</AppRouterCacheProvider>
 			</body>

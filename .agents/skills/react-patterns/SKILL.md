@@ -1,17 +1,23 @@
 ---
 name: react-patterns
-description: React/Next.js DOM-id (`useId`) and page-composition conventions for this repository, plus the "no outer margin or padding" rule for component spacing. Use whenever generating DOM ids for `aria-controls`/label pairs, deciding whether code belongs in an `app/` route file versus a reusable `src/` component, or writing/reviewing a component that applies `margin`/`mb`/`mt`/`my` or borderless/backgroundless `padding` (including in an `sx` prop) to its own outermost element.
+description: React/Next.js DOM-id (`useId`) and page-composition conventions for this repository, plus the "outer placement is the parent's responsibility" rule for component spacing and positioning. Use whenever generating DOM ids for `aria-controls`/label pairs, deciding whether code belongs in an `app/` route file versus a reusable `src/` component, or writing/reviewing a component that applies `margin`/`mb`/`mt`/`my`, borderless/backgroundless `padding`, or page placement (`position: fixed`/`absolute`, `top`/`right`/`bottom`/`left`, overlay `zIndex`) to its own outermost element (including in an `sx` prop).
 ---
 
 # React patterns
 
-## No outer margin or padding
+## Outer placement is the parent's responsibility
 
-A component must never apply outer spacing to its own outermost element: never `margin`, and never `padding` unless that element has a visible `border` or `background-color`. External spacing (the gap between a component and its siblings) is the parent's responsibility, not the component's. A component that sets its own outer margin — or padding on an otherwise invisible root, which behaves identically to margin from the outside — breaks encapsulation: it assumes a layout context it doesn't control, and every place that reuses it in a different context (a different sibling order, a grid instead of a stack) needs a compensating override to undo it.
+**Goal: a component owns how it looks inside its own boundary, never where it sits relative to anything outside that boundary.** Outer spacing *and* page placement are the parent's job. A component that decides its own position breaks encapsulation: it assumes a layout context it doesn't control, so every place that reuses it in a different context (a different sibling order, a grid instead of a stack, a different corner of the screen) needs a compensating override to undo it.
 
-- A component's root element should only carry spacing that's contained inside a visible boundary. `padding` is fine on an element with a `border` or `background-color` — it's genuinely internal. Never `m`, `mt`, `mb`, `my`, or a hardcoded `margin` on the root, and never `padding` on a transparent/borderless root.
-- Let the parent control spacing between siblings, normally via `gap` on a flex/grid container (see `.agents/skills/ui-styling/SKILL.md`'s "prefer `gap` over margins on children").
-- If a component is rendered inside something that does not support `gap` (e.g. plain text flow), the *call site* — not the component — adds the spacing, for example by wrapping the usage in a `Box` with `mb`.
+This covers two things on a component's outermost element:
+
+- **Outer spacing.** Never `margin`, and never `padding` unless that element has a visible `border` or `background-color`. Padding on an otherwise invisible root behaves identically to margin from the outside, so it's the same violation.
+  - A component's root should only carry spacing contained inside a visible boundary. `padding` is fine on an element with a `border` or `background-color` — it's genuinely internal. Never `m`, `mt`, `mb`, `my`, or a hardcoded `margin` on the root, and never `padding` on a transparent/borderless root.
+  - Let the parent control spacing between siblings, normally via `gap` on a flex/grid container (see `.agents/skills/ui-styling/SKILL.md`'s "prefer `gap` over margins on children").
+  - If a component is rendered inside something that does not support `gap` (e.g. plain text flow), the *call site* — not the component — adds the spacing, for example by wrapping the usage in a `Box` with `mb`.
+
+- **Page placement.** Never put the component *itself* in a fixed/overlay position. No `position: "fixed"` / `"absolute"`, no `top`/`right`/`bottom`/`left` offsets, and no page-level overlay `zIndex` on the root. Where a toast, banner, or floating panel anchors on screen is the call site's decision; the component only renders its own content. Internal arrangement of the component's *own* children — `display: flex`, `flexDirection`, `gap`, `maxWidth` — stays inside the component, because that describes what's within its boundary, not where the boundary lands.
+  - The call site that knows the layout context wraps the component to place it, e.g. `<Box sx={{ position: "fixed", bottom: 16, left: 16, zIndex: 2000 }}><SaveErrorsDisplay /></Box>`.
 
 ```tsx
 // Bad: SubmissionCard owns its own outer margin.
