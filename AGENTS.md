@@ -38,6 +38,7 @@ Use this table to find the canonical guidance instead of copying rules into this
 - GitHub issues, pull requests, labels, templates, and collaboration workflow → `docs/guides/issue-and-pr-conventions.md`.
 - Commit titles and squash merge titles → `docs/guides/commit-message-conventions.md`.
 - TypeScript public/helper APIs, function parameter design, and `as` type assertions → `.agents/skills/typescript-api-design/SKILL.md` (also explicitly loaded; see Skills below).
+- UI composition, semantic-component boundaries, keyboard-oriented workflow requirements, and MUI replacement readiness → `.agents/skills/ui-system/SKILL.md`.
 - UI styling, spacing direction, and Material UI design-token conventions → `.agents/skills/ui-styling/SKILL.md`.
 - User-facing error message conventions → `.agents/skills/error-handling-ux/SKILL.md`.
 - Testing conventions, test-command selection, and disposable-fixture patterns → `docs/reference/testing-conventions.md`, `.agents/skills/testing/SKILL.md`.
@@ -58,6 +59,7 @@ Use this table to find the canonical guidance instead of copying rules into this
 - Temporarily drop caveman mode when clarity, safety, irreversible actions, or public-facing writing require normal prose.
 - Use `.agents/skills/simplify/SKILL.md` after code edits as a focused cleanup pass over recently modified code. Preserve behavior exactly while improving clarity, consistency, naming, control flow, and maintainability.
 - Load `.agents/skills/typescript-api-design/SKILL.md` whenever writing or reviewing a TypeScript function signature or an `as` type assertion. It is near-universal in this TS-only repo and won't reliably auto-trigger, so consult it explicitly rather than waiting for its description to match.
+- Load `.agents/skills/ui-system/SKILL.md` for non-trivial UI work. Also load `.agents/skills/ui-styling/SKILL.md` when the task touches spacing, MUI styling, an `sx` prop, or fixed visual values.
 - Load other local skills from `.agents/skills/*` only when the task touches that domain. Do not load every skill by default.
 
 ## Instruction precedence
