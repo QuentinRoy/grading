@@ -8,6 +8,7 @@ import {
 	Modal,
 	Stack,
 	Text,
+	TextInput,
 	useCombobox,
 } from "@mantine/core";
 import {
@@ -16,6 +17,7 @@ import {
 	Suspense,
 	use,
 	useEffect,
+	useId,
 	useMemo,
 	useState,
 } from "react";
@@ -105,6 +107,7 @@ function SubmissionSelectorContent({
 }): ReactElement {
 	const progressBySubmissionId = use(progressPromise);
 	const [query, setQuery] = useState("");
+	const searchInputId = useId();
 	// Combobox.EventsTarget owns the Escape key (it stops the event from
 	// reaching Modal's own Escape-to-close listener), so closing the dropdown
 	// is wired to close the whole selector instead.
@@ -142,12 +145,12 @@ function SubmissionSelectorContent({
 		<Combobox store={combobox} onOptionSubmit={handleSubmit}>
 			<Stack gap="md">
 				<Combobox.EventsTarget>
-					<Combobox.Search
+					<TextInput
+						id={searchInputId}
 						value={query}
 						onChange={(event) => setQuery(event.currentTarget.value)}
 						placeholder="Search by team or student name"
 						autoFocus
-						style={{ width: "100%" }}
 					/>
 				</Combobox.EventsTarget>
 
