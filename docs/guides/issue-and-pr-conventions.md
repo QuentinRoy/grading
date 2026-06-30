@@ -22,6 +22,12 @@ TODO lists should not replace issue descriptions, acceptance criteria, follow-up
 
 Before marking a PR as ready for review, resolve or remove temporary TODO items where possible.
 
+## Branch freshness
+
+Before creating a pull request and before pushing further commits to one, check whether its base branch has moved. If so, update the branch first.
+
+Pull requests must be up to date with their base branch before the user merges them.
+
 ## Pull request titles
 
 Prefer the commit message convention in `docs/guides/commit-message-conventions.md` for pull request titles when it stays readable:
