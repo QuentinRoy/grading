@@ -75,6 +75,7 @@ export default defineConfig({
 					include: [
 						"immer",
 						"fuse.js",
+						"@tabler/icons-react",
 						"@mui/material/Chip",
 						"@mui/material/CircularProgress",
 						"@mui/material/Dialog",

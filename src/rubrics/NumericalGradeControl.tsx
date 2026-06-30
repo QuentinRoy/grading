@@ -1,6 +1,6 @@
 "use client";
 
-import TextField from "@mui/material/TextField";
+import { NumberInput } from "@mantine/core";
 import { type ReactElement, useEffect, useState } from "react";
 
 type NumericalGradeControlProps = {
@@ -18,14 +18,14 @@ export default function NumericalGradeControl({
 	disabled,
 	onAssess,
 }: NumericalGradeControlProps): ReactElement {
-	const [draft, setDraft] = useState(value != null ? String(value) : "");
+	const [draft, setDraft] = useState<string | number>(value ?? "");
 
 	useEffect(() => {
-		setDraft(value != null ? String(value) : "");
+		setDraft(value ?? "");
 	}, [value]);
 
 	function submit() {
-		const trimmed = draft.trim();
+		const trimmed = String(draft).trim();
 		if (trimmed.length === 0) {
 			return;
 		}
@@ -39,11 +39,9 @@ export default function NumericalGradeControl({
 	}
 
 	return (
-		<TextField
-			size="small"
-			type="number"
+		<NumberInput
 			value={draft}
-			onChange={(event) => setDraft(event.target.value)}
+			onChange={setDraft}
 			onBlur={submit}
 			onKeyDown={(event) => {
 				if (event.key === "Enter") {
@@ -53,8 +51,12 @@ export default function NumericalGradeControl({
 			}}
 			placeholder="Score"
 			disabled={disabled}
-			slotProps={{ htmlInput: { min: minScore, max: maxScore, step: "any" } }}
-			sx={{ width: 96 }}
+			min={minScore}
+			max={maxScore}
+			clampBehavior="none"
+			allowDecimal
+			hideControls
+			w={96}
 		/>
 	);
 }
