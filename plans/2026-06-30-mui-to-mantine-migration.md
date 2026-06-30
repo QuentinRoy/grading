@@ -58,12 +58,12 @@ Scope is UI-only: no product-logic, data, schema, server-action, or cache change
 
 ## Execution: step sequence
 
-Repo commands (`package.json`): `pnpm run check --fix` (Biome), `pnpm run check-types` (`tsc --noEmit`), `pnpm test:unit [pattern]`, `pnpm test:integration [pattern]`, `pnpm test:storybook`, `pnpm test` (all projects), `pnpm run build`. After each step: simplify pass on changed code (`.agents/skills/simplify/SKILL.md`), then the step's validation.
+Repo commands (`package.json`): `pnpm run check --fix` (Biome), `pnpm run check-types` (`tsc --noEmit`), `pnpm test:unit [pattern]`, `pnpm test:integration [pattern]`, `pnpm test:storybook`, `pnpm test` (all projects), `pnpm run build`. After each step: simplify pass on changed code (`.agents/skills/simplify/SKILL.md`), then the step's validation, then **a commit for that step** (one commit per numbered step below, following `docs/guides/commit-message-conventions.md`).
 
 ### Step 0 — Scaffolding + theme (coexist with MUI)
 
 1. Add the dependencies above.
-2. Add `postcss.config.cjs` (repo is `"type": "module"`, so `.cjs`) with `postcss-preset-mantine` + `postcss-simple-vars`.
+2. Add `postcss.config.mjs` (ESM, matching repo `"type": "module"` and Next.js's own `.mjs` convention) with `postcss-preset-mantine` + `postcss-simple-vars`.
 3. Create the theme in design-system (`src/design-system/theme.ts`): light, `primaryColor` blue/indigo, single compact density via component `defaultProps` + tuned `spacing`/`fontSizes`.
 4. `app/layout.tsx`: add `ColorSchemeScript` + `mantineHtmlProps` to `<html>`, wrap children in `MantineProvider theme={theme}`, import `@mantine/core/styles.css`. **Keep** `AppRouterCacheProvider` + MUI mounted (coexistence).
 5. `.storybook/preview.tsx`: add a `MantineProvider` decorator + import Mantine styles; **keep** the MUI decorator.
@@ -125,10 +125,10 @@ Repo commands (`package.json`): `pnpm run check --fix` (Biome), `pnpm run check-
 
 ## State (handoff)
 
-- **Planning complete; nothing implemented.** This session produced [ADR 0011](../docs/adr/0011-adopt-mantine-constrained-design-system.md) and this plan only — no code changed.
-- **Branch:** `mantine-switch`. It already carries (from earlier commits) the Mantine skills, the `ui-styling` house rules, and `@mantine/core` + `@mantine/hooks` in `package.json`. Everything else above is unstarted.
-- **Next action:** Step 0 — add deps (`@mantine/form`, `@tabler/icons-react`, dev `postcss-preset-mantine` + `postcss-simple-vars`), add `postcss.config.cjs`, create `src/design-system/theme.ts`, mount Mantine alongside MUI.
-- **Decisions deferred to implementation:** exact indigo-vs-blue shade; the SegmentedControl boolean green/red Styles API details; whether `AssessmentProgressSummary` + `GlobalAssessmentSummary` actually unify into one `AssessmentSummary` (only on the rule-5 reuse bar); whether `fuse.js` filtering stays or `Combobox`'s own filter replaces it in `SubmissionSelector`.
+- **Step 0 done** (commit on `mantine-switch`): deps added (`@mantine/form`, `@tabler/icons-react`, dev `postcss-preset-mantine` + `postcss-simple-vars`); `postcss.config.mjs` added; `src/design-system/theme.ts` created (`primaryColor: "indigo"`, tuned `spacing`/`fontSizes`); `app/layout.tsx` and `.storybook/preview.tsx` mount Mantine alongside MUI. Validated: `check --fix`, `check-types`, `build`, `test:storybook` all green.
+- **Branch:** `mantine-switch`. It already carries (from earlier commits) the Mantine skills and the `ui-styling` house rules.
+- **Next action:** Step 1 — design-system primitives + semantic scaffolding (`AppPage`, `PageHeader`, `Panel`; migrate `NumberField`→`ScoreInput`, `MuiNextLink`, `CodeSnippet`, `SaveErrorsProvider`/`SaveErrorsDisplay` off MUI).
+- **Decisions deferred to implementation:** exact indigo-vs-blue shade (Step 0 picked `indigo`; revisit if it reads wrong against the rest of the theme); per-component `defaultProps` density tuning (deferred to the Step 3b benchmark); the SegmentedControl boolean green/red Styles API details; whether `AssessmentProgressSummary` + `GlobalAssessmentSummary` actually unify into one `AssessmentSummary` (only on the rule-5 reuse bar); whether `fuse.js` filtering stays or `Combobox`'s own filter replaces it in `SubmissionSelector`.
 - **Review watch-items already folded in:** `vitest.config.ts` `optimizeDeps` (Step 3b) and the repo-wide cleanup guard (Step 5) — both reach beyond the 48 `src`/`app` files.
 
 ## Out of scope
