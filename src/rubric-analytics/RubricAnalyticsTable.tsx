@@ -1,4 +1,4 @@
-import { alpha, Box, Table, Text } from "@mantine/core";
+import { alpha, Flex, Table, Text } from "@mantine/core";
 import type { ReactElement } from "react";
 import CompletionProgress from "./CompletionProgress.tsx";
 import QuestionDetailsTooltip from "./QuestionDetailsTooltip.tsx";
@@ -58,21 +58,19 @@ export default function RubricAnalyticsTable({
 									/>
 								</Table.Td>
 								<Table.Td ta="center">
-									<Box
+									<Flex
 										display="inline-flex"
-										px={8}
+										align="start"
+										px="xs"
 										py={4}
 										bdrs="sm"
-										style={{
-											alignItems: "start",
-											backgroundColor: alpha(color, 0.1),
-										}}
+										style={{ backgroundColor: alpha(color, 0.1) }}
 									>
 										<Text size="sm" style={{ color, whiteSpace: "nowrap" }}>
 											{formatMarks(rubric.averageMarks)} /{" "}
 											{formatMarks(rubric.maxMarks)}
 										</Text>
-									</Box>
+									</Flex>
 								</Table.Td>
 								<Table.Td miw={180}>
 									<CompletionProgress

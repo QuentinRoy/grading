@@ -178,7 +178,7 @@ function SubmissionSelectorContent({
 											<div>
 												<Text size="sm">{result.displayLabel}</Text>
 												{secondaryText.length > 0 ? (
-													<Text size="xs" style={{ opacity: 0.7 }}>
+													<Text size="xs" opacity={0.7}>
 														{secondaryText}
 													</Text>
 												) : null}

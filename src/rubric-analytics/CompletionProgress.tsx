@@ -17,7 +17,7 @@ export default function CompletionProgress({
 	alignItems = "center",
 }: CompletionProgressProps): ReactElement {
 	return (
-		<Stack gap={6} align={alignItems}>
+		<Stack gap="xs" align={alignItems}>
 			<Text size="xs" style={{ whiteSpace: "nowrap" }}>
 				{assessedCount} / {totalCount}
 			</Text>

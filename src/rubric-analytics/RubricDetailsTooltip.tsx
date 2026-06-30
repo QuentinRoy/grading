@@ -1,6 +1,6 @@
 "use client";
 
-import { Group, Stack, Text, Tooltip } from "@mantine/core";
+import { Box, Group, Stack, Text, Tooltip } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import type { ReactElement, ReactNode } from "react";
 import type { RubricOverviewPopupDetails } from "./rubricOverviewBuilder.ts";
@@ -75,10 +75,9 @@ export default function RubricDetailsTooltip({
 				<Text component="span" size="sm" td="underline dotted">
 					{rubricId}
 				</Text>
-				<IconInfoCircle
-					size={14}
-					style={{ color: "var(--mantine-color-dimmed)" }}
-				/>
+				<Box component="span" c="dimmed" display="inline-flex">
+					<IconInfoCircle size={14} />
+				</Box>
 			</Group>
 		</Tooltip>
 	);

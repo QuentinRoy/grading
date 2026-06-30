@@ -1,4 +1,4 @@
-import { alpha, Box, Table, Text } from "@mantine/core";
+import { alpha, Flex, Table, Text } from "@mantine/core";
 import type { ReactElement } from "react";
 import CompletionProgress from "./CompletionProgress.tsx";
 import RubricDetailsTooltip from "./RubricDetailsTooltip.tsx";
@@ -53,82 +53,81 @@ export default function SubmissionMatrix({
 					</Table.Tr>
 				</Table.Thead>
 				<Table.Tbody>
-					{submissionRows.map((submissionRow) => (
-						<Table.Tr key={submissionRow.submissionId}>
-							<Table.Td>{submissionRow.submissionLabel}</Table.Td>
-							{submissionRow.rubrics.map((rubricCell) => {
-								const color = rubricCell.assessed
-									? severityColor(
-											rubricCell.maxMarks > 0
-												? ((rubricCell.marks ?? 0) / rubricCell.maxMarks) * 100
-												: 0,
-										)
-									: "hsl(220 8% 60%)";
+					{submissionRows.map((submissionRow) => {
+						const avgColor = severityColor(submissionRow.averagePercent);
 
-								return (
-									<Table.Td key={rubricCell.rubricId} ta="center">
-										<Box
-											display="inline-flex"
-											px={6}
-											py={2}
-											bdrs="sm"
-											miw={64}
-											style={{
-												justifyContent: "center",
-												color,
-												backgroundColor: alpha(
-													color,
-													rubricCell.assessed ? 0.12 : 0.08,
-												),
-											}}
-										>
-											<Text size="xs" style={{ whiteSpace: "nowrap" }}>
-												{rubricCell.assessed
-													? `${formatMarks(rubricCell.marks)} / ${formatMarks(rubricCell.maxMarks)}`
-													: "-"}
-											</Text>
-										</Box>
-									</Table.Td>
-								);
-							})}
-							<Table.Td ta="center" style={{ whiteSpace: "nowrap" }}>
-								{(() => {
-									const color = severityColor(submissionRow.averagePercent);
+						return (
+							<Table.Tr key={submissionRow.submissionId}>
+								<Table.Td>{submissionRow.submissionLabel}</Table.Td>
+								{submissionRow.rubrics.map((rubricCell) => {
+									const color = rubricCell.assessed
+										? severityColor(
+												rubricCell.maxMarks > 0
+													? ((rubricCell.marks ?? 0) / rubricCell.maxMarks) *
+															100
+													: 0,
+											)
+										: "hsl(220 8% 60%)";
+
 									return (
-										<Box
-											display="inline-flex"
-											px={8}
-											py={4}
-											bdrs="sm"
-											style={{
-												alignItems: "center",
-												backgroundColor: alpha(color, 0.1),
-											}}
-										>
-											<Text size="sm" style={{ color, whiteSpace: "nowrap" }}>
-												{formatMarks(submissionRow.marks)} /{" "}
-												{formatMarks(submissionRow.maxMarks)}
-											</Text>
-										</Box>
+										<Table.Td key={rubricCell.rubricId} ta="center">
+											<Flex
+												justify="center"
+												px={6}
+												py={2}
+												bdrs="sm"
+												miw={64}
+												style={{
+													color,
+													backgroundColor: alpha(
+														color,
+														rubricCell.assessed ? 0.12 : 0.08,
+													),
+												}}
+											>
+												<Text size="xs" style={{ whiteSpace: "nowrap" }}>
+													{rubricCell.assessed
+														? `${formatMarks(rubricCell.marks)} / ${formatMarks(rubricCell.maxMarks)}`
+														: "-"}
+												</Text>
+											</Flex>
+										</Table.Td>
 									);
-								})()}
-							</Table.Td>
-							<Table.Td ta="right" miw={180}>
-								<CompletionProgress
-									assessedCount={submissionRow.completedRubrics}
-									totalCount={submissionRow.totalRubrics}
-									completionPercent={
-										submissionRow.totalRubrics > 0
-											? (submissionRow.completedRubrics /
-													submissionRow.totalRubrics) *
-												100
-											: 0
-									}
-									alignItems="flex-end"
-								/>
-							</Table.Td>
-						</Table.Tr>
-					))}
+								})}
+								<Table.Td ta="center" style={{ whiteSpace: "nowrap" }}>
+									<Flex
+										align="center"
+										px="xs"
+										py={4}
+										bdrs="sm"
+										style={{ backgroundColor: alpha(avgColor, 0.1) }}
+									>
+										<Text
+											size="sm"
+											style={{ color: avgColor, whiteSpace: "nowrap" }}
+										>
+											{formatMarks(submissionRow.marks)} /{" "}
+											{formatMarks(submissionRow.maxMarks)}
+										</Text>
+									</Flex>
+								</Table.Td>
+								<Table.Td ta="right" miw={180}>
+									<CompletionProgress
+										assessedCount={submissionRow.completedRubrics}
+										totalCount={submissionRow.totalRubrics}
+										completionPercent={
+											submissionRow.totalRubrics > 0
+												? (submissionRow.completedRubrics /
+														submissionRow.totalRubrics) *
+													100
+												: 0
+										}
+										alignItems="flex-end"
+									/>
+								</Table.Td>
+							</Table.Tr>
+						);
+					})}
 				</Table.Tbody>
 			</Table>
 		</Table.ScrollContainer>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Group, Text, Tooltip } from "@mantine/core";
+import { Box, Group, Text, Tooltip } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import type { ReactElement } from "react";
 
@@ -30,10 +30,9 @@ export default function QuestionDetailsTooltip({
 				<Text component="span" size="sm" td="underline dotted">
 					{questionId}
 				</Text>
-				<IconInfoCircle
-					size={14}
-					style={{ color: "var(--mantine-color-dimmed)" }}
-				/>
+				<Box component="span" c="dimmed" display="inline-flex">
+					<IconInfoCircle size={14} />
+				</Box>
 			</Group>
 		</Tooltip>
 	);
