@@ -51,6 +51,7 @@ Scope is UI-only: no product-logic, data, schema, server-action, or cache change
 ## Footprint (measured this session)
 
 - 48 files import `@mui/*`; 1 imports `@emotion/react` (`RubricStatusMarker` `keyframes`).
+- Two **config files** also reference MUI beyond those 48: `.storybook/preview.tsx` (the MUI decorator) and `vitest.config.ts` (the storybook project's `optimizeDeps.include` pre-bundles 5 `@mui/material/*` subpaths — `Chip`, `CircularProgress`, `Dialog`, `DialogContent`, `DialogTitle` — reached only by the SubmissionQuickJump story). `src/export` has **no** MUI (confirmed).
 - `sx={{…}}`: **172 occurrences across 41 files** — the dominant mechanical effort; every one converts to style props / Styles API per `ui-styling`.
 - No custom MUI theme exists today (app runs on MUI defaults; only Storybook has an empty `createTheme()`). The theme is greenfield.
 - **No hard blockers found** — every MUI component in use has a Mantine equivalent.
@@ -66,7 +67,7 @@ Repo commands (`package.json`): `pnpm run check --fix` (Biome), `pnpm run check-
 3. Create the theme in design-system (`src/design-system/theme.ts`): light, `primaryColor` blue/indigo, single compact density via component `defaultProps` + tuned `spacing`/`fontSizes`.
 4. `app/layout.tsx`: add `ColorSchemeScript` + `mantineHtmlProps` to `<html>`, wrap children in `MantineProvider theme={theme}`, import `@mantine/core/styles.css`. **Keep** `AppRouterCacheProvider` + MUI mounted (coexistence).
 5. `.storybook/preview.tsx`: add a `MantineProvider` decorator + import Mantine styles; **keep** the MUI decorator.
-6. Review `next.config.ts` for MUI-specific config to drop later.
+6. `next.config.ts` has **no** MUI-specific config — nothing to drop there. (Optional, unrelated to MUI removal: if dev compile of icon imports is slow, consider `experimental.optimizePackageImports: ['@tabler/icons-react', '@mantine/core']`; verify it takes effect under Turbopack first.)
 7. **Done-when:** app and Storybook render with both providers mounted. **Validate:** `pnpm run check --fix`, `pnpm run check-types`, `pnpm run build`.
 
 ### Step 1 — design-system primitives + semantic scaffolding
@@ -87,10 +88,10 @@ Repo commands (`package.json`): `pnpm run check --fix` (Biome), `pnpm run check-
 ### Step 3 — verticals (one commit each)
 
 - **3a `app-shell`:** `AppShell`/`AppShellTopBar`/`AppShellDrawerContent`/`AppShellNavigationShell` → Mantine `AppShell` (header/navbar + `Burger`); MUI `AppBar`/`Drawer`/`Toolbar` gone; `layout.tsx` `Box` placement → Mantine.
-- **3b `assessment-capture` (density benchmark):** `SubmissionAssessmentClient`, `SubmissionOverviewAssessmentClient`, `AssessmentProgressSummary`, `RubricGradeList`, and `SubmissionQuickJumpDialog` → `SubmissionSelector` (`Modal` + `Combobox`). **Tune the theme density here** against the real marking view.
+- **3b `assessment-capture` (density benchmark):** `SubmissionAssessmentClient`, `SubmissionOverviewAssessmentClient`, `AssessmentProgressSummary`, `RubricGradeList`, and `SubmissionQuickJumpDialog` → `SubmissionSelector` (`Modal` + `Combobox`). **Tune the theme density here** against the real marking view. **Also update `vitest.config.ts`:** remove the 5 `@mui/material/*` entries from the storybook project's `optimizeDeps.include` (they exist only for this story); if the Storybook browser tests then fail with a mid-run Vite reload, add the Mantine modules the migrated story now reaches instead. Keep `immer` and `fuse.js`.
 - **3c `assessment-completion` + `rubric-analytics`:** `GlobalAssessmentSummary` → `AssessmentSummary`; `CompletionProgress`; `RubricAnalyticsTable`, `SubmissionMatrix`, `QuestionDetailsTooltip`, `RubricDetailsTooltip` (Mantine `Table`; `alpha()` → Mantine color functions).
 - **3d `question-management`:** `QuestionForm` → `@mantine/form` client state with live validation (Ordinal Marks Minimum, Numerical Rubric Bounds) → serialized to the hidden payload; rubric editor papers → `Panel`; `QuestionTable` (Mantine `Table` + dnd-kit retained); `QuestionList`; `DeleteQuestionDialog` → `Modal`; `SelectedQuestionPane`.
-- **3e `imports`:** `BaseImportForm` + the three import forms → Mantine inputs (native `<form action>` kept). Confirm `export` has no MUI.
+- **3e `imports`:** `BaseImportForm` + the three import forms → Mantine inputs (native `<form action>` kept). (`export` has no MUI — confirmed this session.)
 - **Done-when (each):** the vertical imports no `@mui/*`; its tests green. **Validate (each):** `pnpm run check --fix`, `pnpm run check-types`, targeted `pnpm test:unit`/`test:integration`/`test:storybook` for the vertical, `pnpm lint:boundaries`.
 
 ### Step 4 — `app/` pages
@@ -100,9 +101,9 @@ Repo commands (`package.json`): `pnpm run check --fix` (Biome), `pnpm run check-
 
 ### Step 5 — cleanup (remove MUI + Emotion)
 
-1. Remove `AppRouterCacheProvider` from `app/layout.tsx`; remove the MUI decorator from `.storybook/preview.tsx`; drop any MUI-specific `next.config.ts` settings.
+1. Remove `AppRouterCacheProvider` from `app/layout.tsx`; remove the MUI decorator from `.storybook/preview.tsx`; confirm `vitest.config.ts` `optimizeDeps.include` has no `@mui/*` left (handled in Step 3b).
 2. Uninstall `@mui/material`, `@mui/icons-material`, `@mui/material-nextjs`, `@emotion/react`, `@emotion/styled`.
-3. Guard: `grep -rE "@mui/|@emotion/" src app` returns nothing.
+3. Guard (repo-wide, not just `src app`): `grep -rE "@mui/|@emotion/" --include="*.ts" --include="*.tsx" . | grep -v node_modules` returns nothing — this also catches `.storybook/preview.tsx` and `vitest.config.ts`.
 4. Set this plan `Status: Completed` and remove its `plans/index.md` entry **in this PR**.
 5. **Done-when:** no MUI/Emotion in deps or imports; **Validate:** `pnpm run check --fix`, `pnpm run check-types`, `pnpm test`, `pnpm run build`.
 
@@ -121,6 +122,14 @@ Repo commands (`package.json`): `pnpm run check --fix` (Biome), `pnpm run check-
 - **Interaction tests** assume MUI DOM/roles; selectors must be updated to Mantine without expanding assertions.
 - **Server Component + function props**: as in the ADR 0010 migration, provider/prop wiring can pass `check`/`check-types` but fail at `pnpm run build` — build every step.
 - **Coexistence**: both providers and both stylesheets load until Step 5 — watch for CSS reset/specificity clashes between MUI `CssBaseline` and Mantine styles; isolate per-component as migrated.
+
+## State (handoff)
+
+- **Planning complete; nothing implemented.** This session produced [ADR 0011](../docs/adr/0011-adopt-mantine-constrained-design-system.md) and this plan only — no code changed.
+- **Branch:** `mantine-switch`. It already carries (from earlier commits) the Mantine skills, the `ui-styling` house rules, and `@mantine/core` + `@mantine/hooks` in `package.json`. Everything else above is unstarted.
+- **Next action:** Step 0 — add deps (`@mantine/form`, `@tabler/icons-react`, dev `postcss-preset-mantine` + `postcss-simple-vars`), add `postcss.config.cjs`, create `src/design-system/theme.ts`, mount Mantine alongside MUI.
+- **Decisions deferred to implementation:** exact indigo-vs-blue shade; the SegmentedControl boolean green/red Styles API details; whether `AssessmentProgressSummary` + `GlobalAssessmentSummary` actually unify into one `AssessmentSummary` (only on the rule-5 reuse bar); whether `fuse.js` filtering stays or `Combobox`'s own filter replaces it in `SubmissionSelector`.
+- **Review watch-items already folded in:** `vitest.config.ts` `optimizeDeps` (Step 3b) and the repo-wide cleanup guard (Step 5) — both reach beyond the 48 `src`/`app` files.
 
 ## Out of scope
 
