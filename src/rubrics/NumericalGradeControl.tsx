@@ -1,7 +1,7 @@
 "use client";
 
 import { NumberInput } from "@mantine/core";
-import { type ReactElement, useEffect, useState } from "react";
+import type { ReactElement } from "react";
 
 type NumericalGradeControlProps = {
 	value?: number | undefined;
@@ -18,14 +18,8 @@ export default function NumericalGradeControl({
 	disabled,
 	onAssess,
 }: NumericalGradeControlProps): ReactElement {
-	const [draft, setDraft] = useState<string | number>(value ?? "");
-
-	useEffect(() => {
-		setDraft(value ?? "");
-	}, [value]);
-
-	function submit() {
-		const trimmed = String(draft).trim();
+	function submit(text: string) {
+		const trimmed = text.trim();
 		if (trimmed.length === 0) {
 			return;
 		}
@@ -40,13 +34,13 @@ export default function NumericalGradeControl({
 
 	return (
 		<NumberInput
-			value={draft}
-			onChange={setDraft}
-			onBlur={submit}
+			key={value ?? "unset"}
+			defaultValue={value ?? ""}
+			onBlur={(event) => submit(event.currentTarget.value)}
 			onKeyDown={(event) => {
 				if (event.key === "Enter") {
 					event.preventDefault();
-					submit();
+					submit(event.currentTarget.value);
 				}
 			}}
 			placeholder="Score"
