@@ -8,7 +8,6 @@ import {
 	MantineProvider,
 	mantineHtmlProps,
 } from "@mantine/core";
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { SaveErrorsDisplay } from "#app-shell/SaveErrorsDisplay.tsx";
 import { SaveErrorsProvider } from "#design-system/SaveErrorsProvider.tsx";
 import { theme } from "#design-system/theme.ts";
@@ -27,20 +26,18 @@ export default function RootLayout({ children }: RootLayoutProps) {
 				<ColorSchemeScript defaultColorScheme="light" />
 			</head>
 			<body>
-				<AppRouterCacheProvider>
-					<MantineProvider theme={theme} defaultColorScheme="light">
-						<SaveErrorsProvider>
-							{children}
-							<Box
-								pos="fixed"
-								style={{ bottom: 16, left: 16, zIndex: 2000 }}
-								maw={480}
-							>
-								<SaveErrorsDisplay />
-							</Box>
-						</SaveErrorsProvider>
-					</MantineProvider>
-				</AppRouterCacheProvider>
+				<MantineProvider theme={theme} defaultColorScheme="light">
+					<SaveErrorsProvider>
+						{children}
+						<Box
+							pos="fixed"
+							style={{ bottom: 16, left: 16, zIndex: 2000 }}
+							maw={480}
+						>
+							<SaveErrorsDisplay />
+						</Box>
+					</SaveErrorsProvider>
+				</MantineProvider>
 			</body>
 		</html>
 	);
