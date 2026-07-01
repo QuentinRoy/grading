@@ -61,11 +61,11 @@ function NavigationZone({
 	onNavigate,
 }: NavigationZoneProps): ReactNode {
 	return (
-		<Stack gap={4} px="md" py="sm">
+		<Stack gap="xs" px="md" py="sm">
 			<Text size="xs" tt="uppercase" c="dimmed" fw={600}>
 				{title}
 			</Text>
-			<Stack gap={2}>
+			<Stack gap="xs">
 				{items.map((item) => (
 					<NavLink
 						key={item.href}
@@ -163,7 +163,7 @@ export default function AppShellDrawerContent({
 
 	return (
 		<Stack gap={0}>
-			<Stack gap={4} px="md" py="sm">
+			<Stack gap="xs" px="md" py="sm">
 				<Text size="xs" tt="uppercase" c="dimmed" fw={600}>
 					Project
 				</Text>

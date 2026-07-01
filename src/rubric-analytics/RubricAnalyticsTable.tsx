@@ -72,7 +72,7 @@ export default function RubricAnalyticsTable({
 										</Text>
 									</Flex>
 								</Table.Td>
-								<Table.Td miw={180}>
+								<Table.Td>
 									<CompletionProgress
 										assessedCount={rubric.assessedCount}
 										totalCount={rubric.totalCount}

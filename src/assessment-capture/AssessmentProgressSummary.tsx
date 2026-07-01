@@ -24,7 +24,7 @@ export default function AssessmentProgressSummary({
 	const isCompleted = totalRubrics > 0 && rubricsLeft === 0;
 
 	return (
-		<Stack align="center" gap={4}>
+		<Stack align="center" gap="xs">
 			<Text>
 				<span>{marks}</span>&nbsp;/&nbsp;{maxMarks}
 			</Text>

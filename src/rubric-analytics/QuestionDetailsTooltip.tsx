@@ -22,7 +22,6 @@ export default function QuestionDetailsTooltip({
 		>
 			<Group
 				component="span"
-				gap={4}
 				wrap="nowrap"
 				display="inline-flex"
 				style={{ cursor: "help" }}

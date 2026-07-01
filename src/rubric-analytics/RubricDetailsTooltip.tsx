@@ -67,7 +67,6 @@ export default function RubricDetailsTooltip({
 		>
 			<Group
 				component="span"
-				gap={4}
 				wrap="nowrap"
 				display="inline-flex"
 				style={{ cursor: "help" }}

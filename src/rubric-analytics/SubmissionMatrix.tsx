@@ -111,7 +111,7 @@ export default function SubmissionMatrix({
 										</Text>
 									</Flex>
 								</Table.Td>
-								<Table.Td ta="right" miw={180}>
+								<Table.Td ta="right">
 									<CompletionProgress
 										assessedCount={submissionRow.completedRubrics}
 										totalCount={submissionRow.totalRubrics}
