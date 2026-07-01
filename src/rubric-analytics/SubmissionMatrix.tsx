@@ -1,3 +1,5 @@
+"use client";
+
 import { Badge, Table } from "@mantine/core";
 import type { ReactElement } from "react";
 import CompletionProgress from "./CompletionProgress.tsx";
