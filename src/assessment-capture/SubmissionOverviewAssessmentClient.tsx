@@ -212,7 +212,9 @@ export default function SubmissionOverviewAssessmentClient({
 						return (
 							<Stack key={question.questionId} gap="md">
 								<Group justify="space-between" align="baseline" gap="xs">
-									<Title order={2}>{question.questionLabel}</Title>
+									<Title m="0" order={2}>
+										{question.questionLabel}
+									</Title>
 									<Text size="sm">
 										({questionMarks}&nbsp;/&nbsp;{questionMaxMarks})
 									</Text>

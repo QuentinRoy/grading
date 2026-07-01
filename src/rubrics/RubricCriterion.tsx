@@ -72,7 +72,7 @@ export default function RubricCriterion({
 	}
 
 	return (
-		<Group wrap="nowrap" gap="md" py="xs" miw={0}>
+		<Group wrap="nowrap" gap="md" py="0" miw={0}>
 			<AssessmentStatus
 				assessmentStatus={assessmentStatus}
 				isSaving={isPending}

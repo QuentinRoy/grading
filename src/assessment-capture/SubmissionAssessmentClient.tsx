@@ -123,7 +123,6 @@ export default function SubmissionAssessmentClient({
 					{currentSubmission.id}
 				</Text>
 			</Card>
-
 			<Group gap="xs" wrap="wrap">
 				<Button
 					component={NextLink}
@@ -160,7 +159,6 @@ export default function SubmissionAssessmentClient({
 					{currentSubmissionIndex + 1} / {submissions.length}
 				</Text>
 			</Group>
-
 			<SubmissionSelector
 				open={quickJump.isOpen}
 				onClose={quickJump.close}
@@ -169,7 +167,6 @@ export default function SubmissionAssessmentClient({
 				progressPromise={progressPromise}
 				progressLabel="rubrics"
 			/>
-
 			<RubricGradeList
 				savedRubrics={savedRubrics}
 				rubrics={optimisticRubrics}
@@ -177,7 +174,6 @@ export default function SubmissionAssessmentClient({
 				disabled={false}
 				onAssess={(index, assessment) => assess(index, assessment)}
 			/>
-
 			<AssessmentProgressSummary
 				marks={marks}
 				maxMarks={maxMarks}
