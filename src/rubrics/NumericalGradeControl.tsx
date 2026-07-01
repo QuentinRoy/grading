@@ -1,7 +1,8 @@
 "use client";
 
-import TextField from "@mui/material/TextField";
-import { type ReactElement, useEffect, useState } from "react";
+import { NumberInput } from "@mantine/core";
+import { type ReactElement, useRef } from "react";
+import { clamped } from "#utils/utils.ts";
 
 type NumericalGradeControlProps = {
 	value?: number | undefined;
@@ -18,43 +19,39 @@ export default function NumericalGradeControl({
 	disabled,
 	onAssess,
 }: NumericalGradeControlProps): ReactElement {
-	const [draft, setDraft] = useState(value != null ? String(value) : "");
-
-	useEffect(() => {
-		setDraft(value != null ? String(value) : "");
-	}, [value]);
-
-	function submit() {
-		const trimmed = draft.trim();
+	const ref = useRef<HTMLInputElement>(null);
+	function submit(text: string) {
+		const trimmed = text.trim();
 		if (trimmed.length === 0) {
 			return;
 		}
-		let parsed = Number(trimmed);
-		if (!Number.isFinite(parsed) || parsed === value) {
+		const parsedValue = Number(trimmed);
+		if (!Number.isFinite(parsedValue) || parsedValue === value) {
 			return;
 		}
-		if (parsed < minScore) parsed = minScore;
-		else if (parsed > maxScore) parsed = maxScore;
-		onAssess(parsed);
+		const clampedValue = clamped({
+			value: parsedValue,
+			min: minScore,
+			max: maxScore,
+		});
+		if (clampedValue !== parsedValue && ref.current != null) {
+			ref.current.value = clampedValue.toString();
+		}
+		onAssess(clampedValue);
 	}
 
 	return (
-		<TextField
-			size="small"
-			type="number"
-			value={draft}
-			onChange={(event) => setDraft(event.target.value)}
-			onBlur={submit}
-			onKeyDown={(event) => {
-				if (event.key === "Enter") {
-					event.preventDefault();
-					submit();
-				}
-			}}
+		<NumberInput
+			ref={ref}
+			defaultValue={value ?? ""}
+			onBlur={(v) => submit(v.target.value)}
 			placeholder="Score"
+			clampBehavior="none"
 			disabled={disabled}
-			slotProps={{ htmlInput: { min: minScore, max: maxScore, step: "any" } }}
-			sx={{ width: 96 }}
+			min={minScore}
+			max={maxScore}
+			allowDecimal
+			w="80"
 		/>
 	);
 }
