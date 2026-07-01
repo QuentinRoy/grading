@@ -1,6 +1,6 @@
 "use client";
 
-import { Stack } from "@mui/material";
+import { Group } from "@mantine/core";
 import type { ReactElement } from "react";
 import ScoreInput from "#design-system/ScoreInput.tsx";
 import type { QuestionRubricFieldErrors } from "./errors.ts";
@@ -29,7 +29,7 @@ export default function BooleanRubricEditorPaper({
 			onRemove={onRemove}
 			fieldErrors={fieldErrors}
 		>
-			<Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+			<Group wrap="wrap">
 				<ScoreInput
 					label="True marks"
 					defaultValue={rubric.marks}
@@ -42,7 +42,7 @@ export default function BooleanRubricEditorPaper({
 					onChange={(value) => onChange({ ...rubric, falseMarks: value })}
 					error={fieldErrors?.falseMarks}
 				/>
-			</Stack>
+			</Group>
 		</RubricEditorPaper>
 	);
 }

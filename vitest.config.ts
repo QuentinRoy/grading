@@ -71,7 +71,9 @@ export default defineConfig({
 				// https://github.com/vitest-dev/vitest/issues/8447. Remove these
 				// once addon-vitest pre-bundles deps reachable from the story
 				// graph itself.
-				optimizeDeps: { include: ["immer", "fuse.js", "@tabler/icons-react"] },
+				optimizeDeps: {
+					include: ["immer", "fuse.js", "@tabler/icons-react", "@mantine/form"],
+				},
 				test: {
 					name: "storybook",
 					browser: {

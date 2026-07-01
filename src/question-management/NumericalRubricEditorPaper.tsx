@@ -1,6 +1,6 @@
 "use client";
 
-import { Stack, Switch, Typography } from "@mui/material";
+import { Group, Stack, Switch, Text } from "@mantine/core";
 import type { ReactElement } from "react";
 import ScoreInput from "#design-system/ScoreInput.tsx";
 import type { QuestionRubricFieldErrors } from "./errors.ts";
@@ -29,8 +29,8 @@ export default function NumericalRubricEditorPaper({
 			onRemove={onRemove}
 			fieldErrors={fieldErrors}
 		>
-			<Stack spacing={1}>
-				<Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+			<Stack gap="xs">
+				<Group wrap="wrap">
 					<ScoreInput
 						label="Min score"
 						defaultValue={rubric.minScore}
@@ -43,8 +43,8 @@ export default function NumericalRubricEditorPaper({
 						onChange={(value) => onChange({ ...rubric, maxScore: value })}
 						error={fieldErrors?.maxScore}
 					/>
-				</Stack>
-				<Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+				</Group>
+				<Group wrap="wrap">
 					<ScoreInput
 						label="Min marks"
 						defaultValue={rubric.minMarks}
@@ -57,16 +57,14 @@ export default function NumericalRubricEditorPaper({
 						onChange={(value) => onChange({ ...rubric, maxMarks: value })}
 						error={fieldErrors?.maxMarks}
 					/>
-				</Stack>
-				<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-					<Switch
-						checked={rubric.reversed}
-						onChange={(event) =>
-							onChange({ ...rubric, reversed: event.target.checked })
-						}
-					/>
-					<Typography>Reverse score-to-marks mapping</Typography>
-				</Stack>
+				</Group>
+				<Switch
+					label={<Text size="sm">Reverse score-to-marks mapping</Text>}
+					checked={rubric.reversed}
+					onChange={(event) =>
+						onChange({ ...rubric, reversed: event.currentTarget.checked })
+					}
+				/>
 			</Stack>
 		</RubricEditorPaper>
 	);
