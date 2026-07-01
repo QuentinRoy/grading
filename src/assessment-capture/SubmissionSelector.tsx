@@ -13,7 +13,6 @@ import {
 } from "@mantine/core";
 import {
 	type ReactElement,
-	type ReactNode,
 	Suspense,
 	use,
 	useEffect,
@@ -25,6 +24,7 @@ import type { Submission } from "#submissions/types.ts";
 import {
 	buildSubmissionSearchTargets,
 	createSubmissionSearch,
+	type SubmissionSearchResult,
 } from "./quickJumpSearch.ts";
 
 type SubmissionProgressBySubmissionId = Record<
@@ -58,28 +58,6 @@ export default function SubmissionSelector({
 	}
 
 	return (
-		<SelectorShell onClose={onClose}>
-			<Suspense fallback={<Loader m="auto" />}>
-				<SubmissionSelectorContent
-					onClose={onClose}
-					onSelectSubmission={onSelectSubmission}
-					submissions={submissions}
-					progressPromise={progressPromise}
-					progressLabel={progressLabel}
-				/>
-			</Suspense>
-		</SelectorShell>
-	);
-}
-
-function SelectorShell({
-	onClose,
-	children,
-}: {
-	onClose: () => void;
-	children: ReactNode;
-}): ReactElement {
-	return (
 		<Modal
 			opened
 			onClose={onClose}
@@ -87,7 +65,13 @@ function SelectorShell({
 			fullScreen
 			closeButtonProps={{ "aria-label": "Close lookup" }}
 		>
-			{children}
+			<SubmissionSelectorContent
+				onClose={onClose}
+				onSelectSubmission={onSelectSubmission}
+				submissions={submissions}
+				progressPromise={progressPromise}
+				progressLabel={progressLabel}
+			/>
 		</Modal>
 	);
 }
@@ -105,7 +89,6 @@ function SubmissionSelectorContent({
 	progressPromise: Promise<SubmissionProgressBySubmissionId>;
 	progressLabel: string;
 }): ReactElement {
-	const progressBySubmissionId = use(progressPromise);
 	const [query, setQuery] = useState("");
 	const searchInputId = useId();
 	// Combobox.EventsTarget owns the Escape key (it stops the event from
@@ -115,6 +98,55 @@ function SubmissionSelectorContent({
 		defaultOpened: true,
 		onDropdownClose: onClose,
 	});
+
+	const handleSubmit = (submissionId: string) => {
+		onSelectSubmission(submissionId);
+		onClose();
+	};
+
+	return (
+		<Combobox store={combobox} onOptionSubmit={handleSubmit}>
+			<Stack gap="md">
+				<Combobox.EventsTarget>
+					<TextInput
+						id={searchInputId}
+						value={query}
+						onChange={(event) => setQuery(event.currentTarget.value)}
+						placeholder="Search by team or student name"
+						data-autofocus
+					/>
+				</Combobox.EventsTarget>
+
+				<Combobox.Options>
+					<Suspense fallback={<Loader m="auto" />}>
+						<SubmissionResultsList
+							query={query}
+							submissions={submissions}
+							progressPromise={progressPromise}
+							progressLabel={progressLabel}
+							combobox={combobox}
+						/>
+					</Suspense>
+				</Combobox.Options>
+			</Stack>
+		</Combobox>
+	);
+}
+
+function SubmissionResultsList({
+	query,
+	submissions,
+	progressPromise,
+	progressLabel,
+	combobox,
+}: {
+	query: string;
+	submissions: Submission[];
+	progressPromise: Promise<SubmissionProgressBySubmissionId>;
+	progressLabel: string;
+	combobox: ReturnType<typeof useCombobox>;
+}): ReactElement {
+	const progressBySubmissionId = use(progressPromise);
 
 	const searchTargets = useMemo(
 		() => buildSubmissionSearchTargets(submissions, progressBySubmissionId),
@@ -136,68 +168,56 @@ function SubmissionSelectorContent({
 		}
 	}, [results, combobox]);
 
-	const handleSubmit = (submissionId: string) => {
-		onSelectSubmission(submissionId);
-		onClose();
-	};
+	if (results.length === 0) {
+		return (
+			<Combobox.Empty>
+				{query.length === 0
+					? "Type to search by team or student name (supports partial matches)"
+					: "No matching submissions found. Try a different search term."}
+			</Combobox.Empty>
+		);
+	}
 
 	return (
-		<Combobox store={combobox} onOptionSubmit={handleSubmit}>
-			<Stack gap="md">
-				<Combobox.EventsTarget>
-					<TextInput
-						id={searchInputId}
-						value={query}
-						onChange={(event) => setQuery(event.currentTarget.value)}
-						placeholder="Search by team or student name"
-						autoFocus
-					/>
-				</Combobox.EventsTarget>
+		<Stack gap="xs">
+			{results.map((result) => (
+				<SubmissionOption
+					key={result.submissionId}
+					result={result}
+					progressLabel={progressLabel}
+				/>
+			))}
+		</Stack>
+	);
+}
 
-				<Combobox.Options>
-					{results.length === 0 ? (
-						<Combobox.Empty>
-							{query.length === 0
-								? "Type to search by team or student name (supports partial matches)"
-								: "No matching submissions found. Try a different search term."}
-						</Combobox.Empty>
-					) : (
-						<Stack gap="xs">
-							{results.map((result) => {
-								const secondaryText =
-									result.matchReason.length > 0
-										? result.matchReason
-										: result.memberNames.join(", ");
+function SubmissionOption({
+	result,
+	progressLabel,
+}: {
+	result: SubmissionSearchResult;
+	progressLabel: string;
+}): ReactElement {
+	const secondaryText =
+		result.matchReason.length > 0
+			? result.matchReason
+			: result.memberNames.join(", ");
 
-								return (
-									<Combobox.Option
-										value={result.submissionId}
-										key={result.submissionId}
-									>
-										<Group justify="space-between" wrap="nowrap" gap="sm">
-											<div>
-												<Text size="sm">{result.displayLabel}</Text>
-												{secondaryText.length > 0 ? (
-													<Text size="xs" opacity={0.7}>
-														{secondaryText}
-													</Text>
-												) : null}
-											</div>
-											<Badge
-												color={result.isCompleted ? "green" : "gray"}
-												variant="light"
-											>
-												{result.progress.completed} / {result.progress.total}{" "}
-												{progressLabel}
-											</Badge>
-										</Group>
-									</Combobox.Option>
-								);
-							})}
-						</Stack>
-					)}
-				</Combobox.Options>
-			</Stack>
-		</Combobox>
+	return (
+		<Combobox.Option value={result.submissionId}>
+			<Group justify="space-between" wrap="nowrap" gap="sm">
+				<div>
+					<Text size="sm">{result.displayLabel}</Text>
+					{secondaryText.length > 0 ? (
+						<Text size="xs" opacity={0.7}>
+							{secondaryText}
+						</Text>
+					) : null}
+				</div>
+				<Badge color={result.isCompleted ? "green" : "gray"} variant="light">
+					{result.progress.completed} / {result.progress.total} {progressLabel}
+				</Badge>
+			</Group>
+		</Combobox.Option>
 	);
 }

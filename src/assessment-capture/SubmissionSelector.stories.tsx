@@ -44,10 +44,10 @@ type Story = StoryObj<typeof meta>;
 
 export const FiltersAndSelectsViaKeyboard: Story = {
 	play: async ({ args }) => {
-		const search = await screen.findByPlaceholderText(
+		const search = screen.getByPlaceholderText(
 			"Search by team or student name",
 		);
-		await expect(search).toHaveFocus();
+		await waitFor(() => expect(search).toHaveFocus());
 
 		await userEvent.type(search, "alice");
 
