@@ -1,6 +1,9 @@
 import { readFileSync } from "node:fs";
 import { expect, type Page, test } from "@playwright/test";
-import { projectExportSubmissionsPath } from "#projects/projectPaths.ts";
+import {
+	projectExportSubmissionsPath,
+	projectOverviewPath,
+} from "#projects/projectPaths.ts";
 import {
 	EXPECTED_COMPLETION,
 	EXPECTED_GRAND_TOTAL_MARKS,
@@ -184,6 +187,20 @@ test("grading workflow: import, assess, persist, and export a computed total", a
 		"Submissions assessed",
 		EXPECTED_COMPLETION.submissions,
 	);
+
+	// Visit the assessments-overview page: it renders RubricAnalyticsTable and
+	// SubmissionMatrix, Server Components that use Mantine's Table.* compound
+	// subcomponents. Those regressed with an RSC boundary crash ("Element type
+	// is invalid") that no other check caught — tsc has no notion of the
+	// client/server boundary, and this route isn't statically prerendered, so
+	// only an actual render (here, or a real request) exercises it.
+	await page.goto(projectOverviewPath({ projectId, projectSlug }));
+	await expect(
+		page.getByRole("table", { name: "Rubric analytics" }),
+	).toBeVisible();
+	await expect(
+		page.getByRole("table", { name: "Submission matrix" }),
+	).toBeVisible();
 
 	// Export the submissions CSV via the GET route (request context avoids
 	// browser download flakiness) and assert the computed grand totals. The
