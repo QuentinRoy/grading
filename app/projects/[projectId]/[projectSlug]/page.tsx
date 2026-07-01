@@ -1,6 +1,8 @@
-import { Button, Container, Stack, Typography } from "@mui/material";
+import { Button, Stack, Text, Title } from "@mantine/core";
+import NextLink from "next/link";
 import GlobalAssessmentSummary from "#assessment-completion/GlobalAssessmentSummary.tsx";
 import { loadAssessmentCompletionSummary } from "#assessment-completion/loadAssessmentCompletion.ts";
+import AppPage from "#design-system/AppPage.tsx";
 import {
 	projectAssessmentsPath,
 	projectImportStudentsPath,
@@ -24,37 +26,35 @@ export default async function ProjectDashboardPage({
 	});
 
 	return (
-		<Container component="main" maxWidth="md" sx={{ py: 5 }}>
-			<Stack sx={{ gap: 3 }}>
-				<Typography component="h1" variant="h2">
-					{project.name} Dashboard
-				</Typography>
+		<AppPage>
+			<Stack gap="lg">
+				<Title order={1}>{project.name} Dashboard</Title>
 				{progress.questions.total === 0 ? (
-					<Stack sx={{ gap: 2, alignItems: "flex-start" }}>
-						<Typography color="text.secondary">
+					<Stack gap="sm" align="flex-start">
+						<Text c="dimmed">
 							No questions yet — add questions to start assessing.
-						</Typography>
+						</Text>
 						<Button
+							component={NextLink}
 							href={projectQuestionsPath({
 								projectId: project.id,
 								projectSlug: project.slug,
 							})}
-							variant="contained"
 						>
 							Add questions
 						</Button>
 					</Stack>
 				) : progress.submissions.total === 0 ? (
-					<Stack sx={{ gap: 2, alignItems: "flex-start" }}>
-						<Typography color="text.secondary">
+					<Stack gap="sm" align="flex-start">
+						<Text c="dimmed">
 							No submissions yet — import submissions to start assessing.
-						</Typography>
+						</Text>
 						<Button
+							component={NextLink}
 							href={projectImportStudentsPath({
 								projectId: project.id,
 								projectSlug: project.slug,
 							})}
-							variant="contained"
 						>
 							Import submissions
 						</Button>
@@ -62,18 +62,16 @@ export default async function ProjectDashboardPage({
 				) : (
 					<GlobalAssessmentSummary progress={progress} />
 				)}
-				<div>
-					<Button
-						href={projectAssessmentsPath({
-							projectId: project.id,
-							projectSlug: project.slug,
-						})}
-						variant="contained"
-					>
-						Open assessments
-					</Button>
-				</div>
+				<Button
+					component={NextLink}
+					href={projectAssessmentsPath({
+						projectId: project.id,
+						projectSlug: project.slug,
+					})}
+				>
+					Open assessments
+				</Button>
 			</Stack>
-		</Container>
+		</AppPage>
 	);
 }

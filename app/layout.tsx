@@ -3,11 +3,11 @@ import type { ReactNode } from "react";
 import "../styles/globals.css";
 import "@mantine/core/styles.css";
 import {
+	Box,
 	ColorSchemeScript,
 	MantineProvider,
 	mantineHtmlProps,
 } from "@mantine/core";
-import Box from "@mui/material/Box";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { SaveErrorsDisplay } from "#app-shell/SaveErrorsDisplay.tsx";
 import { SaveErrorsProvider } from "#design-system/SaveErrorsProvider.tsx";
@@ -32,13 +32,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
 						<SaveErrorsProvider>
 							{children}
 							<Box
-								sx={{
-									position: "fixed",
-									bottom: 16,
-									left: 16,
-									zIndex: 2000,
-									maxWidth: 480,
-								}}
+								pos="fixed"
+								style={{ bottom: 16, left: 16, zIndex: 2000 }}
+								maw={480}
 							>
 								<SaveErrorsDisplay />
 							</Box>
